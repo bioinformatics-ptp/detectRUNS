@@ -1,0 +1,193 @@
+#Runs of Heterogosity
+#per lancaire il programma:  python ROHet.py code12.ped code12.map
+
+
+import subprocess as sub
+import argparse
+import sys 
+
+
+def try_file(files):
+    try:
+        ff=open(files)
+    except:
+        print '*'*50,'\n *** ERRORE NEL FILE: '+files+' ***\n','*'*50
+        print '***        I FILE .ped e .map NON SONO STATI TROVATI!        ***'
+        print '***    il File .ped e .map devono avere lo stesso nome       ***'
+        print "*** Accetto solo 'Example/filename' o 'Example/filename.ped' ***"
+        print '-'*50
+        sys.exit()
+
+def get_args():
+    # Assign description to the help doc
+    parser = argparse.ArgumentParser(description='Script for Runs of heterozygous')
+    # Add arguments
+    parser.add_argument('--files', type=str, help='File name (Example/filename or Example/filename.ped)', required=True)
+    parser.add_argument('--roh', action = "store_true", required=False, help = "Runs of Homozygosity")
+    parser.add_argument('--out', type=str, help='File OUTPUT name', required=False, default='example')
+    parser.add_argument('--length',type=int, help='Minimun ROHet length', required=False, default=1)
+    parser.add_argument('--missing', type=int, help='Maximun missing in ROHet', required=False, default=0)
+    parser.add_argument('--homoz', type=int, help='Maximun homozygotes in ROHet', required=False, default=0)
+    parser.add_argument('--minSNP', type=int, help='Minimun SNP in ROHet', required=False, default=10)
+    
+    # Array for all arguments passed to script
+    args = parser.parse_args()
+
+    # Assign args to variables
+    if ('.ped' or '.map') in args.files:
+        fileped=args.files[:-4]+'.ped'
+        filemap=args.files[:-4]+'.map'
+    else:
+        fileped=args.files+'.ped'
+        filemap=args.files+'.map'
+    try_file(fileped)
+    try_file(filemap)
+
+    #Parameters
+    length_min1= args.length
+    mini_SNP1=args.minSNP
+    maxbuffer1=args.homoz
+    maxmissing1=args.missing
+    file_out=args.out
+
+    global recode    
+    if args.roh: #swich tra ROH e ROHet
+        recode={'11':'1','22':'1','12':'2','21':'2','00':'5'} #ROH
+        roh=True
+    else:
+        recode={'11':'2','22':'2','12':'1','21':'1','00':'5'} #ROHet  
+        roh=False
+    
+    # Return all variable values
+    return fileped,filemap,length_min1,maxmissing1,maxbuffer1,mini_SNP1,file_out,roh
+
+# Match return values from get_arguments()
+# and assign to their respective variables
+fileped,filemap, length_min1,maxmissing1,maxbuffer1,mini_SNP1,file_out,roh= get_args()
+
+
+#Summary of parameters used
+print '*'*50
+print '*** Avvio del programma per calcolo delle Runs ***'
+print '*'*50
+print '\t\t*** PARAMETERS: *** '
+if roh:print '\t+++ Runs of Homozygosity +++'
+else: print '\t+++ Runs of Heterozygosity +++'
+print '\t*** File ped: ',fileped
+print '\t*** File map: ',filemap
+print '\t*** Minimun length: ',length_min1
+print '\t*** Maximun missing SNP in ROHet: ',maxmissing1
+print '\t*** Maximun homozygous SNP in ROHet:',maxbuffer1
+print '\t*** Minimun SNPs:',mini_SNP1
+print '\t*** Output file name:',file_out
+print '_'*50
+
+
+#####################
+### READ MAP FILE ###
+#####################
+def read_map(map_file,nchrom):
+    chromosome=[]
+    position=[]
+    name=[]
+    ##read map file 
+    for mapp in open(map_file):
+        chro,nam,xx,posiz=mapp.strip().split()
+        #if not chro.isdigit() or int(chro)<1 or int(chro)>29: #cambiare i cromosomi!!!
+        if not chro.isdigit() or not int(chro) in range(1,nchrom+1): #cambiare i cromosomi!!!
+            chromosome.append('skip');position.append('skip')
+            continue
+        chromosome.append(chro)
+        position.append(posiz)
+        name.append(nam)
+    return(chromosome,position,name)
+
+############################
+### RUNS OF HOMOZYGOSITY ###
+############################
+def ROHet(pedfile,list1,list2):
+    
+    ##creation of lists
+    chromosome,position,name=list1
+    mini_SNP1,maxbuffer1,maxmissing1,length_min1,file_out=list2
+
+    ##creation value
+    breeds={}
+    error=False
+    mini_SNP=int(mini_SNP1)
+    length_min=int(length_min1)
+    maxbuffer=int(maxbuffer1)
+    maxmissing=int(maxmissing1)
+
+    #print chromosome,position,name
+    #print mini_SNP,length_min,maxbuffer,maxmissing
+
+    ##output file
+    output=open(file_out,'w')
+    output.write('BREED;ANIMAL;CHROMOSOME;COUNT;START;END;LENGTH\n')
+
+    ##def to write to output file
+    def write_out(breed,animal,first,last,count,chrom):
+        diff=int(last)-int(first)
+        if count>mini_SNP and diff/1000000. > length_min:
+            output.write('%s;%s;%s;%s;%s;%s;%s\n'%(breed,animal,chrom,count,first,last,diff))
+            
+    ##identification of ROH
+    for en,line in enumerate(open(pedfile)):
+        allpp=[]
+        breed,ind,sire,dame,sex,phe,geno=line.strip().split(' ',6)  ## NOTE: This only works with SINGLE SPACE - to do (other delims)
+        if not breeds.has_key(breed):breeds[breed]=0
+        breeds[breed] += 1
+        geno=geno.split()
+        ##recode genotype 
+        genotype=[recode.get(geno[x]+geno[x+1],'!') for x in range(0,len(geno)-1,2)]
+        if genotype.count('!'): error=True 
+        count1=0;last1=0;first1=0;lastcrom='1'
+        for letter in range(len(genotype)):
+            if chromosome[letter]=='skip':continue
+            if chromosome[letter]!=lastcrom:
+                ##first write output
+                write_out(breed,ind,first1,last1,count1,lastcrom)
+                count1=0
+                lastcrom=chromosome[letter]
+            if count1==0:
+                buff=0;first1=0; last1=0; missing=0;
+                if genotype[letter]=='1':
+                    count1+=1
+                    first1=position[letter]
+                    continue
+                else:continue
+            if genotype[letter]=='1':
+                count1+=1
+                last1=position[letter]
+                continue
+            elif genotype[letter]=='2': ##Control for heterozygous genotypes
+                    buff+=1
+                    if buff<=maxbuffer and missing<=maxmissing:
+                        count1+=1;continue
+                    elif buff > maxbuffer:
+                        last1=position[letter-1]
+                        ##second write output
+                        write_out(breed,ind,first1,last1,count1,lastcrom)
+                        count1=0
+                        continue
+            elif genotype[letter]=='5': ##Control for missings genotypes
+                    missing+=1
+                    if buff<=maxbuffer and missing<=maxmissing:
+                        count1+=1;continue
+                    elif missing > maxmissing:
+                        last1=position[letter-1]
+                        ##third write output
+                        write_out(breed,ind,first1,last1,count1,lastcrom)
+                        count1=0
+
+    return (breeds,error)
+
+
+one=read_map(filemap,90)
+list2=[mini_SNP1,maxbuffer1,maxmissing1,length_min1,file_out]
+list1=[one]
+
+#avvio del programma
+ROHet(fileped,one,list2)
+
