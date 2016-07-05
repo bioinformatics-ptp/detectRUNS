@@ -1,14 +1,14 @@
 PLINK v1.90b3x 64-bit (17 Oct 2015)
 Options in effect:
   --cow
-  --file subset
-  --freq
+  --file subsetChillingham
+  --recode A
 
 Hostname: hugo.bioinformatics.tecnoparco.org
 Working directory: /storage/biscarinif/RunsOfHeterozygosity/RoHet/DATA
-Start time: Tue Jul  5 19:26:03 2016
+Start time: Tue Jul  5 19:33:38 2016
 
-Random number seed: 1467739563
+Random number seed: 1467740018
 16384 MB RAM detected; reserving 8192 MB for main workspace.
 Scanning .ped file... done.
 Performing single-pass .bed write (2635 variants, 17 cattle).
@@ -20,6 +20,8 @@ Ambiguous sex IDs written to plink.nosex .
 Using 1 thread (no multithreaded calculations invoked.
 Before main variant filters, 17 founders and 0 nonfounders present.
 Calculating allele frequencies... done.
---freq: Allele frequencies (founders only) written to plink.frq .
+2635 variants and 17 cattle pass filters and QC.
+Note: No phenotypes present.
+--recode A to plink.raw ... done.
 
-End time: Tue Jul  5 19:26:03 2016
+End time: Tue Jul  5 19:33:38 2016
