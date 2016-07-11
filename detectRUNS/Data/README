@@ -1,0 +1,11 @@
+# Example datasets for illustration
+
+- code12.map/ped: ??
+
+
+- subsetChillingham.map/ped: Chillingham data, BTA1, 2635 SNP, 17 animals
+
+From: plink --noweb --file edited --snp BovineHD0100016549 --window 5000 --recode --out subsetChillingham
+Formats: ped/map, raw
+
+
