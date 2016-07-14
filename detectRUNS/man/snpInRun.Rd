@@ -17,7 +17,7 @@ snpInRun(RunVector, fenster, schwelle)
 vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
 }
 \description{
-This is a core function. The function to determine whether a SNP is or not in a RUN. 
+This is a core function. The function to determine whether a SNP is or not in a RUN.
 The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 }
 \examples{

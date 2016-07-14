@@ -17,6 +17,10 @@
 #' @return n. of individuals for which runs have been written out
 #' @export
 #'
+#' @import plyr
+#' @import itertools
+#' @import ggplot2
+#'
 #' @examples x <- RUNS.run(gegevens, mappa, windowSize = 20, drempel = 0.1, minSNP = 5, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1)
 #'
 
