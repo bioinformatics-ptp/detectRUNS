@@ -91,7 +91,7 @@ def get_args():
 # Match return values from get_arguments()
 # and assign to their respective variables
 fileped,filemap, length_min1,maxmissing1,maxbuffer1,mini_SNP1,file_out,roh,distance= get_args()
-
+n_roh=0
 
 #Summary of parameters used
 print '*'*50
@@ -146,6 +146,7 @@ def ROHet(pedfile,list1,list2):
     length_min=int(length_min1)
     maxbuffer=int(maxbuffer1)
     maxmissing=int(maxmissing1)
+    #n_roh=0    
 
     #print chromosome,position,name
     #print mini_SNP,length_min,maxbuffer,maxmissing
@@ -157,10 +158,15 @@ def ROHet(pedfile,list1,list2):
 
     ##def to write to output file
     def write_out(breed,animal,first,last,count,chrom):
+        
         diff=int(last)-int(first)
         if count>mini_SNP and diff/1000. > length_min:
             output.write('%s;%s;%s;%s;%s;%s;%s\n'%(breed,animal,chrom,count,first,last,diff))
- 
+            global n_roh
+            n_roh += 1
+
+        return n_roh
+
     ##identification of ROH
     for en,line in enumerate(open(pedfile)):
         allpp=[]
@@ -216,7 +222,10 @@ def ROHet(pedfile,list1,list2):
                         ##third write output
                         write_out(breed,ind,first1,last1,count1,lastcrom)
                         count1=0
+    
 
+    print '\t*** Ho trovato in tutto '+str(n_roh)+' ROH ***'
+    print '\t*** Analisi Finita ***\n','*'*50
     return (breeds,error)
 
 

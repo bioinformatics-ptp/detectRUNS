@@ -5,7 +5,7 @@ import argparse
 import sys
 
 
-def try_file(files,roh):
+def try_file(files):
     try:
         if '.map' in files:
             ff=open(files)
@@ -50,25 +50,25 @@ def get_args():
     parser.add_argument('--files', type=str, help='File name (.txt)', required=True)
     parser.add_argument('--map', type=str, help='Map file name (.txt)', required=True)
     parser.add_argument('--out', type=str, help='File OUTPUT name', required=False, default='example')
-    parser.add_argument('--roh', action = "store_true", required=False, help = "Runs of Homozygosity")
+
 
     # Array for all arguments passed to script
     args = parser.parse_args()
 
     files=args.files
     map=args.map
-    roh=args.roh
 
-    try_file(args.files,args.roh)
-    try_file(args.map,args.roh)
+
+    try_file(args.files)
+    try_file(args.map)
 
     file_out=args.out
 
     # Return all variable values
-    return files,map,roh,file_out
+    return files,map,file_out
 
 
-files,map,roh,file_out= get_args()
+files,map,file_out= get_args()
 
 
 ############################    
