@@ -31,17 +31,20 @@ RUNS.run <- function(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3
 
   #gegevens <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
   #remove unnecessary fields from the .raw file
-  gegevens <- gegevens[,-c(1,3,4,5,6)]
+  gegevens <- gegevens[,-c(3,4,5,6)]
+
+  report_filename <- paste("detectRUNS",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
+  if(file.exists(report_filename)) system2("rm",report_filename)
 
   zustand <- vector()
 
   # require "plyr"
   staat <- daply(gegevens,"IID",function(x) {
 
-    y <- schiebeFenster(as.integer(x[-1]),windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss);
+    y <- schiebeFenster(as.integer(x[-c(1,2)]),windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss);
     snpRun <- snpInRun(y,windowSize,drempel)
     dRUN <- createRUNdf(snpRun,mappa,minSNP)
-    zustand <- schreibRUN(as.character(x$IID),dRUN,ROHet)
+    zustand <- schreibRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
     return(zustand)
   })
 

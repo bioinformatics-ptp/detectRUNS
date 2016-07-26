@@ -29,7 +29,7 @@ plotRuns <- function(runsFile = 'detectRUNS.ROHet.csv', ROHet = TRUE) {
 
   runs <- read.table(file=runsFile, header=TRUE, sep=',')
 
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","START","END","COUNT","LENGTH")
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #divisione delle razze
   #scelta razza e cromosoma DEVI CAMBIARE IL NOME DEL FILE PDF SE LO VUOI E LA RAZZA
@@ -38,7 +38,7 @@ plotRuns <- function(runsFile = 'detectRUNS.ROHet.csv', ROHet = TRUE) {
   for (krom in seq(as.factor(table(runs$CHROMOSOME)))) {
 
     cromo <- subset(runs,CHROMOSOME==krom)
-    sottoInsieme <- cromo[,c(4,5,2)]
+    sottoInsieme <- cromo[,c(5,6,2)]
 
     #lughezza in mb
     sottoInsieme[,1] <- sottoInsieme[,1]/1000000
