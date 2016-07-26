@@ -4,7 +4,7 @@
 \alias{schreibRUN}
 \title{Function to write out RUNS per individual animal}
 \usage{
-schreibRUN(ind, dRUN, ROHet = TRUE)
+schreibRUN(ind, dRUN, ROHet = TRUE, breed)
 }
 \arguments{
 \item{ind}{ID of animal}

@@ -228,7 +228,7 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
   dRUN$breed <- rep(breed,nrow(dRUN))
-  dRUN <- dRUN[,c(7,6,4,1,2,3,5)]
+  dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
   print(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
 
