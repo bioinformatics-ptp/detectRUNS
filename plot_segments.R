@@ -4,72 +4,50 @@
 
 #plot 
 library(ggplot2)
-razza<-read.table(file='detectRUNS.ROHet.csv',header=T,sep=',')
+razza<-read.table(file='step1',header=T,sep=';')
 head(razza)
 
-#divisione delle razze
-#scelta razza e cromosoma DEVI CAMBIARE IL NOME DEL FILE PDF SE LO VUOI E LA RAZZA
-colore=as.factor(razza$BREED)
+pdf('nome_plot3.pdf',height=12, width=20)
 
-#pdf('reads_ROHet_BISCARINI.pdf',height=12, width=20)
-
-seq(as.factor(table(razza$CHROMOSOME)))
-for (a in seq(as.factor(table(razza$CHROMOSOME)))){
+for (a in sort(unique(razza$CHROMOSOME))){
+  
+  print(paste('Chromosome: ',a))
+  
+  #primo subset
   cromo<-subset(razza,CHROMOSOME==a)
-  sotto<-cromo[,c(4,5,2)]
+  #secondo subset
+  sotto<-cromo[,c(5,6,2,1)]
+  sotto=sotto[order(sotto$BREED),]
+  #creo un numero progressivo per animale
+  newID=seq(1,length(unique(sotto$ANIMAL)))
+  id=unique(sotto$ANIMAL)
+  sotto$NEWID=newID[match(sotto$ANIMAL,id)]
+  
+  #colore delle razze
+  colore=as.factor(sotto$BREED)
   
   #lughezza in mb
   sotto[,1]<-sotto[,1]/1000000
   sotto[,2]<-sotto[,2]/1000000
   
-  grafico=ggplot()  + geom_segment(data=sotto,aes(x = START, y = ANIMAL, xend = END, yend = ANIMAL),colour="red",alpha=1,size=4)+
-      xlim(0, max(sotto$END)) + ggtitle("Biscarini's method")
+  #PRIMO PLOT
+  grafico=ggplot(sotto,aes(colour=sotto$BREED))  + 
+    geom_segment(data=sotto,aes(x = START, y = NEWID, xend = END, yend = NEWID),alpha=1,size=0.5)+
+    xlim(0, max(sotto$END)) + 
+    ggtitle(paste('Cromosome:',a))
   
   print(grafico)
   
-}
-
-#dev.off()
-
-
-
-#######################################################################################################################################
-#######################################################################################################################################
-#######################################################################################################################################
-
-
-#############################################
-####  PLOT DELLE ROH DEL PROGRAMMA MARRAS ###
-#############################################
-#preparazione dei dati
-library(ggplot2)
-
-razza<-read.table(file='runs_eter',header=T,sep=';')
-head(razza)
-
-#divisione delle razze
-#scelta razza e cromosoma DEVI CAMBIARE IL NOME DEL FILE PDF SE LO VUOI E LA RAZZA
-#controllare se funziona!!!!!
-colore=as.factor(razza$BREED)
-
-
-#pdf('reads_ROHet_MARRAS.pdf',height=12, width=20)
-
-seq(as.factor(table(razza$CHROMOSOME)))
-for (a in seq(as.factor(table(razza$CHROMOSOME)))){
-  cromo<-subset(razza,CHROMOSOME==a)
-  sotto<-cromo[,c(5,6,2)]
+  #SECONDO PLOT
+  sotto$JitterSpecies <- ave(as.numeric(sotto$BREED), sotto$BREED,FUN = function(x) x + rnorm(length(x), sd = .1))
+  grafico1 =  ggplot(sotto, aes(x = START, xend = END, y = JitterSpecies, yend = JitterSpecies)) +
+    geom_segment()+
+    scale_y_continuous("Species", breaks = seq(unique(sotto$BREED)), labels = levels(sotto$BREED)) +
+    ggtitle(paste('Cromosome:',a))
   
-  #lughezza in mb
-  sotto[,1]<-sotto[,1]/1000000
-  sotto[,2]<-sotto[,2]/1000000
   
-  grafico=ggplot()  + geom_segment(data=sotto,aes(x = START, y = ANIMAL, xend = END, yend = ANIMAL),colour="red",alpha=1,size=4)+
-    xlim(0, max(sotto$END)) + ggtitle("Marras's method")
-  
-  print(grafico)
+  print(grafico1)
   
 }
 
-#dev.off()
-
+dev.off()
