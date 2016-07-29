@@ -3,9 +3,13 @@
 ################################################
 
 #plot 
-library(ggplot2)
+library("ggplot2")
 razza<-read.table(file='detectRUNS.ROHet.csv',header=T,sep=',')
 head(razza)
+
+names(razza) <- c("ANIMAL","CHROMOSOME","START","END","COUNT","LENGTH")
+razza$BREED <- rep("CHIL",nrow(razza))
+razza <- razza[,c(7,1,2,3,4,5,6)]
 
 #divisione delle razze
 #scelta razza e cromosoma DEVI CAMBIARE IL NOME DEL FILE PDF SE LO VUOI E LA RAZZA
@@ -13,7 +17,6 @@ colore=as.factor(razza$BREED)
 
 #pdf('reads_ROHet_BISCARINI.pdf',height=12, width=20)
 
-seq(as.factor(table(razza$CHROMOSOME)))
 for (a in seq(as.factor(table(razza$CHROMOSOME)))){
   cromo<-subset(razza,CHROMOSOME==a)
   sotto<-cromo[,c(4,5,2)]
@@ -44,7 +47,7 @@ for (a in seq(as.factor(table(razza$CHROMOSOME)))){
 #preparazione dei dati
 library(ggplot2)
 
-razza<-read.table(file='runs_eter',header=T,sep=';')
+razza<-read.table(file='example',header=T,sep=';')
 head(razza)
 
 #divisione delle razze
