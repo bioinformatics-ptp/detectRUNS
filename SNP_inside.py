@@ -9,31 +9,59 @@ def try_file(files):
     try:
         if '.map' in files:
             ff=open(files)
-        else:
+
+        elif '.ped' in files:
             ff=open(files)
-            global n_breed,nchrom 
+            global n_breed
             n_animal={}
             n_breed={}
-            chro=[]
+            #chro=[]
             lista=[]
             for line in ff:
-                if 'CHROMOSOME' in line: continue
-                BREED,ANIMAL,CHROMOSOME,COUNT,START,END,LENGTH=line.strip().split(";")
-                chro.append(int(CHROMOSOME))
-                if not n_animal.has_key(BREED):n_animal[BREED]=[]
-                if not ANIMAL in lista:
-                    n_animal[BREED].append(ANIMAL)
-                    lista.append(ANIMAL)
+                breed,ids,sire,dam,sex,phe,geno=line.strip().split(' ',6) #AGGIUNGERE REPLACE PER I TAB
+                if not n_animal.has_key(breed):n_animal[breed]=[]
+                if not ids in lista:
+                    n_animal[breed].append(ids)
+                    lista.append(ids)
                 else:continue
+                    #print 'doppio'         
+                
+            for n in n_animal:
+                n_breed[n]=len(n_animal[n])
+            #print n_breed
+            
+
+
+        else:
+
+            ff=open(files)
+            print 'leggo il file:',files            
+            global nchrom 
+            #n_animal={}
+            #n_breed={}
+            chro=[]
+            #lista=[]
+            for line in ff:
+                if 'CHROMOSOME' in line: continue
+                #BREED,ANIMAL,CHROMOSOME,COUNT,START,END,LENGTH=line.strip().split(";")
+                if 'chrom' in line:continue
+                BREED,ANIMAL,CHROMOSOME,START,END,COUNT,LENGTH=line.strip().split(";")
+                chro.append(int(CHROMOSOME))
+                #if not n_animal.has_key(BREED):n_animal[BREED]=[]
+                #if not ANIMAL in lista:
+                #    n_animal[BREED].append(ANIMAL)
+                #    lista.append(ANIMAL)
+                #else:continue
                     #print 'doppio'
 
             #print n_animal
-            for n in n_animal:
+            #for n in n_animal:
                 #print n_animal[n]
                 #print len(n_animal[n]),n
-                n_breed[n]=len(n_animal[n])
-            #print n_breed
+                #n_breed[n]=len(n_animal[n])
+            print n_breed
             nchrom=max(chro)
+
 
     except:
         print '*'*50,'\n *** ERRORE NEL FILE: '+files+' ***\n','*'*50
@@ -49,6 +77,7 @@ def get_args():
     # Add arguments
     parser.add_argument('--files', type=str, help='File name (.txt)', required=True)
     parser.add_argument('--map', type=str, help='Map file name (.txt)', required=True)
+    parser.add_argument('--ped', type=str, help='Ped file name (.txt)', required=True)
     parser.add_argument('--out', type=str, help='File OUTPUT name', required=False, default='example')
 
 
@@ -57,18 +86,20 @@ def get_args():
 
     files=args.files
     map=args.map
+    ped=args.ped
 
-
+    try_file(args.ped)
     try_file(args.files)
+    print 'letto file map'
     try_file(args.map)
 
     file_out=args.out
 
     # Return all variable values
-    return files,map,file_out
+    return files,map,file_out,ped
 
 
-files,map,file_out= get_args()
+files,map,file_out,ped= get_args()
 
 
 ############################    
@@ -91,12 +122,17 @@ def snp_inside_ROH(dati_roh,map_file,save,n_breed,nchrom):
         final_SNP[chrom].append(0)
         snp_name[chrom].append(name)
 
+
+        
     for bre in n_breed.keys():
-        #if bre!='PEZ':continue
         n_animal=int(n_breed[bre])
         for read in open(dati_roh,'r'):
-            if 'CHROMOSOME' in read:continue
+
+            #if 'CHROMOSOME' in read:continue
+            #breed,animal,chrom,conta,inizio,fine,differenza=read.strip().split(';')
+            if 'chrom' in read:continue
             breed,animal,chrom,conta,inizio,fine,differenza=read.strip().split(';')
+            #print inizio,fine
             if chrom=='30' or breed !=bre:continue ### THIS WORKS ONLY ON COW
 
             start=int(inizio);end=int(fine)
@@ -110,7 +146,7 @@ def snp_inside_ROH(dati_roh,map_file,save,n_breed,nchrom):
 
         for t in final_SNP:
             for n,y in enumerate(final_SNP[t]):
-                #print snp_name[t][n],t,marker[t][n],final_SNP[t][n],bre,final_SNP[t][n],(n_animal)
+                #print snp_name[t][n],t,marker[t][n],final_SNP[t][n],bre,final_SNP[t][n],(n_animal),int(final_SNP[t][n]),int(n_animal)
                 save.write('%s;%s;%s;%s;%s;%s\n' % (snp_name[t][n],t,marker[t][n],final_SNP[t][n],bre,int(final_SNP[t][n])*100/int(n_animal)))
                 final_SNP[t][n]=0
 
