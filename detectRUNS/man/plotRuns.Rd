@@ -5,15 +5,15 @@
 \title{Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)}
 \usage{
-plotRuns(runsFile = "detectRUNS.ROHet.csv", ROHet = TRUE)
+plotRuns(runsFile = "detected.ROHet.csv", suppressInds = FALSE)
 }
 \arguments{
-\item{ROHet}{shall we detect ROHet or ROHom? (TRUE/FALSE)}
+\item{suppressInds}{shall we suppress individual IDs on the y-axis? (defaults to FALSE)}
 
 \item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
 }
 \value{
-converted vector of genotypes
+plot of runs by chromosome (pdf files)
 }
 \description{
 Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)

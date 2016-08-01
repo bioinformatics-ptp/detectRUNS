@@ -29,11 +29,18 @@
 RUNS.run <- function(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1) {
 
+  if(!is.data.frame(gegevens)) {
+
+    if(file.exists(gegevens)){
+      gegevens <- read.table(gegevens,header=TRUE)
+    }
+  }
+
   #gegevens <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
   #remove unnecessary fields from the .raw file
   gegevens <- gegevens[,-c(3,4,5,6)]
 
-  report_filename <- paste("detectRUNS",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
+  report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) system2("rm",report_filename)
 
   zustand <- vector()
