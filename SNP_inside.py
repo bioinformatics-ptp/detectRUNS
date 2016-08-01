@@ -10,7 +10,7 @@ def try_file(files):
         if '.map' in files:
             ff=open(files)
 
-        elif '.ped' in files:
+        elif '.raw' in files:
             ff=open(files)
             global n_breed
             n_animal={}
@@ -19,6 +19,8 @@ def try_file(files):
             lista=[]
             for line in ff:
                 breed,ids,sire,dam,sex,phe,geno=line.strip().split(' ',6) #AGGIUNGERE REPLACE PER I TAB
+		if breed=='FID':
+			continue
                 if not n_animal.has_key(breed):n_animal[breed]=[]
                 if not ids in lista:
                     n_animal[breed].append(ids)
