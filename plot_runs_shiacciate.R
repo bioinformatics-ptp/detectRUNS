@@ -3,15 +3,18 @@
 ###############################
 
 #READ a FILE
-dati<-read.table(file='step1',header=T,sep=';')
+dati<-read.table(file='detected.ROHom.csv',header=T,sep=';')
+dati<-read.table(file='detected.ROHet.csv',header=T,sep=';')
 head(dati)
+
+names(dati) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
 pdf('name_file1.pdf',height=12, width=20)
 
-#select a breed
-for (bre in unique(dati$BREED)){
+#select a POPULATION
+for (bre in unique(dati$POPULATION)){
   print(paste('Subset for ',bre))
-  razza=subset(dati,dati$BREED==bre)
+  razza=subset(dati,dati$POPULATION==bre)
   
   #select a chromosome
   for (a in sort(unique(razza$CHROMOSOME))){ 
@@ -67,7 +70,7 @@ for (bre in unique(dati$BREED)){
       geom_segment(data=sorted,aes(x = START/1000000, y = ypos, xend = END/1000000, yend = ypos),colour="blue",alpha=1,size=1)+
       xlim(0, max(sorted$END/1000000)+10) + 
       ylab('n Runs') + xlab('Chromosome position (Mbps)') +
-      ggtitle(paste("Breed: ",bre,'\nCromosome:',a))
+      ggtitle(paste("POPULATION: ",bre,'\nCromosome:',a))
     
     print(grafico)
     

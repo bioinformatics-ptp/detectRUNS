@@ -237,14 +237,14 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
     append = FALSE
     headers = TRUE
 
-    report_filename <- paste("detectRUNS",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
+    report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
 
     if(file.exists(report_filename)){
       append = TRUE
       headers = FALSE
     }
     write.table(
-      sep=',', dRUN, file=report_filename, quote=FALSE,
+      sep=';', dRUN, file=report_filename, quote=FALSE,
       col.names=headers, row.names=FALSE, append=append
     )
     stato <- TRUE

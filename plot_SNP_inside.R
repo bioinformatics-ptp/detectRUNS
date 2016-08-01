@@ -1,7 +1,7 @@
 #script per fare i grafici degli SNP dentro le ROH
 library('ggplot2')
 
-all_breed=read.csv('step2',sep=';')
+all_breed=read.csv('prova',sep=';',header=TRUE)
 head(all_breed)
 
 pdf('name_file.pdf',height=12, width=20)  
