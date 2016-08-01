@@ -4,64 +4,84 @@
 
 #plot
 library("ggplot2")
-razza<-read.table(file='detected.ROHom.csv',header=T,sep=';')
-head(razza)
+runs <- read.table(file='detected.ROHom.csv',header=T,sep=';')
+head(runs)
 
-names(razza) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-pdf('nome_plot3.pdf',height=12, width=20)
+runs$POPULATION <- as.character(runs$POPULATION)
+runs[runs$IND %in% sample(unique(runs$IND),6),"POPULATION"] <- "SWS"
+write.table(runs,file="detected.ROHom.csv",quote=FALSE,row.names=FALSE,col.names=TRUE,sep=";")
 
-for (a in sort(unique(razza$CHROMOSOME))){
-
-  print(paste('Chromosome: ',a))
-
-  #primo subset
-
-  cromo<-subset(razza,CHROMOSOME==a)
-  #secondo subset
-  sotto<-cromo[,c(5,6,2,1)]
-  sotto=sotto[order(sotto$POPULATION),]
-  #creo un numero progressivo per animale
-  newID=seq(1,length(unique(sotto$IND)))
-  id=unique(sotto$IND)
-  sotto$NEWID=newID[match(sotto$IND,id)]
-
-  #colore delle razze
-  colore=as.factor(sotto$POPULATION)
-
-  #lughezza in mb
-  sotto[,1]<-sotto[,1]/1000000
-  sotto[,2]<-sotto[,2]/1000000
-
-  row.names(sotto) <- NULL
-  sotto$IND <- as.character(sotto$IND)
-  sotto <- sotto[order(sotto$POPULATION),]
+plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE) {
   
-  #PRIMO PLOT
-  grafico=ggplot(sotto,aes(colour=sotto$POPULATION))  +
-    geom_segment(data=sotto,aes(x = START, y = IND, xend = END, yend = IND),alpha=1,size=1)+
-    xlim(0, max(sotto$END)) +
-    ggtitle(paste('Cromosome:',a))
-  print(grafico)
-
-  #SECONDO PLOT
-  grafico1=ggplot(sotto,aes(colour=sotto$POPULATION))  +
-    geom_segment(data=sotto,aes(x = START, y = NEWID, xend = END, yend = NEWID),alpha=1,size=1)+
-    xlim(0, max(sotto$END)) +
-    ggtitle(paste('Cromosome:',a))
-
-  print(grafico1)
-
-  #TERZO PLOT
-  sotto$JitterSpecies <- ave(as.numeric(sotto$POPULATION), sotto$POPULATION,FUN = function(x) x + rnorm(length(x), sd = .1))
-  grafico2 =  ggplot(sotto, aes(x = START, xend = END, y = JitterSpecies, yend = JitterSpecies)) +
-    geom_segment() + xlim(0, max(sotto$END)) +
-    scale_y_continuous("Species", breaks = seq(unique(sotto$POPULATION)), labels = levels(sotto$POPULATION)) +
-    ggtitle(paste('Cromosome:',a))
-
-
-  print(grafico2)
-
+  
+  runs <- read.table(file=runsFile, header=TRUE, sep=';')
+  
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  
+  for (chrom in sort(unique(runs$CHROMOSOME))) {
+    
+    #subset by chromosome
+    krom <- subset(runs,CHROMOSOME==chrom)
+    
+    #rearrange subset
+    teilsatz <- krom[,c(5,6,2,1)]
+    teilsatz <- teilsatz[order(teilsatz$POPULATION),]
+    
+    #new progressive numerical ID
+    newID <- seq(1,length(unique(teilsatz$IND)))
+    id <- unique(teilsatz$IND)
+    teilsatz$NEWID=newID[match(teilsatz$IND,id)]
+    
+    optionen <- scale_y_discrete("IDs",limits=unique(teilsatz$IND))
+    alfa <- 1
+    grosse <- 1
+    
+    if (length(id) > 50) {
+      
+      optionen <- theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+      alfa <- 0.75
+      grosse <- 0.25
+    }
+    
+    if (suppressInds) optionen <- theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+      
+    #lughezza in mb
+    teilsatz$START <- (teilsatz$START/(10^6))
+    teilsatz$END <- (teilsatz$END/(10^6))
+    
+    row.names(teilsatz) <- NULL
+    
+    teilsatz$IND <- as.factor(teilsatz$IND)
+    teilsatz$IND <- factor(teilsatz$IND, levels = unique(teilsatz$IND[order(teilsatz$NEWID)]))
+    
+    titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chromosome",chrom,sep="_")
+    
+    p <- ggplot(teilsatz)
+    p <- p + geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=alfa, size=grosse)
+    p <- p + xlim(0, max(teilsatz$END)) + ggtitle(paste('Chromosome:',chrom)) 
+    p <- p + guides(colour=guide_legend(title="Population")) + xlab("Mbps")
+    p <- p + optionen
+    
+    pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+    print(p)
+    dev.off()
+  }
 }
 
-dev.off()
+plotRuns("detected.ROHom_x.csv")
+plotRuns("detected.ROHom.csv")
+plotRuns("detected.ROHet.csv")
+
+p <- ggplot(teilsatz)
+p <- p + geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=1, size=1)
+p <- p + xlim(0, max(teilsatz$END))
+p <- p + ggtitle(paste('Chromosome:',chrom)) 
+p <- p + guides(colour=guide_legend(title="Population")) + xlab("Mbps")
+# p <- p + scale_y_discrete("IDs",limits=unique(teilsatz$IND))
+p <- p + theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+print(p)
+
+
+titel <- "detected.ROHet.csv"
