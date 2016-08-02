@@ -190,6 +190,9 @@ createRUNdf <- function(snpRun,mapFile,minSNP = 3) {
 
   names(mapa) <- c("Chrom","SNP","cM","bps")
 
+  ## write out map file for subsequent plots (snpInRuns)
+  write.table(mapa,file="karte.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
+
   cutPoints <- which(diff(sign(snpRun))!=0)
   von <- c(1,cutPoints+1)
   bis <- c(cutPoints,length(snpRun))

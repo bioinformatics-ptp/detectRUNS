@@ -40,6 +40,9 @@ RUNS.run <- function(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3
   #remove unnecessary fields from the .raw file
   gegevens <- gegevens[,-c(3,4,5,6)]
 
+  ## write out populations/individuals for further plots (snpInRuns)
+  write.table(gegevens[,c(1,2)],file="gegevens.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
+
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) system2("rm",report_filename)
 
