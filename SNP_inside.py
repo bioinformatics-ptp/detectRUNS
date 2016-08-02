@@ -18,7 +18,8 @@ def try_file(files):
             #chro=[]
             lista=[]
             for line in ff:
-                breed,ids,sire,dam,sex,phe,geno=line.strip().split(' ',6) #AGGIUNGERE REPLACE PER I TAB
+                breed,ids =line.strip().split(' ')[0:2] #AGGIUNGERE REPLACE PER I TAB
+		#breed,ids,sire,dam,sex,phenotype,geno=line.strip().split(' ',6) #AGGIUNGERE REPLACE PER I TAB
 		if breed=='FID':
 			continue
                 if not n_animal.has_key(breed):n_animal[breed]=[]
@@ -75,33 +76,33 @@ def try_file(files):
 
 def get_args():
     # Assign description to the help doc
-    parser = argparse.ArgumentParser(description='Script for calculated SNP inside ROH')
+    parser = argparse.ArgumentParser(description='Script to count n. of times a SNP is inside a run in the population')
     # Add arguments
-    parser.add_argument('--files', type=str, help='File name (.txt)', required=True)
-    parser.add_argument('--map', type=str, help='Map file name (.txt)', required=True)
-    parser.add_argument('--ped', type=str, help='Ped file name (.txt)', required=True)
-    parser.add_argument('--out', type=str, help='File OUTPUT name', required=False, default='example')
+    parser.add_argument('--f', type=str, help='Runs file name (.csv)', required=True)
+    parser.add_argument('--m', type=str, help='Map-like file name (.map)', required=True)
+    parser.add_argument('--r', type=str, help='Raw-like file name (.raw)', required=True)
+    parser.add_argument('--o', type=str, help='OUTPUT file name', required=False, default='snpInRuns')
 
 
     # Array for all arguments passed to script
     args = parser.parse_args()
 
-    files=args.files
-    map=args.map
-    ped=args.ped
+    runsFile=args.f
+    mappa=args.m
+    raw=args.r
 
-    try_file(args.ped)
-    try_file(args.files)
+    try_file(args.r)
+    try_file(args.f)
     print 'letto file map'
-    try_file(args.map)
+    try_file(args.m)
 
-    file_out=args.out
+    file_out=args.o
 
     # Return all variable values
-    return files,map,file_out,ped
+    return runsFile,mappa,file_out,raw
 
 
-files,map,file_out,ped= get_args()
+runsFile,mappa,file_out,raw= get_args()
 
 
 ############################    
@@ -154,4 +155,4 @@ def snp_inside_ROH(dati_roh,map_file,save,n_breed,nchrom):
 
 
 
-snp_inside_ROH(files,map,file_out,n_breed,n_breed)
+snp_inside_ROH(runsFile,mappa,file_out,n_breed,n_breed)
