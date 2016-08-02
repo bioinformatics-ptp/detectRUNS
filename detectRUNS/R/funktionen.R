@@ -258,3 +258,84 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
   }
   return(stato)
 }
+
+
+#' Function to count number of times a SNP is in a RUN
+#'
+#'
+#' @param runsFile file with runs (results): output from RUNS.run()
+#' @param mapFile optional map file (defaults to karte.map: created by RUNS.run())
+#'
+#' @return TRUE/FALSE if SNP counts are written out or not
+#' @export
+#'
+#' @examples #not yet
+#'
+#'
+
+snp_inside_ROH <- function(runsFile, mapFile = "karte.map") {
+
+  mappa <- read.table(mapFile)
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+
+  runs <- read.table(runsFile,header=TRUE,sep=";")
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+
+  #check if output file is already there (to avoid neverending appending to file)
+  outFile <- "snpInRuns"
+  if(file.exists(outFile)) system2("rm",outFile)
+
+  stato <- FALSE
+
+  #count by breed, by chromosome
+  for (ras in unique(runs$POPULATION)) {
+
+    print(paste("Breed is: ",ras))
+    runsBreed <- runs[runs$POPULATION==ras,]
+    print(paste("N. of runs:",nrow(runsBreed)))
+
+    nBreed <- length(unique(runsBreed$IND))
+    rasse <- unique(runsBreed$POPULATION)
+
+    for (chrom in unique(runsBreed$CHROMOSOME)) {
+
+      print(paste("Chromosome is:", chrom))
+      mapKrom <- mappa[mappa$CHR==chrom,]
+      runsKrom <- runsBreed[runsBreed$CHROMOSOME==chrom,]
+
+      iPos <- ihasNext(mapKrom$POSITION)
+      snpCount <- rep(NA,nrow(mapKrom))
+
+      i <- 1
+      while(hasNext(iPos)) {
+
+        pos <- nextElem(iPos)
+        inRun <- (pos >= runsBreed$START & pos <= runsBreed$END)
+        snpCount[i] <- length(inRun[inRun==TRUE])
+        i <- i + 1
+      }
+    }
+
+    mapKrom$COUNT <- snpCount
+    mapKrom$BREED <- rep(rasse,nrow(mapKrom))
+    mapKrom$PERCENTAGE <- snpCount/nBreed
+    mapKrom <- mapKrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
+
+    ## Write out file (may be skipped later on (return a dataframe instead))
+    append = FALSE
+    headers = TRUE
+
+    if(nrow(mapKrom)>0) stato <- TRUE
+
+    if(file.exists(outFile)){
+      append = TRUE
+      headers = FALSE
+    }
+    write.table(
+      sep=';', mapKrom, file=outFile, quote=FALSE,
+      col.names=headers, row.names=FALSE, append=append
+    )
+  }
+  return(stato)
+}
