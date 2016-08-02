@@ -20,6 +20,8 @@
 #' @import plyr
 #' @import itertools
 #' @import ggplot2
+#' @import iterators
+#' @import itertools
 #'
 #' @examples x <- RUNS.run(gegevens, mappa, windowSize = 20, drempel = 0.1, minSNP = 5, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1)
 #'
