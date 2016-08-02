@@ -3,32 +3,32 @@
 ###############################
 
 #READ a FILE
-dati<-read.table(file='detected.ROHom.csv',header=T,sep=';')
-dati<-read.table(file='detected.ROHet.csv',header=T,sep=';')
+runs<-read.table(file='detected.ROHom.csv',header=T,sep=';')
+dati<-read.table(file='detected.ROHet_x.csv',header=T,sep=';')
 head(dati)
 
-names(dati) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
 pdf('name_file1.pdf',height=12, width=20)
 
 #select a POPULATION
-for (bre in unique(dati$POPULATION)){
-  print(paste('Subset for ',bre))
-  razza=subset(dati,dati$POPULATION==bre)
+for (rasse in unique(runs$POPULATION)){
+  print(paste('Subset for ',rasse))
+  teilsatz <- subset(runs,runs$POPULATION==rasse)
   
   #select a chromosome
-  for (a in sort(unique(razza$CHROMOSOME))){ 
+  for (chrom in sort(unique(teilsatz$CHROMOSOME))){ 
     
-    print (paste('CHR: ',a))
-    cromo<-subset(razza,CHROMOSOME==a)
-    sorted=cromo[order(cromo$START),]
+    print (paste('CHR: ',chrom))
+    krom <- subset(teilsatz,CHROMOSOME==chrom)
+    krom <- krom[order(krom$START),]
     
     #start the order 
     yread <- c(); #keeps track of the x space that is used up by segments 
     
     # get x axis limits
-    minstart <- min(sorted$START);
-    maxend <- max(sorted$END);
+    minstart <- min(krom$START);
+    maxend <- max(krom$END);
     
     # initialise yread
     yread[1] <- minstart - 1;
@@ -37,7 +37,7 @@ for (bre in unique(dati$POPULATION)){
     #sorted<-subset(sorted,CHROMOSOME==1)
     
     for (r in 1:nrow(sorted)){
-      read <- sorted[r,];   
+      read <- krom[r,];   
       start <- read$START;
       placed <- FALSE;
       
@@ -62,12 +62,12 @@ for (bre in unique(dati$POPULATION)){
     } 
     
     maxy <- length(yread);
-    sorted$ypos <- ypos;
-    head(sorted)
+    krom$ypos <- ypos;
+    head(krom)
     
     #PLOT TIME
     grafico=ggplot()  + 
-      geom_segment(data=sorted,aes(x = START/1000000, y = ypos, xend = END/1000000, yend = ypos),colour="blue",alpha=1,size=1)+
+      geom_segment(data=krom,aes(x = START/1000000, y = ypos, xend = END/1000000, yend = ypos),colour="blue",alpha=1,size=1)+
       xlim(0, max(sorted$END/1000000)+10) + 
       ylab('n Runs') + xlab('Chromosome position (Mbps)') +
       ggtitle(paste("POPULATION: ",bre,'\nCromosome:',a))

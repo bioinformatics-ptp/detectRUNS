@@ -1,18 +1,25 @@
 #script per fare i grafici degli SNP dentro le ROH
 library('ggplot2')
 
-all_breed=read.csv('prova',sep=';',header=TRUE)
-head(all_breed)
+system2("python", 
+        "SNP_inside.py --f detected.ROHom_x.csv --m test_ROHet.map --r testRuns.raw --o snpInRuns"
+)
+
+
+snpInRuns <- read.csv('snpInRuns',sep=';',header=TRUE)
 
 pdf('name_file.pdf',height=12, width=20)  
 head(all_breed)
 
-for (a in sort(unique(all_breed$CHR))){ 
-    cromo<-subset(all_breed,CHR==a)
-    grafico=ggplot(data=cromo,aes(x=POSITION/1000000,y=PERCENTAGE,colour=BREED))  + geom_line() + 
-    ggtitle(paste('chr',a,sep=' ')) + scale_y_continuous(limits = c(-0, 100)) + 
-      scale_x_continuous(limits = c(-0, max(all_breed$POSITION/1000000)+1))
-    print(grafico) 
+for (chrom in sort(unique(snpInRuns$CHR))) { 
+    
+    krom <- subset(snpInRuns,CHR==chrom)
+    
+    p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
+    p <- p + geom_line() +  ggtitle(paste('chr', chrom, sep=' '))
+    p <- p + scale_y_continuous(limits = c(-0, 100))
+    p <- p + scale_x_continuous(limits = c(-0, max(snpInRuns$POSITION/(10^6))+1))
+    print(p) 
 
 } 
 
