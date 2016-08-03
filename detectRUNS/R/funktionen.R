@@ -292,7 +292,7 @@ snp_inside_ROH <- function(runs, mapKrom, popFile = "gegevens.raw") {
     for (ras in unique(runs$POPULATION)) {
 
       print(paste("Breed is:", ras))
-      runsBreed <- runsChrom[runsChrom$POPULATION==ras,]
+      runsBreed <- runs[runs$POPULATION==ras,]
       nBreed <- nrow(pops[pops$POP==as.character(ras),])
       print(paste("N. of animals of breed",ras,nBreed,sep=" "))
 
