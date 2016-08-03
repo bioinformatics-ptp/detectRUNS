@@ -6,15 +6,15 @@
 Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
 Proportions on the y-axis, bps on the x-axis}
 \usage{
-plotSnpsInRuns(runsFile = "detected.ROHet.csv", mappa = "karte.map",
+plotSnpsInRuns(runsFile = "detected.ROHet.csv", mapFile = "karte.map",
   rawFile = "gegevens.raw")
 }
 \arguments{
-\item{mappa}{map file (optional) #defaults to karte.map}
-
 \item{rawFile}{raw file of 0/1/2 genotypes (optional) #defaults to gegevens.raw}
 
 \item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+
+\item{mappa}{map file (optional) #defaults to karte.map}
 }
 \value{
 plot of n. of times a SNP is in a run by chromosome and population (pdf files)
