@@ -187,21 +187,31 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv') {
 #'
 #plot
 
-plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mappa = 'karte.map', rawFile = 'gegevens.raw') {
+plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'karte.map', rawFile = 'gegevens.raw') {
 
-  outFile <- "snpInRuns"
-  optionen <- paste("SNP_inside.py --f",runsFile, "--m", mappa, "--r", rawFile, "--o", outFile)
-  system2("python", optionen)
 
-  snpInRuns <- read.csv('snpInRuns',sep=';',header=TRUE)
+  runs <- read.table(runsFile,header=TRUE,sep=";")
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  for (chrom in sort(unique(snpInRuns$CHR))) {
+  mappa <- read.table(mapFile)
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
 
+  for (chrom in sort(unique(runs$CHROMOSOME))) {
+
+    print(paste("Chromosome is: ",chrom))
+    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    print(paste("N. of runs:",nrow(runsChrom)))
+
+    mapKrom <- mappa[mappa$CHR==chrom,]
+    print(paste("N.of SNP is",nrow(mapKrom)))
+
+    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, popFile = rawFile)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
     p <- p + geom_line() +  ggtitle(paste('chr', chrom, sep=' '))
-    p <- p + scale_y_continuous(limits = c(-0, 100))
+    p <- p + scale_y_continuous(limits = c(-0, 100)) + xlab("Mbps")
     p <- p + scale_x_continuous(limits = c(-0, max(snpInRuns$POSITION/(10^6))+1))
 
     titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,"SNP",sep="_")
