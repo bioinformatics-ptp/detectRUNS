@@ -33,7 +33,7 @@ genoUmschalten <- function(x) {
 #' @param maxHet max n. of heterozygous SNP in a homozygous window
 #' @param maxMiss max n. of missing in a window
 #'
-#' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
+#' @return TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
 #' @examples #not yet
@@ -55,7 +55,7 @@ homoZygotPrufen <- function(x,maxHet,maxMiss) {
 #' @param maxHom max n. of homozygous SNP in a heterozygous window
 #' @param maxMiss max n. of missing in a window
 #'
-#' @return vector of TRUE/FALSE (whether a window is heterozygous or NOT)
+#' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 #' @export
 #'
 #' @examples #not yet
@@ -90,7 +90,7 @@ schiebeFenster <- function(data, window, step, ROHet=TRUE, maxOppositeGenotype=1
 
   total <- length(data)
   spots <- seq(from = 1, to = (total - window + 1), by = step)
-  result <- vector(length = total)
+  result <- vector(length = length(spots))
   y <- genoUmschalten(data)
 
   print(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
@@ -100,13 +100,15 @@ schiebeFenster <- function(data, window, step, ROHet=TRUE, maxOppositeGenotype=1
     for(i in 1:length(spots)){
       result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+window-1)],maxOppositeGenotype,maxMiss)
     }
-    for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
+    # for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
       result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+window-1)],maxOppositeGenotype,maxMiss)
     }
-    for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
+    #for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   }
 
   print(paste(

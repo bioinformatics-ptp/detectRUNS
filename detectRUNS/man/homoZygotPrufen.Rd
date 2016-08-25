@@ -14,7 +14,7 @@ homoZygotPrufen(x, maxHet, maxMiss)
 \item{maxMiss}{max n. of missing in a window}
 }
 \value{
-vector of TRUE/FALSE (whether a window is homozygous or NOT)
+TRUE/FALSE (whether a window is homozygous or NOT)
 }
 \description{
 This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)

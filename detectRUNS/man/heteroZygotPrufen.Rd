@@ -14,7 +14,7 @@ heteroZygotPrufen(x, maxHom, maxMiss)
 \item{maxMiss}{max n. of missing in a window}
 }
 \value{
-vector of TRUE/FALSE (whether a window is heterozygous or NOT)
+TRUE/FALSE (whether a window is heterozygous or NOT)
 }
 \description{
 This is a core function. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
