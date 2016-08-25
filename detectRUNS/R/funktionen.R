@@ -167,6 +167,8 @@ snpInRun <- function(RunVector,fenster,schwelle) {
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
 #' @param mapFile Plink map file (either the file path/name or the R data.frame)
 #' @param minSNP minimun n. of SNP to call a RUN
+#' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
+#' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
 #'
 #' @return a data.frame with RUNS per animal
 #' @export
@@ -175,7 +177,7 @@ snpInRun <- function(RunVector,fenster,schwelle) {
 #'
 #'
 
-createRUNdf <- function(snpRun,mapFile,minSNP = 3) {
+createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
 
   #requires itertools
 
@@ -209,6 +211,11 @@ createRUNdf <- function(snpRun,mapFile,minSNP = 3) {
   dL$bis <- mapa[dL$bis,"bps"]
   dL$chrom <- as.integer(chroms)
   dL$lengthBps <- (dL$bis-dL$von)
+
+  #filters on minimum run length and minimum SNP density
+  dL <- dL[dL$lengthBps > minLengthBps,]
+  dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
+  dL <- dL[dL$SNPdensity > minDensity, ]
 
   print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
   return(dL)
