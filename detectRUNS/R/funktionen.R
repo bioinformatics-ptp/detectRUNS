@@ -86,10 +86,10 @@ heteroZygotPrufen <- function(x,maxHom,maxMiss) {
 #'
 #'
 
-schiebeFenster <- function(data, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
+schiebeFenster <- function(data, fenster, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
   total <- length(data)
-  spots <- seq(from = 1, to = (total - window + 1), by = step)
+  spots <- seq(from = 1, to = (total - fenster + 1), by = step)
   result <- vector(length = length(spots))
   y <- genoUmschalten(data)
 
@@ -98,14 +98,14 @@ schiebeFenster <- function(data, window, step, ROHet=TRUE, maxOppositeGenotype=1
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+window-1)],maxOppositeGenotype,maxMiss)
+      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],maxOppositeGenotype,maxMiss)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     # for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+window-1)],maxOppositeGenotype,maxMiss)
+      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],maxOppositeGenotype,maxMiss)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     #for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
@@ -218,6 +218,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000, minDen
   dL <- dL[dL$lengthBps > minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
   dL <- dL[dL$SNPdensity > minDensity, ]
+  dL$SNPdensity <- NULL
 
   print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
   return(dL)
