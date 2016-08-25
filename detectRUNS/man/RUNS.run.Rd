@@ -5,7 +5,8 @@
 \title{Run functions to detect RUNS (ROHom/ROHet)}
 \usage{
 RUNS.run(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3,
-  ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1)
+  ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
+  minLengthBps = 1000, minDensity = 1/10)
 }
 \arguments{
 \item{gegevens}{genotype dataset in the Plink .raw format}
@@ -18,6 +19,10 @@ RUNS.run(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3,
 
 \item{ROHet}{should we look for ROHet or ROHom?}
 
+\item{minLengthBps}{minimum length of run in bps (defaults to 1000 bps = 1 kbps)}
+
+\item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
+
 \item{window}{the size of sliding window}
 }
 \value{
@@ -28,7 +33,8 @@ This is the main function of RUNS and would probably require
 some good documentation.
 }
 \examples{
-x <- RUNS.run(gegevens, mappa, windowSize = 20, drempel = 0.1, minSNP = 5, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1)
+x <- RUNS.run(gegevens, mappa, windowSize = 20, drempel = 0.1, minSNP = 5,
+ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 
 }
 
