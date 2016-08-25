@@ -40,11 +40,11 @@ genoUmschalten <- function(x) {
 #'
 #'
 
-homoZygotPrufen <- function(x,maxHet,maxMiss) {
+homoZygotPrufen <- function(x,gaps,maxHet,maxMiss, maxGap) {
 
   nHet <- sum(x==1,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  ifelse(!(nHet > maxHet | nMiss > maxMiss), TRUE,FALSE)
+  ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
 }
 
 #' Function to check whether a window is (loosely) heterozygous or not
@@ -61,11 +61,11 @@ homoZygotPrufen <- function(x,maxHet,maxMiss) {
 #' @examples #not yet
 #'
 #'
-heteroZygotPrufen <- function(x,maxHom,maxMiss) {
+heteroZygotPrufen <- function(x,gaps,maxHom,maxMiss,maxGap) {
 
   nHom <- sum(x==0,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  ifelse(!(nHom > maxHom | nMiss > maxMiss), TRUE,FALSE)
+  ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
 }
 
 #' Function to slide a window over a vector (individual's genotypes)
@@ -73,11 +73,13 @@ heteroZygotPrufen <- function(x,maxHom,maxMiss) {
 #' This is a core function. The functions to detect RUNS are slidden over the genome
 #'
 #' @param x vector of 0/1/2 genotypes
+#' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param window size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
@@ -86,7 +88,7 @@ heteroZygotPrufen <- function(x,maxHom,maxMiss) {
 #'
 #'
 
-schiebeFenster <- function(data, fenster, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
+schiebeFenster <- function(data, gaps, fenster, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
   total <- length(data)
   spots <- seq(from = 1, to = (total - fenster + 1), by = step)
@@ -98,14 +100,14 @@ schiebeFenster <- function(data, fenster, step, ROHet=TRUE, maxOppositeGenotype=
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],maxOppositeGenotype,maxMiss)
+      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],gaps[spots[i]:(spots[i]+fenster-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     # for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],maxOppositeGenotype,maxMiss)
+      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],gaps[spots[i]:(spots[i]+fenster-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     #for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
@@ -167,7 +169,7 @@ snpInRun <- function(RunVector,fenster,schwelle) {
 #'
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
-#' @param mapFile Plink map file (either the file path/name or the R data.frame)
+#' @param mapa Plink-like map file (the R data.frame from RUNS.run)
 #' @param minSNP minimun n. of SNP to call a RUN
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
@@ -179,20 +181,9 @@ snpInRun <- function(RunVector,fenster,schwelle) {
 #'
 #'
 
-createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
+createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
 
   #requires itertools
-
-  mapa <- mapFile
-
-  if(!is.data.frame(mapFile)) {
-
-    if(file.exists(mapFile)){
-      mapa <- read.table(mapFile)
-    }
-  }
-
-  names(mapa) <- c("Chrom","SNP","cM","bps")
 
   ## write out map file for subsequent plots (snpInRuns)
   write.table(mapa,file="karte.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
