@@ -6,9 +6,11 @@
 Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs)
 Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)}
 \usage{
-plotStackedRuns(runsFile = "detected.ROHet.csv")
+plotStackedRuns(runsFile = "detected.ROHet.csv", savePlots = TRUE)
 }
 \arguments{
+\item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
+
 \item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
 }
 \value{

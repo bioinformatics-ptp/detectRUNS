@@ -15,6 +15,7 @@
 #'
 #' @param runs output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
+#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #'
 #' @return plot of runs by chromosome (pdf files)
 #' @export
@@ -24,7 +25,7 @@
 #'
 #plot
 
-plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE) {
+plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, savePlots = TRUE) {
 
 
   runs <- read.table(file=runsFile, header=TRUE, sep=';')
@@ -75,9 +76,12 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE) {
     p <- p + guides(colour=guide_legend(title="Population")) + xlab("Mbps")
     p <- p + optionen
 
-    pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-    print(p)
-    dev.off()
+    if(savePlots) {
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(p)
+      dev.off()
+    } else print(p)
+
   }
 }
 
@@ -87,6 +91,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE) {
 #' Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
 #' @param runs output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
+#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #'
 #' @return plot of stacked runs by population and by chromosome (pdf files)
 #' @export
@@ -96,7 +101,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE) {
 #'
 #plot
 
-plotStackedRuns <- function(runsFile = 'detected.ROHet.csv') {
+plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 
 
   runs <- read.table(file=runsFile, header=TRUE, sep=';')
@@ -163,9 +168,12 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv') {
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
 
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(p)
-      dev.off()
+      if(savePlots) {
+        pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+        print(p)
+        dev.off()
+      } else print(p)
+
     }
   }
 
@@ -178,6 +186,7 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv') {
 #' @param runs output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
 #' @param mappa map file (optional) #defaults to karte.map
 #' @param rawFile raw file of 0/1/2 genotypes (optional) #defaults to gegevens.raw
+#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
 #' @export
@@ -187,7 +196,7 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv') {
 #'
 #plot
 
-plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'karte.map', rawFile = 'gegevens.raw') {
+plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'karte.map', rawFile = 'gegevens.raw', savePlots = TRUE) {
 
 
   runs <- read.table(runsFile,header=TRUE,sep=";")
@@ -216,9 +225,12 @@ plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'karte.map
 
     titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,"SNP",sep="_")
 
-    pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-    print(p)
-    dev.off()
+    if(savePlots) {
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(p)
+      dev.off()
+    } else print(p)
+
   }
 
 }

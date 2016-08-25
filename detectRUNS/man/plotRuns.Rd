@@ -5,10 +5,13 @@
 \title{Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)}
 \usage{
-plotRuns(runsFile = "detected.ROHet.csv", suppressInds = FALSE)
+plotRuns(runsFile = "detected.ROHet.csv", suppressInds = FALSE,
+  savePlots = TRUE)
 }
 \arguments{
 \item{suppressInds}{shall we suppress individual IDs on the y-axis? (defaults to FALSE)}
+
+\item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
 
 \item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
 }

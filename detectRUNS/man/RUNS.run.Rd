@@ -4,14 +4,12 @@
 \alias{RUNS.run}
 \title{Run functions to detect RUNS (ROHom/ROHet)}
 \usage{
-RUNS.run(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3,
-  ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
+RUNS.run(gegevens, mapFile, windowSize = 15, drempel = 0.1, minSNP = 3,
+  ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6,
   minLengthBps = 1000, minDensity = 1/10)
 }
 \arguments{
 \item{gegevens}{genotype dataset in the Plink .raw format}
-
-\item{mappa}{Plink map file}
 
 \item{drempel}{the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN}
 
@@ -19,9 +17,13 @@ RUNS.run(gegevens, mappa, windowSize = 15, drempel = 0.1, minSNP = 3,
 
 \item{ROHet}{should we look for ROHet or ROHom?}
 
+\item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
+
 \item{minLengthBps}{minimum length of run in bps (defaults to 1000 bps = 1 kbps)}
 
 \item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
+
+\item{mappa}{Plink map file (either the file path/name or the R data.frame)}
 
 \item{window}{the size of sliding window}
 }

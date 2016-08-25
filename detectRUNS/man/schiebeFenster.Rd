@@ -4,10 +4,12 @@
 \alias{schiebeFenster}
 \title{Function to slide a window over a vector (individual's genotypes)}
 \usage{
-schiebeFenster(data, fenster, step, ROHet = TRUE, maxOppositeGenotype = 1,
-  maxMiss = 1)
+schiebeFenster(data, gaps, fenster, step, ROHet = TRUE,
+  maxOppositeGenotype = 1, maxMiss = 1, maxGap)
 }
 \arguments{
+\item{gaps}{vector of differences between consecutive positions (gaps) in bps}
+
 \item{step}{by which (how many SNP) is the window slidden}
 
 \item{ROHet}{shall we detect ROHet or ROHom?}
@@ -15,6 +17,8 @@ schiebeFenster(data, fenster, step, ROHet = TRUE, maxOppositeGenotype = 1,
 \item{maxOppositeGenotype}{max n. of homozygous/heterozygous SNP}
 
 \item{maxMiss}{max. n. of missing SNP}
+
+\item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
 
 \item{x}{vector of 0/1/2 genotypes}
 

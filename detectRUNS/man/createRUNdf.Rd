@@ -5,13 +5,13 @@
 \title{Function to create a dataframe of RUNS per individual animal
 Requires a map file (other filename to read or R object)}
 \usage{
-createRUNdf(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
+createRUNdf(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
   minDensity = 1/10)
 }
 \arguments{
 \item{snpRun}{vector of TRUE/FALSE (is the SNP in a RUN?)}
 
-\item{mapFile}{Plink map file (either the file path/name or the R data.frame)}
+\item{mapa}{Plink-like map file (the R data.frame from RUNS.run)}
 
 \item{minSNP}{minimun n. of SNP to call a RUN}
 

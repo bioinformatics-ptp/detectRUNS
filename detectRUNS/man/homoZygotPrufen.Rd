@@ -4,7 +4,7 @@
 \alias{homoZygotPrufen}
 \title{Function to check whether a window is (loosely) homozygous or not}
 \usage{
-homoZygotPrufen(x, maxHet, maxMiss)
+homoZygotPrufen(x, gaps, maxHet, maxMiss, maxGap)
 }
 \arguments{
 \item{x}{vector of 0/1 genotypes (from genoUmschalten())}
