@@ -4,12 +4,10 @@
 \alias{schiebeFenster}
 \title{Function to slide a window over a vector (individual's genotypes)}
 \usage{
-schiebeFenster(data, window, step, ROHet = TRUE, maxOppositeGenotype = 1,
+schiebeFenster(data, fenster, step, ROHet = TRUE, maxOppositeGenotype = 1,
   maxMiss = 1)
 }
 \arguments{
-\item{window}{size of window (n. of SNP)}
-
 \item{step}{by which (how many SNP) is the window slidden}
 
 \item{ROHet}{shall we detect ROHet or ROHom?}
@@ -19,6 +17,8 @@ schiebeFenster(data, window, step, ROHet = TRUE, maxOppositeGenotype = 1,
 \item{maxMiss}{max. n. of missing SNP}
 
 \item{x}{vector of 0/1/2 genotypes}
+
+\item{window}{size of window (n. of SNP)}
 }
 \value{
 vector of TRUE/FALSE (whether a window is homozygous or NOT)
