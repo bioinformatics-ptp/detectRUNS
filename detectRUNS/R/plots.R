@@ -52,12 +52,12 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 
     if (length(id) > 50) {
 
-      optionen <- theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+      optionen <- ggplot2::theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
       alfa <- 0.75
       grosse <- 0.25
     }
 
-    if (suppressInds) optionen <- theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+    if (suppressInds) optionen <- ggplot2::theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
 
     #lughezza in mb
     teilsatz$START <- (teilsatz$START/(10^6))
@@ -70,11 +70,11 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 
     titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chromosome",chrom,sep="_")
 
-    p <- ggplot(teilsatz)
-    p <- p + geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=alfa, size=grosse)
-    p <- p + xlim(0, max(teilsatz$END)) + ggtitle(paste('Chromosome:',chrom))
-    p <- p + guides(colour=guide_legend(title="Population")) + xlab("Mbps")
-    p <- p + optionen
+    p <- ggplot2::ggplot(teilsatz)
+    p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=alfa, size=grosse)
+    p <- p + ggplot2::xlim(0, max(teilsatz$END)) + ggplot2::ggtitle(paste('Chromosome:',chrom))
+    p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
+    p <- p + ggplot2::optionen
 
     if(savePlots) {
       pdf(paste(titel,".pdf",sep=""),height=8,width=10)
@@ -162,11 +162,11 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
       titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,rasse,"stacked",sep="_")
 
       #PLOT STACKED RUNS
-      p <- ggplot()
-      p <- p + geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos), colour="lightcoral", alpha=1, size=0.75)
+      p <- ggplot2::ggplot()
+      p <- p + ggplot2::geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos), colour="lightcoral", alpha=1, size=0.75)
       p <- p + xlim(0, max(krom$END/(10^6))+10) + ylim(0,length(yread))
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
-      p <- p + ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
+      p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
 
       if(savePlots) {
         pdf(paste(titel,".pdf",sep=""),height=8,width=10)
