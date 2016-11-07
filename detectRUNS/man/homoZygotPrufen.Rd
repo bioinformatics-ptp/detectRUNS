@@ -9,9 +9,13 @@ homoZygotPrufen(x, gaps, maxHet, maxMiss, maxGap)
 \arguments{
 \item{x}{vector of 0/1 genotypes (from genoUmschalten())}
 
+\item{gaps}{vector of differences between consecutive positions (gaps) in bps}
+
 \item{maxHet}{max n. of heterozygous SNP in a homozygous window}
 
 \item{maxMiss}{max n. of missing in a window}
+
+\item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
 }
 \value{
 TRUE/FALSE (whether a window is homozygous or NOT)

@@ -10,13 +10,13 @@ plotSnpsInRuns(runsFile = "detected.ROHet.csv", mapFile = "karte.map",
   rawFile = "gegevens.raw", savePlots = TRUE)
 }
 \arguments{
+\item{runsFile}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+
+\item{mapFile}{map file (optional) #defaults to karte.map}
+
 \item{rawFile}{raw file of 0/1/2 genotypes (optional) #defaults to gegevens.raw}
 
 \item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
-
-\item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
-
-\item{mappa}{map file (optional) #defaults to karte.map}
 }
 \value{
 plot of n. of times a SNP is in a run by chromosome and population (pdf files)

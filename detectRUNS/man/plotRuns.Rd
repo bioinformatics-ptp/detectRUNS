@@ -9,11 +9,11 @@ plotRuns(runsFile = "detected.ROHet.csv", suppressInds = FALSE,
   savePlots = TRUE)
 }
 \arguments{
+\item{runsFile}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+
 \item{suppressInds}{shall we suppress individual IDs on the y-axis? (defaults to FALSE)}
 
 \item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
-
-\item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
 }
 \value{
 plot of runs by chromosome (pdf files)

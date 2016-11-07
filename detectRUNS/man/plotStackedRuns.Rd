@@ -9,9 +9,9 @@ Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)}
 plotStackedRuns(runsFile = "detected.ROHet.csv", savePlots = TRUE)
 }
 \arguments{
-\item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
+\item{runsFile}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
 
-\item{runs}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+\item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
 }
 \value{
 plot of stacked runs by population and by chromosome (pdf files)

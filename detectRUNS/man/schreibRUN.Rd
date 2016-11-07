@@ -10,6 +10,10 @@ schreibRUN(ind, dRUN, ROHet = TRUE, breed)
 \item{ind}{ID of animal}
 
 \item{dRUN}{data.frame with RUNS per animal}
+
+\item{ROHet}{shall we detect ROHet or ROHom?}
+
+\item{breed}{breed (factor)}
 }
 \value{
 TRUE/FALSE if RUNS are written out or not
