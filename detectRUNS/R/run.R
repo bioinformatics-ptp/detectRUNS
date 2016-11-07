@@ -8,14 +8,16 @@
 #' some good documentation.
 #'
 #' @param gegevens genotype dataset in the Plink .raw format
-#' @param mappa Plink map file (either the file path/name or the R data.frame)
-#' @param window the size of sliding window
+#' @param mapFile Plink map file (either the file path/name or the R data.frame)
+#' @param windowSize the size of sliding window
 #' @param drempel the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
 #' @param minSNP minimum n. of SNP in a RUN
+#' @param ROHet should we look for ROHet or ROHom?
+#' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+#' @param maxMiss max. n. of missing SNP
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
-#' @param ROHet should we look for ROHet or ROHom?
 #'
 #' @return n. of individuals for which runs have been written out
 #' @export
@@ -23,14 +25,14 @@
 #' @import plyr
 #' @import itertools
 #' @import ggplot2
-#' @import iterators
 #' @import itertools
+#' @importFrom utils read.table write.table
 #'
-#' @examples x <- RUNS.run(gegevens, mappa, windowSize = 20, drempel = 0.1, minSNP = 5,
+#' @examples
+#' data(chillingam)
+#' x <- RUNS.run(chillingham_genotype, chillingham_map, windowSize = 20, drempel = 0.1, minSNP = 5,
 #' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 #'
-
-#library("plyr")
 
 RUNS.run <- function(gegevens, mapFile, windowSize = 15, drempel = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {

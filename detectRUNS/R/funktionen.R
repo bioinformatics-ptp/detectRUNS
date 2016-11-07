@@ -30,8 +30,10 @@ genoUmschalten <- function(x) {
 #' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
 #'
 #' @param x vector of 0/1 genotypes (from genoUmschalten())
+#' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHet max n. of heterozygous SNP in a homozygous window
 #' @param maxMiss max n. of missing in a window
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
@@ -52,8 +54,10 @@ homoZygotPrufen <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #' This is a core function. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
 #'
 #' @param x vector of 0/1 genotypes (from genoUmschalten())
+#' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHom max n. of homozygous SNP in a heterozygous window
 #' @param maxMiss max n. of missing in a window
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 #' @export
@@ -72,7 +76,7 @@ heteroZygotPrufen <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #' This is a core function. The functions to detect RUNS are slidden over the genome
 #'
-#' @param x vector of 0/1/2 genotypes
+#' @param data vector of 0/1/2 genotypes
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param window size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden
@@ -88,10 +92,10 @@ heteroZygotPrufen <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #'
 
-schiebeFenster <- function(data, gaps, fenster, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
+schiebeFenster <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
   total <- length(data)
-  spots <- seq(from = 1, to = (total - fenster + 1), by = step)
+  spots <- seq(from = 1, to = (total - window + 1), by = step)
   result <- vector(length = length(spots))
   y <- genoUmschalten(data)
 
@@ -100,14 +104,14 @@ schiebeFenster <- function(data, gaps, fenster, step, ROHet=TRUE, maxOppositeGen
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],gaps[spots[i]:(spots[i]+fenster-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     # for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+fenster-1)],gaps[spots[i]:(spots[i]+fenster-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     #for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
@@ -126,7 +130,7 @@ schiebeFenster <- function(data, gaps, fenster, step, ROHet=TRUE, maxOppositeGen
 #' The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 #'
 #' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
-#' @param fenster size of window (n. of SNP)
+#' @param window size of window (n. of SNP)
 #' @param schwelle threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -135,17 +139,17 @@ schiebeFenster <- function(data, gaps, fenster, step, ROHet=TRUE, maxOppositeGen
 #' @examples #not yet
 #'
 #'
-snpInRun <- function(RunVector,fenster,schwelle) {
+snpInRun <- function(RunVector,window,schwelle) {
 
   total <- length(RunVector)
 
   print(paste("Length of imput vector:",total,sep=" "))
-  print(paste("Window size:",fenster,sep=" "))
+  print(paste("Window size:",window,sep=" "))
   print(paste("Threshold for calling SNP in a Run:",schwelle,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,fenster),rep(fenster,(total-(2*fenster))),seq(fenster,1))
+  nWin <- c(seq(1,window),rep(window,(total-(2*window))),seq(window,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   iWin <- enumerate(nWin)
@@ -176,6 +180,8 @@ snpInRun <- function(RunVector,fenster,schwelle) {
 #'
 #' @return a data.frame with RUNS per animal
 #' @export
+#'
+#' @importFrom stats na.omit
 #'
 #' @examples #not yet
 #'
@@ -220,6 +226,8 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #'
 #' @param ind ID of animal
 #' @param dRUN data.frame with RUNS per animal
+#' @param ROHet shall we detect ROHet or ROHom?
+#' @param breed breed (factor)
 #'
 #' @return TRUE/FALSE if RUNS are written out or not
 #' @export
