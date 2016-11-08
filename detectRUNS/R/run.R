@@ -61,8 +61,9 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   write.table(genotype[,c(1,2)],file="genotype.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
 
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
-  if(file.exists(report_filename)) system2("rm",report_filename)
+  if(file.exists(report_filename)) file.remove(report_filename)
 
+  # a vector to record if ROH if is written or not (FALSE, TRUE)
   is_run <- vector()
 
   # require "plyr"
@@ -72,6 +73,8 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
     y <- slidingWindow(as.integer(x[-c(1,2)]),gaps,windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss,maxGap);
     snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
+
+    # this function will write ROH on report_filename (defined inside writeRUN)
     is_run <- writeRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
     return(is_run)
   })

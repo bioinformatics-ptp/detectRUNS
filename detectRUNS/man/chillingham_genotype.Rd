@@ -16,12 +16,12 @@ A dataset containing the 0/1/2 SNP genotypes of 17 Chillingham cattle on BTA1
 }
 \details{
 \itemize{
-  \item{\code{FID}}{}
-  \item{\code{IID}}: id of animals
-  \item{\code{PAT}}{}
-  \item{\code{MAT}}{}
-  \item{\code{SEX}}{}
-  \item{\code{PHENOTYPE}}{}
+  \item{\code{FID}}: breeds (race)
+  \item{\code{IID}}: id of animals (individual)
+  \item{\code{PAT}}: paternal (who is father?)
+  \item{\code{MAT}}: maternal
+  \item{\code{SEX}}: sex (1/2)?
+  \item{\code{PHENOTYPE}}: phenotype (or -9 if missing)
   \item{\code{BovineHD0100015049_0}}: sample name
   \item{\code{BovineHD0100015050_0}}: sample name
   \item{\code{BovineHD0100015051_0}}: sample name
