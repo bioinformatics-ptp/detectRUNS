@@ -6,5 +6,5 @@
 
 # temporary files produced by RUNS.run
 detected.ROHet.csv
-gegevens.raw
-karte.map
+genotype.raw
+plink.map

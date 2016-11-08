@@ -7,9 +7,6 @@
 # ii) stacked runs per animal
 # iii) n. of times a SNP is in a run in the population
 
-#required external packages
-#library("ggplot2")
-
 #' Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 #' IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
@@ -188,8 +185,8 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 #' Proportions on the y-axis, bps on the x-axis
 #'
 #' @param runsFile output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
-#' @param mapFile map file (optional) #defaults to karte.map
-#' @param rawFile raw file of 0/1/2 genotypes (optional) #defaults to gegevens.raw
+#' @param mapFile map file (optional) #defaults to plink.map
+#' @param rawFile raw file of 0/1/2 genotypes (optional) #defaults to genotype.raw
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
@@ -203,7 +200,7 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 #'
 #plot
 
-plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'karte.map', rawFile = 'gegevens.raw', savePlots = TRUE) {
+plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'plink.map', rawFile = 'genotype.raw', savePlots = TRUE) {
 
 
   runs <- read.table(runsFile,header=TRUE,sep=";")
