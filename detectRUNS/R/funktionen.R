@@ -3,9 +3,6 @@
 #####################
 
 
-#required external packages
-#library("itertools")
-
 #' Function to convert 0/1/2 genotypes to 0/1 (either homozygous/heterozygous)
 #'
 #' This is a utility function.
@@ -18,7 +15,7 @@
 #' @examples #not yet
 #'
 #'
-genoUmschalten <- function(x) {
+genoConvert <- function(x) {
 
   neues <- c(0,1,0,NA)
   altes <- c(0,1,2,NA)
@@ -29,7 +26,7 @@ genoUmschalten <- function(x) {
 #'
 #' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
 #'
-#' @param x vector of 0/1 genotypes (from genoUmschalten())
+#' @param x vector of 0/1 genotypes (from genoConvert())
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHet max n. of heterozygous SNP in a homozygous window
 #' @param maxMiss max n. of missing in a window
@@ -42,7 +39,7 @@ genoUmschalten <- function(x) {
 #'
 #'
 
-homoZygotPrufen <- function(x,gaps,maxHet,maxMiss, maxGap) {
+homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 
   nHet <- sum(x==1,na.rm=TRUE)
   nMiss <- sum(is.na(x))
@@ -53,7 +50,7 @@ homoZygotPrufen <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #'
 #' This is a core function. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
 #'
-#' @param x vector of 0/1 genotypes (from genoUmschalten())
+#' @param x vector of 0/1 genotypes (from genoConvert())
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHom max n. of homozygous SNP in a heterozygous window
 #' @param maxMiss max n. of missing in a window
@@ -65,7 +62,7 @@ homoZygotPrufen <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #' @examples #not yet
 #'
 #'
-heteroZygotPrufen <- function(x,gaps,maxHom,maxMiss,maxGap) {
+heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 
   nHom <- sum(x==0,na.rm=TRUE)
   nMiss <- sum(is.na(x))
@@ -92,29 +89,29 @@ heteroZygotPrufen <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #'
 
-schiebeFenster <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
+slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
   total <- length(data)
   spots <- seq(from = 1, to = (total - window + 1), by = step)
   result <- vector(length = length(spots))
-  y <- genoUmschalten(data)
+  y <- genoConvert(data)
 
   print(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
 
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotPrufen(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    # for(i in (length(spots)+1):total) result[i] <- heteroZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    # for(i in (length(spots)+1):total) result[i] <- heteroZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotPrufen(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    #for(i in (length(spots)+1):total) result[i] <- homoZygotPrufen(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    #for(i in (length(spots)+1):total) result[i] <- homoZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
   }
 
   print(paste(
@@ -131,7 +128,7 @@ schiebeFenster <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGeno
 #'
 #' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
 #' @param window size of window (n. of SNP)
-#' @param schwelle threshold to call a SNP in a RUN
+#' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
 #' @export
@@ -139,13 +136,13 @@ schiebeFenster <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGeno
 #' @examples #not yet
 #'
 #'
-snpInRun <- function(RunVector,window,schwelle) {
+snpInRun <- function(RunVector,window,threshold) {
 
   total <- length(RunVector)
 
   print(paste("Length of imput vector:",total,sep=" "))
   print(paste("Window size:",window,sep=" "))
-  print(paste("Threshold for calling SNP in a Run:",schwelle,sep=" "))
+  print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
@@ -159,7 +156,7 @@ snpInRun <- function(RunVector,window,schwelle) {
   quotient <- hWin/nWin
 
   #vector of SNP belonging to a ROH
-  snpRun <- ifelse(quotient>schwelle,TRUE,FALSE)
+  snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
 
   print(paste(
     "Lenght of output file:",
@@ -192,24 +189,24 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   #requires itertools
 
   ## write out map file for subsequent plots (snpInRuns)
-  write.table(mapa,file="karte.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
+  write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
   cutPoints <- which(diff(sign(snpRun))!=0)
-  von <- c(1,cutPoints+1)
-  bis <- c(cutPoints,length(snpRun))
+  from <- c(1,cutPoints+1)
+  to <- c(cutPoints,length(snpRun))
 
-  iLaenge <- izip(a = von,b = bis)
+  iLaenge <- izip(a = from,b = to)
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
 
-  dL <- data.frame("von"=von,"bis"=bis,"nSNP"=lengte)
+  dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
   dL <- dL[dL$nSNP>minSNP,]
   dL <- na.omit(dL)
 
-  chroms <- mapa[dL$von,"Chrom"]
-  dL$von <- mapa[dL$von,"bps"]
-  dL$bis <- mapa[dL$bis,"bps"]
+  chroms <- mapa[dL$from,"Chrom"]
+  dL$from <- mapa[dL$from,"bps"]
+  dL$to <- mapa[dL$to,"bps"]
   dL$chrom <- as.integer(chroms)
-  dL$lengthBps <- (dL$bis-dL$von)
+  dL$lengthBps <- (dL$to-dL$from)
 
   #filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps > minLengthBps,]
@@ -236,7 +233,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #'
 #'
 
-schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
+writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
   dRUN$breed <- rep(breed,nrow(dRUN))
@@ -259,13 +256,13 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
       sep=';', dRUN, file=report_filename, quote=FALSE,
       col.names=headers, row.names=FALSE, append=append
     )
-    stato <- TRUE
+    is_run <- TRUE
   } else {
 
     print(paste("No RUNs found for animal",ind,sep=" "))
-    stato <- FALSE
+    is_run <- FALSE
   }
-  return(stato)
+  return(is_run)
 }
 
 
@@ -273,8 +270,8 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #'
 #'
 #' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
-#' @param mapKrom R map object with SNP per chromosome
-#' @param popFile file with two columns POPULATION/ID (defaults to gegevens.raw, generated by RUNS.run())
+#' @param mapChrom R map object with SNP per chromosome
+#' @param popFile file with two columns POPULATION/ID (defaults to genotype.raw, generated by RUNS.run())
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #' @export
@@ -283,7 +280,7 @@ schreibRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #'
 #'
 
-snp_inside_ROH <- function(runs, mapKrom, popFile = "gegevens.raw") {
+snp_inside_ROH <- function(runs, mapChrom, popFile = "genotype.raw") {
 
   pops <- read.table(popFile,header=TRUE)
   pops <- pops[,c(1,2)]
@@ -305,8 +302,8 @@ snp_inside_ROH <- function(runs, mapKrom, popFile = "gegevens.raw") {
       nBreed <- nrow(pops[pops$POP==as.character(ras),])
       print(paste("N. of animals of breed",ras,nBreed,sep=" "))
 
-      iPos <- ihasNext(mapKrom$POSITION)
-      snpCount <- rep(NA,nrow(mapKrom))
+      iPos <- ihasNext(mapChrom$POSITION)
+      snpCount <- rep(NA,nrow(mapChrom))
 
       i <- 1
       while(hasNext(iPos)) {
@@ -317,11 +314,11 @@ snp_inside_ROH <- function(runs, mapKrom, popFile = "gegevens.raw") {
         i <- i + 1
       }
 
-      mapKrom$COUNT <- snpCount
-      mapKrom$BREED <- rep(ras,nrow(mapKrom))
-      mapKrom$PERCENTAGE <- (snpCount/nBreed)*100
-      mapKrom <- mapKrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
-      M <- rbind.data.frame(M,mapKrom)
+      mapChrom$COUNT <- snpCount
+      mapChrom$BREED <- rep(ras,nrow(mapChrom))
+      mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
+      mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
+      M <- rbind.data.frame(M,mapChrom)
     }
 
   return(M)

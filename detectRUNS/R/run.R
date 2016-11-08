@@ -7,10 +7,10 @@
 #' This is the main function of RUNS and would probably require
 #' some good documentation.
 #'
-#' @param gegevens genotype dataset in the Plink .raw format
+#' @param genotype genotype dataset in the Plink .raw format
 #' @param mapFile Plink map file (either the file path/name or the R data.frame)
 #' @param windowSize the size of sliding window
-#' @param drempel the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
+#' @param threshold the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
 #' @param minSNP minimum n. of SNP in a RUN
 #' @param ROHet should we look for ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
@@ -30,17 +30,17 @@
 #'
 #' @examples
 #' data(chillingam)
-#' x <- RUNS.run(chillingham_genotype, chillingham_map, windowSize = 20, drempel = 0.1, minSNP = 5,
+#' x <- RUNS.run(chillingham_genotype, chillingham_map, windowSize = 20, threshold = 0.1, minSNP = 5,
 #' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 #'
 
-RUNS.run <- function(gegevens, mapFile, windowSize = 15, drempel = 0.1, minSNP = 3, ROHet = TRUE,
+RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
 
-  if(!is.data.frame(gegevens)) {
+  if(!is.data.frame(genotype)) {
 
-    if(file.exists(gegevens)){
-      gegevens <- read.table(gegevens,header=TRUE)
+    if(file.exists(genotype)){
+      genotype <- read.table(genotype,header=TRUE)
     }
   }
 
@@ -53,30 +53,30 @@ RUNS.run <- function(gegevens, mapFile, windowSize = 15, drempel = 0.1, minSNP =
 
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  #gegevens <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
+  #genotype <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
   #remove unnecessary fields from the .raw file
-  gegevens <- gegevens[,-c(3,4,5,6)]
+  genotype <- genotype[,-c(3,4,5,6)]
 
   ## write out populations/individuals for further plots (snpInRuns)
-  write.table(gegevens[,c(1,2)],file="gegevens.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
+  write.table(genotype[,c(1,2)],file="genotype.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
 
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) system2("rm",report_filename)
 
-  zustand <- vector()
+  is_run <- vector()
 
   # require "plyr"
-  staat <- daply(gegevens,"IID",function(x) {
+  n_of_individuals <- daply(genotype,"IID",function(x) {
 
     gaps <- diff(mapFile$bps)
-    y <- schiebeFenster(as.integer(x[-c(1,2)]),gaps,windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss,maxGap);
-    snpRun <- snpInRun(y,windowSize,drempel)
+    y <- slidingWindow(as.integer(x[-c(1,2)]),gaps,windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss,maxGap);
+    snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
-    zustand <- schreibRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
-    return(zustand)
+    is_run <- writeRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
+    return(is_run)
   })
 
-  return(sum(staat))
+  return(sum(n_of_individuals))
 }
 
 

@@ -4,14 +4,14 @@
 \alias{snpInRun}
 \title{Function to return a vector of T/F for whether a SNP is or not in a RUN}
 \usage{
-snpInRun(RunVector, window, schwelle)
+snpInRun(RunVector, window, threshold)
 }
 \arguments{
 \item{RunVector}{vector of TRUE/FALSE (is a window homozygous/heterozygous?)}
 
 \item{window}{size of window (n. of SNP)}
 
-\item{schwelle}{threshold to call a SNP in a RUN}
+\item{threshold}{threshold to call a SNP in a RUN}
 }
 \value{
 vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
