@@ -26,7 +26,9 @@
 #' @import itertools
 #' @import ggplot2
 #' @import itertools
+#' @import data.table
 #' @importFrom utils read.table write.table
+#' @importFrom bigmemory read.big.matrix
 #'
 #' @examples
 #' data(chillingam)
@@ -37,53 +39,71 @@
 RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
 
+  animals <- NULL
+
   if(!is.data.frame(genotype)) {
 
     if(file.exists(genotype)){
-      genotype <- read.table(genotype,header=TRUE)
+      # using bigmemory to read data
+      genotype <- read.big.matrix(genotype, sep = " ", header = T, type = "integer")
+      colClasses <- c(
+        rep("character", 2),
+        rep("NULL", ncol(genotype)-2)
+      )
+
+      animals <- fread(genotype, sep = " ", header = T, colClasses = colClasses)
+    } else {
+      stop(paste("file", genotype, "doesn't exists"))
     }
+
+  } else {
+    # read animals properly
+    animals <- genotype[ ,c(1,2)]
   }
 
   if(!is.data.frame(mapFile)) {
 
     if(file.exists(mapFile)){
-      mapFile <- read.table(mapFile)
+      # using data.table to read data
+      mapFile <- fread(mapFile, header = F)
+    } else {
+      stop(paste("file", mapFile, "doesn't exists"))
     }
   }
 
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  #genotype <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
   #remove unnecessary fields from the .raw file
-  genotype <- genotype[,-c(3,4,5,6)]
+  genotype <- genotype[ ,-c(1:6)]
 
   ## write out populations/individuals for further plots (snpInRuns)
-  write.table(genotype[,c(1,2)],file="genotype.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
+  write.table(animals, file="genotype.raw", quote=FALSE, row.names=FALSE, col.names=TRUE)
 
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) file.remove(report_filename)
 
-  # a vector to record if ROH if is written or not (FALSE, TRUE)
-  is_run <- vector()
-
   # require "plyr"
-  n_of_individuals <- daply(genotype,"IID",function(x) {
+  n_of_individuals <- vector(length = nrow(genotype))
 
+  # define an internal function
+  is_run <- function(x, animal) {
     gaps <- diff(mapFile$bps)
-    y <- slidingWindow(as.integer(x[-c(1,2)]),gaps,windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss,maxGap);
+    y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
     snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 
     # this function will write ROH on report_filename (defined inside writeRUN)
-    is_run <- writeRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
+    is_run <- writeRUN(as.character(animal$IID),dRUN,ROHet,as.character(animal$FID))
     return(is_run)
-  })
+  }
+
+  for (i in 1:nrow(genotype)) {
+    n_of_individuals[i] <- is_run(
+      as.vector(genotype[i, ]),
+      animal = animals[i, ]
+    )
+  }
 
   return(sum(n_of_individuals))
 }
-
-
-
-
-
 
