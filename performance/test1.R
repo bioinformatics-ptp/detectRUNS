@@ -11,9 +11,8 @@ source('~/Projects/RoHet/performance/helper.R')
 library(detectRUNS)
 library(microbenchmark)
 library(ggplot2)
-
-# importing data
-data("chillingam")
+library(bigmemory)
+library(data.table)
 
 # parameters
 windowSize <- 20
@@ -27,13 +26,29 @@ minLengthBps <- 1000
 minDensity <- 1/10
 
 # get genotype data
-genotype <- chillingham_genotype[,-c(3,4,5,6)]
+genotype_path  <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
+genotype <- read.big.matrix(genotype_path, sep = " ", header = T, type = "integer")
 
-# get only one individual
-x <- genotype[genotype$IID=="Chill_12", ]
+# load IID and breed
+colClasses <- c(
+  rep("character", 2),
+  rep("NULL", ncol(genotype)-2)
+)
+
+animals <- fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
+
+# get only one individual. Get index
+idx <- which(animals$IID=="Chill_12")
+
+# remove unuseful columns
+x <- genotype[idx, -c(1:6)]
+
+# get map data
+mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+mapfile <- fread(mapfile_path, header = F)
 
 # calculate sequence. 11 elements, then remove the first
-steps <- ceiling(seq(1, ncol(x)-2, length.out = 11))[-1]
+steps <- ceiling(seq(1, length(x), length.out = 11))[-1]
 
 # a dataframe in which i will store everything
 tests <- data.frame(type=character(), step=integer(), time=integer())
@@ -41,8 +56,8 @@ tests <- data.frame(type=character(), step=integer(), time=integer())
 # iterate over 10 steps
 for (i in steps ) {
   # get a subset
-  subset_map <- chillingham_map$bps[1:i]
-  subset_genotype <- as.integer(x[3:i])
+  subset_map <- mapfile$bps[1:i]
+  subset_genotype <- x[1:i]
 
   # calculate gaps (only one chromosome)
   gaps <- diff(subset_map)

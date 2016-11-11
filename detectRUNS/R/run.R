@@ -44,14 +44,15 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   if(!is.data.frame(genotype)) {
 
     if(file.exists(genotype)){
+      genotype_path <- genotype
       # using bigmemory to read data
-      genotype <- read.big.matrix(genotype, sep = " ", header = T, type = "integer")
+      genotype <- read.big.matrix(genotype_path, sep = " ", header = T, type = "integer")
       colClasses <- c(
         rep("character", 2),
         rep("NULL", ncol(genotype)-2)
       )
 
-      animals <- fread(genotype, sep = " ", header = T, colClasses = colClasses)
+      animals <- fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
     } else {
       stop(paste("file", genotype, "doesn't exists"))
     }
