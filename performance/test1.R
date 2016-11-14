@@ -5,7 +5,7 @@
 rm(list = ls())
 
 # source library
-source('~/Projects/RoHet/performance/helper.R')
+source('helper.R')
 
 # importing libraries
 library(detectRUNS)
@@ -161,9 +161,6 @@ plotGraph - function(mydata) {
 
   # plot subgraps
   graph <- graph + facet_wrap(~fun, ncol = 2, scales = "free_y")
-
-  # visualize graph in rstudio
-  #print(graph)
 
   # change labels
   graph <- graph +

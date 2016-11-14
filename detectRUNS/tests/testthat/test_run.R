@@ -1,3 +1,4 @@
+library(testthat)
 library(detectRUNS)
 context("Testing RUNS")
 

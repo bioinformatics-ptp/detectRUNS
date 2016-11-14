@@ -1,16 +1,5 @@
 #include <Rcpp.h>
-#include <cstdlib>
 using namespace Rcpp;
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
 
 //' Function to return a vector of T/F for whether a SNP is or not in a RUN
 //'
@@ -22,10 +11,11 @@ using namespace Rcpp;
 //' @param threshold threshold to call a SNP in a RUN
 //'
 //' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
-//' @export
 //'
 //' @examples #not yet
-//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
 // [[Rcpp::export]]
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float threshold) {
   // get vector size
@@ -36,8 +26,10 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float
   Rcout << "Threshold for calling SNP in a Run: " << threshold << std::endl;
 
   // compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  std::vector<int> nWin(RunVector_length, 20);
-  //IntegerVector nWin(RunVector_length, 20);
+  // initialize a vector with window as default value
+  std::vector<int> nWin(RunVector_length, window);
+
+  // then fix values at both sides
   for (int i=0; i<window; i++) {
     nWin[i] = i+1;
     nWin[RunVector_length - i-1] = i+1;
@@ -48,7 +40,7 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float
   float quotient;
   LogicalVector::iterator from, to;
 
-  // the returned value, a logical vector with false values
+  // the returned value, a logical vector with false values as default values
   LogicalVector snpRun(RunVector_length, false);
 
   for (int i=0; i < RunVector_length; i++) {
@@ -63,7 +55,7 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float
     //calc quotient
     quotient = hWin/nWin[i];
 
-    //vector of SNP belonging to a ROH. If yes, put a true value
+    //vector of SNP belonging to a ROH. True if yes (quotient > threshold)
     if (quotient > threshold) {
       snpRun[i] = true;
     }
