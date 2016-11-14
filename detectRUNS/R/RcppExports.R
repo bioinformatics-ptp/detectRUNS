@@ -11,21 +11,12 @@
 #' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
-#' @export
 #'
 #' @examples #not yet
-#'
-snpInRunCpp <- function(RunVector, window, threshold) {
-    .Call('detectRUNS_snpInRunCpp', PACKAGE = 'detectRUNS', RunVector, window, threshold)
-}
-
-#' Multiply a number by two
-#'
-#' @param x A single integer.
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #' @export
-timesTwo <- function(x) {
-    .Call('detectRUNS_timesTwo', PACKAGE = 'detectRUNS', x)
+snpInRunCpp <- function(RunVector, window, threshold) {
+    .Call('detectRUNS_snpInRunCpp', PACKAGE = 'detectRUNS', RunVector, window, threshold)
 }
 

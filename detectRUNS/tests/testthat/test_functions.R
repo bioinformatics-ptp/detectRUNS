@@ -1,3 +1,4 @@
+library(testthat)
 library(detectRUNS)
 context("Testing functions")
 
@@ -6,7 +7,7 @@ test_that("Testing snpInRun", {
   data("chillingam")
 
   # parameters
-  windowSize <- 20
+  windowSize <- 10
   threshold <- 0.1
   minSNP <- 5
   ROHet <- TRUE
