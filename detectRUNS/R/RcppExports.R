@@ -27,7 +27,7 @@ genoConvertCpp <- function(genotype) {
 #' The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 #'
 #' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
-#' @param window size of window (n. of SNP)
+#' @param windowSize size of window (n. of SNP)
 #' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -36,7 +36,7 @@ genoConvertCpp <- function(genotype) {
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #' @export
-snpInRunCpp <- function(RunVector, window, threshold) {
-    .Call('detectRUNS_snpInRunCpp', PACKAGE = 'detectRUNS', RunVector, window, threshold)
+snpInRunCpp <- function(RunVector, windowSize, threshold) {
+    .Call('detectRUNS_snpInRunCpp', PACKAGE = 'detectRUNS', RunVector, windowSize, threshold)
 }
 

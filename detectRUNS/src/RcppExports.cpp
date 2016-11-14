@@ -17,15 +17,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // snpInRunCpp
-LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float threshold);
-RcppExport SEXP detectRUNS_snpInRunCpp(SEXP RunVectorSEXP, SEXP windowSEXP, SEXP thresholdSEXP) {
+LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold);
+RcppExport SEXP detectRUNS_snpInRunCpp(SEXP RunVectorSEXP, SEXP windowSizeSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< LogicalVector >::type RunVector(RunVectorSEXP);
-    Rcpp::traits::input_parameter< const int >::type window(windowSEXP);
+    Rcpp::traits::input_parameter< const int >::type windowSize(windowSizeSEXP);
     Rcpp::traits::input_parameter< const float >::type threshold(thresholdSEXP);
-    __result = Rcpp::wrap(snpInRunCpp(RunVector, window, threshold));
+    __result = Rcpp::wrap(snpInRunCpp(RunVector, windowSize, threshold));
     return __result;
 END_RCPP
 }

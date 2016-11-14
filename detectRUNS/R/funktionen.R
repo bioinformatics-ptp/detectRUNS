@@ -76,7 +76,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #' @param data vector of 0/1/2 genotypes
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
-#' @param window size of window (n. of SNP)
+#' @param windowSize size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
@@ -90,10 +90,10 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #'
 
-slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
+slidingWindow <- function(data, gaps, windowSize, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
   data_length <- length(data)
-  spots <- seq(from = 1, to = (data_length - window + 1), by = step)
+  spots <- seq(from = 1, to = (data_length - windowSize + 1), by = step)
   result <- vector(length = length(spots))
   y <- genoConvert(data)
 
@@ -102,14 +102,14 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     # for(i in (length(spots)+1):data_length) result[i] <- heteroZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     #for(i in (length(spots)+1):data_length) result[i] <- homoZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
@@ -128,7 +128,7 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
 #' The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 #'
 #' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
-#' @param window size of window (n. of SNP)
+#' @param windowSize size of window (n. of SNP)
 #' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -137,17 +137,17 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
 #' @examples #not yet
 #'
 #'
-snpInRun <- function(RunVector,window,threshold) {
+snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
   print(paste("Length of imput vector:",RunVector_length,sep=" "))
-  print(paste("Window size:",window,sep=" "))
+  print(paste("Window size:",windowSize,sep=" "))
   print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,window),rep(window,(RunVector_length-(2*window))),seq(window,1))
+  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-(2*windowSize))),seq(windowSize,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   iWin <- enumerate(nWin)
