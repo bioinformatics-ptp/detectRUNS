@@ -158,7 +158,7 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 
       maxy <- length(yread);
       krom$ypos <- ypos;
-      head(krom)
+      utils::head(krom)
 
       titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,rasse,"stacked",sep="_")
 
@@ -193,7 +193,7 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
-#' @importFrom utils head
+#' @import utils
 #'
 #' @examples #not yet
 #'

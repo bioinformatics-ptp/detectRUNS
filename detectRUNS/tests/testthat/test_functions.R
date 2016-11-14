@@ -17,23 +17,40 @@ test_that("Testing snpInRun", {
   minDensity <- 1/10
 
   # get genotype data
-  genotype <- chillingham_genotype[,-c(3,4,5,6)]
+  genotype <- chillingham_genotype
 
-  # get only one individual
-  x <- genotype[genotype$IID=="Chill_12", ]
+  # get map data
+  mapFile <- chillingham_map
 
-  # calc gaps
-  gaps <- diff(chillingham_map$bps)
+  # get animals
+  animals <- genotype[ ,c(1,2)]
 
-  # calc sliding windows
-  y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap)
+  #remove unnecessary fields from the .raw file
+  genotype <- genotype[ ,-c(1:6)]
 
-  # calculate snpRun (R mode)
-  snpRun <- snpInRun(y, windowSize, threshold)
+  # require "plyr"
+  n_of_individuals <- vector(length = nrow(genotype))
 
-  # calculate snpRun (cpp)
-  snpRunCpp <- snpInRunCpp(y, windowSize, threshold)
+  # define an internal function
+  is_run <- function(x, animal) {
+    gaps <- diff(mapFile$bps)
+    y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
 
-  expect_identical(snpRun, snpRunCpp)
+    # calculate snpRun (R mode)
+    snpRun <- snpInRun(y, windowSize, threshold)
+
+    # calculate snpRun (cpp)
+    snpRunCpp <- snpInRunCpp(y, windowSize, threshold)
+
+    # test every record
+    expect_identical(snpRun, snpRunCpp)
+  }
+
+  for (i in 1:nrow(genotype)) {
+    n_of_individuals[i] <- is_run(
+      as.vector(genotype[i, ]),
+      animal = animals[i, ]
+    )
+  }
 
 })
