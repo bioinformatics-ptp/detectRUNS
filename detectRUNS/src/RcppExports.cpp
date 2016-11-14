@@ -5,6 +5,19 @@
 
 using namespace Rcpp;
 
+// snpInRunCpp
+LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float threshold);
+RcppExport SEXP detectRUNS_snpInRunCpp(SEXP RunVectorSEXP, SEXP windowSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< LogicalVector >::type RunVector(RunVectorSEXP);
+    Rcpp::traits::input_parameter< const int >::type window(windowSEXP);
+    Rcpp::traits::input_parameter< const float >::type threshold(thresholdSEXP);
+    __result = Rcpp::wrap(snpInRunCpp(RunVector, window, threshold));
+    return __result;
+END_RCPP
+}
 // timesTwo
 int timesTwo(int x);
 RcppExport SEXP detectRUNS_timesTwo(SEXP xSEXP) {
