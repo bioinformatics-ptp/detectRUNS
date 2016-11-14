@@ -26,7 +26,7 @@
 #' @import itertools
 #' @import ggplot2
 #' @import itertools
-#' @importFrom utils read.table write.table
+#' @import utils
 #'
 #' @examples
 #' data(chillingam)
@@ -40,25 +40,24 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   if(!is.data.frame(genotype)) {
 
     if(file.exists(genotype)){
-      genotype <- read.table(genotype,header=TRUE)
+      genotype <- utils::read.table(genotype,header=TRUE)
     }
   }
 
   if(!is.data.frame(mapFile)) {
 
     if(file.exists(mapFile)){
-      mapFile <- read.table(mapFile)
+      mapFile <- utils::read.table(mapFile)
     }
   }
 
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  #genotype <- read.table("RoHet/DATA/subsetChillingham.raw",header=TRUE)
   #remove unnecessary fields from the .raw file
   genotype <- genotype[,-c(3,4,5,6)]
 
   ## write out populations/individuals for further plots (snpInRuns)
-  write.table(genotype[,c(1,2)],file="genotype.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
+  utils::write.table(genotype[,c(1,2)],file="genotype.raw",quote=FALSE,row.names=FALSE,col.names=TRUE)
 
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) file.remove(report_filename)

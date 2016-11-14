@@ -142,7 +142,7 @@ for (i in steps ) {
 # as described by http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
 testsc <- summarySE(tests, measurevar="time", groupvars=c("fun","step", "language"))
 
-plotGraph - function(mydata) {
+plotGraph <- function(mydata) {
   # Standard error of the mean
   graph <- ggplot(testsc, aes(x=step, y=time, colour=language)) +
     geom_errorbar(aes(ymin=time-se, ymax=time+se), width=.1) +
