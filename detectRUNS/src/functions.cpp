@@ -47,7 +47,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 //'
 //' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
-//' @param window size of window (n. of SNP)
+//' @param windowSize size of window (n. of SNP)
 //' @param threshold threshold to call a SNP in a RUN
 //'
 //' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -57,20 +57,20 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' @importFrom Rcpp sourceCpp
 //' @export
 // [[Rcpp::export]]
-LogicalVector snpInRunCpp(LogicalVector RunVector, const int window, const float threshold) {
+LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold) {
   // get vector size
   int RunVector_length = RunVector.size();
 
   Rcout << "Length of input vector: " << RunVector_length << std::endl;
-  Rcout << "Window size: " << window << std::endl;
+  Rcout << "Window size: " << windowSize << std::endl;
   Rcout << "Threshold for calling SNP in a Run: " << threshold << std::endl;
 
   // compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
   // initialize a vector with window as default value
-  std::vector<int> nWin(RunVector_length, window);
+  std::vector<int> nWin(RunVector_length, windowSize);
 
   // then fix values at both sides
-  for (int i=0; i<window; i++) {
+  for (int i=0; i<windowSize; i++) {
     nWin[i] = i+1;
     nWin[RunVector_length - i-1] = i+1;
   }

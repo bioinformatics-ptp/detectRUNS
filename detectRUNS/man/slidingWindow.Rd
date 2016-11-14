@@ -4,7 +4,7 @@
 \alias{slidingWindow}
 \title{Function to slide a window over a vector (individual's genotypes)}
 \usage{
-slidingWindow(data, gaps, window, step, ROHet = TRUE,
+slidingWindow(data, gaps, windowSize, step, ROHet = TRUE,
   maxOppositeGenotype = 1, maxMiss = 1, maxGap)
 }
 \arguments{
@@ -12,7 +12,7 @@ slidingWindow(data, gaps, window, step, ROHet = TRUE,
 
 \item{gaps}{vector of differences between consecutive positions (gaps) in bps}
 
-\item{window}{size of window (n. of SNP)}
+\item{windowSize}{size of window (n. of SNP)}
 
 \item{step}{by which (how many SNP) is the window slidden}
 
