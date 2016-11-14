@@ -1,6 +1,46 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+//' Convert 0/1/2 genotypes to 0/1
+//'
+//' This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
+//' (either homozygous/heterozygous)
+//'
+//' @param genotype vector of 0/1/2 genotypes
+//'
+//' @return converted vector of genotypes (0/1)
+//' @export
+//'
+//' @examples
+//' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
+//' geno01 <- genoConvert(geno012)
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+// [[Rcpp::export]]
+IntegerVector genoConvertCpp(IntegerVector genotype) {
+  // deal with missing values (http://adv-r.had.co.nz/Rcpp.html#rcpp-na)
+  int missing = NA_INTEGER;
+
+  // deal with map STL class (http://www.cprogramming.com/tutorial/stl/stlmap.html)
+  std::map <int, int> converter;
+
+  // set values
+  converter[0] = 0;
+  converter[1] = 1;
+  converter[2] = 0;
+  converter[missing] = missing;
+
+  // the converted vector
+  IntegerVector results(genotype.size());
+
+  for (int i = 0; i < genotype.size(); i++) {
+    results[i] = converter[genotype[i]];
+  }
+
+  return results;
+}
+
 //' Function to return a vector of T/F for whether a SNP is or not in a RUN
 //'
 //' This is a core function. The function to determine whether a SNP is or not in a RUN.

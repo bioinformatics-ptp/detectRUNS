@@ -55,3 +55,17 @@ test_that("Testing snpInRun", {
   }
 
 })
+
+test_that("Testing genoConvert", {
+  # create a genotype of 0/1/2
+  geno012 <- c(1, 2, 0, 1, 2, NA, 0, NA)
+  geno01 <- c(1, 0, 0, 1, 0, NA, 0, NA)
+
+  # test R genoConvert
+  test <- genoConvert(geno012)
+  expect_identical(test, geno01)
+
+  # testing Cpp genoConvert
+  test <- genoConvertCpp(geno012)
+  expect_equal(test, geno01)
+})
