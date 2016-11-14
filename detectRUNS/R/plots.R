@@ -17,6 +17,7 @@
 #' @return plot of runs by chromosome (pdf files)
 #' @export
 #'
+#' @import utils
 #' @importFrom grDevices dev.off pdf
 #'
 #' @examples #not yet
@@ -27,7 +28,7 @@
 plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, savePlots = TRUE) {
 
 
-  runs <- read.table(file=runsFile, header=TRUE, sep=';')
+  runs <- utils::read.table(file=runsFile, header=TRUE, sep=';')
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
@@ -95,6 +96,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 #' @return plot of stacked runs by population and by chromosome (pdf files)
 #' @export
 #'
+#' @import utils
 #' @importFrom grDevices dev.off pdf
 #'
 #' @examples #not yet
@@ -105,7 +107,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 
 
-  runs <- read.table(file=runsFile, header=TRUE, sep=';')
+  runs <- utils::read.table(file=runsFile, header=TRUE, sep=';')
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #select a POPULATION
@@ -203,10 +205,10 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'plink.map', rawFile = 'genotype.raw', savePlots = TRUE) {
 
 
-  runs <- read.table(runsFile,header=TRUE,sep=";")
+  runs <- utils::read.table(runsFile,header=TRUE,sep=";")
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  mappa <- read.table(mapFile)
+  mappa <- utils::read.table(mapFile)
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
 

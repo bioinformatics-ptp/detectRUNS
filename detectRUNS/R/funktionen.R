@@ -276,13 +276,15 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #' @return dataframe with counts per SNP in runs (per population)
 #' @export
 #'
+#' @import utils
+#'
 #' @examples #not yet
 #'
 #'
 
 snp_inside_ROH <- function(runs, mapChrom, popFile = "genotype.raw") {
 
-  pops <- read.table(popFile,header=TRUE)
+  pops <- utils::read.table(popFile,header=TRUE)
   pops <- pops[,c(1,2)]
   names(pops) <- c("POP","ID")
 
