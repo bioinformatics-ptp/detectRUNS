@@ -3,23 +3,24 @@
 #####################
 
 
-#' Function to convert 0/1/2 genotypes to 0/1 (either homozygous/heterozygous)
+#' Convert 0/1/2 genotypes to 0/1
 #'
-#' This is a utility function.
+#' This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
+#' (either homozygous/heterozygous)
 #'
 #' @param x vector of 0/1/2 genotypes
 #'
-#' @return converted vector of genotypes
+#' @return converted vector of genotypes (0/1)
 #' @export
 #'
-#' @examples #not yet
-#'
+#' @examples
+#' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
+#' geno01 <- genoConvert(geno012)
 #'
 genoConvert <- function(x) {
-
-  neues <- c(0,1,0,NA)
-  altes <- c(0,1,2,NA)
-  return(neues[match(x,altes)])
+  new <- c(0,1,0,NA)
+  old <- c(0,1,2,NA)
+  return(new[match(x,old)])
 }
 
 #' Function to check whether a window is (loosely) homozygous or not
@@ -91,8 +92,8 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 
 slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
-  total <- length(data)
-  spots <- seq(from = 1, to = (total - window + 1), by = step)
+  data_length <- length(data)
+  spots <- seq(from = 1, to = (data_length - window + 1), by = step)
   result <- vector(length = length(spots))
   y <- genoConvert(data)
 
@@ -104,14 +105,14 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
       result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    # for(i in (length(spots)+1):total) result[i] <- heteroZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    # for(i in (length(spots)+1):data_length) result[i] <- heteroZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
       result[i] <- homoZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    #for(i in (length(spots)+1):total) result[i] <- homoZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    #for(i in (length(spots)+1):data_length) result[i] <- homoZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   }
 
   print(paste(
@@ -138,15 +139,15 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
 #'
 snpInRun <- function(RunVector,window,threshold) {
 
-  total <- length(RunVector)
+  RunVector_length <- length(RunVector)
 
-  print(paste("Length of imput vector:",total,sep=" "))
+  print(paste("Length of imput vector:",RunVector_length,sep=" "))
   print(paste("Window size:",window,sep=" "))
   print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,window),rep(window,(total-(2*window))),seq(window,1))
+  nWin <- c(seq(1,window),rep(window,(RunVector_length-(2*window))),seq(window,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   iWin <- enumerate(nWin)
@@ -178,6 +179,7 @@ snpInRun <- function(RunVector,window,threshold) {
 #' @return a data.frame with RUNS per animal
 #' @export
 #'
+#' @import utils
 #' @importFrom stats na.omit
 #'
 #' @examples #not yet
@@ -189,7 +191,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   #requires itertools
 
   ## write out map file for subsequent plots (snpInRuns)
-  write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
+  utils::write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
@@ -229,6 +231,8 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #' @return TRUE/FALSE if RUNS are written out or not
 #' @export
 #'
+#' @import utils
+#'
 #' @examples #not yet
 #'
 #'
@@ -252,7 +256,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
       append = TRUE
       headers = FALSE
     }
-    write.table(
+    utils::write.table(
       sep=';', dRUN, file=report_filename, quote=FALSE,
       col.names=headers, row.names=FALSE, append=append
     )
