@@ -36,10 +36,23 @@ genoConvert <- function(x) {
 #' @return TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
+#' @examples
+#' maxHom <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^6
+#' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+#'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+#' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
+#'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is true
+#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is false
 #'
-#'
-
 homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 
   nHet <- sum(x==1,na.rm=TRUE)
@@ -60,8 +73,22 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
-#'
+#' @examples
+#' maxHom <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^6
+#' x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+#'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
+#' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
+#'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
+#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is false
+#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is true
 #'
 heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 
@@ -88,8 +115,6 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #' @examples #not yet
 #'
-#'
-
 slidingWindow <- function(data, gaps, windowSize, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
 
   data_length <- length(data)
@@ -135,7 +160,6 @@ slidingWindow <- function(data, gaps, windowSize, step, ROHet=TRUE, maxOppositeG
 #' @export
 #'
 #' @examples #not yet
-#'
 #'
 snpInRun <- function(RunVector,windowSize,threshold) {
 
@@ -184,8 +208,6 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 #' @examples #not yet
 #'
-#'
-
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
 
   #requires itertools
@@ -235,8 +257,6 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #'
 #' @examples #not yet
 #'
-#'
-
 writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
@@ -284,8 +304,6 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #'
 #' @examples #not yet
 #'
-#'
-
 snp_inside_ROH <- function(runs, mapChrom, popFile = "genotype.raw") {
 
   pops <- utils::read.table(popFile,header=TRUE)
