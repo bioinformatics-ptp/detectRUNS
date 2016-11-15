@@ -9,7 +9,6 @@ using namespace Rcpp;
 //' @param genotype vector of 0/1/2 genotypes
 //'
 //' @return converted vector of genotypes (0/1)
-//' @export
 //'
 //' @examples
 //' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
@@ -17,6 +16,7 @@ using namespace Rcpp;
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
+//'
 // [[Rcpp::export]]
 IntegerVector genoConvertCpp(IntegerVector genotype) {
   // deal with missing values (http://adv-r.had.co.nz/Rcpp.html#rcpp-na)
@@ -41,6 +41,61 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
   return results;
 }
 
+//' Function to check whether a window is (loosely) homozygous or not
+//'
+//' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
+//'
+//' @param x vector of 0/1 genotypes (from genoConvert())
+//' @param gaps vector of differences between consecutive positions (gaps) in bps
+//' @param maxHet max n. of heterozygous SNP in a homozygous window
+//' @param maxMiss max n. of missing in a window
+//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//'
+//' @return TRUE/FALSE (whether a window is homozygous or NOT)
+//'
+//' @examples
+//' maxHom <- 1
+//' maxMiss <- 1
+//' maxGap <- 10^6
+//' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+//'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+//' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
+//'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
+//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+//' # test is true
+//' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+//' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+//'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+//' # test is false
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap) {
+  // check gaps
+  for (int i=0; i< gaps.size(); i++) {
+    if (gaps[i] > maxGap) {
+      return false;
+    }
+  }
+
+  // count Heterozygots
+  int nHet = std::count(x.begin(), x.end(), 1);
+
+  // count missing values
+  int nMiss = std::count(x.begin(), x.end(), NA_INTEGER);
+
+  if (nHet > maxHet || nMiss > maxMiss) {
+    return false;
+  }
+
+  // if I pass all checks
+  return true;
+}
+
 //' Function to return a vector of T/F for whether a SNP is or not in a RUN
 //'
 //' This is a core function. The function to determine whether a SNP is or not in a RUN.
@@ -56,6 +111,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
+//'
 // [[Rcpp::export]]
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold) {
   // get vector size
