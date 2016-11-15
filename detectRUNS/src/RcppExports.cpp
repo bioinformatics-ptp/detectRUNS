@@ -16,6 +16,21 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// homoZygotTestCpp
+bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap);
+RcppExport SEXP detectRUNS_homoZygotTestCpp(SEXP xSEXP, SEXP gapsSEXP, SEXP maxHetSEXP, SEXP maxMissSEXP, SEXP maxGapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type gaps(gapsSEXP);
+    Rcpp::traits::input_parameter< int >::type maxHet(maxHetSEXP);
+    Rcpp::traits::input_parameter< int >::type maxMiss(maxMissSEXP);
+    Rcpp::traits::input_parameter< int >::type maxGap(maxGapSEXP);
+    __result = Rcpp::wrap(homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap));
+    return __result;
+END_RCPP
+}
 // snpInRunCpp
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold);
 RcppExport SEXP detectRUNS_snpInRunCpp(SEXP RunVectorSEXP, SEXP windowSizeSEXP, SEXP thresholdSEXP) {

@@ -9,7 +9,6 @@
 #' @param genotype vector of 0/1/2 genotypes
 #'
 #' @return converted vector of genotypes (0/1)
-#' @export
 #'
 #' @examples
 #' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
@@ -17,8 +16,45 @@
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #' @export
+#'
 genoConvertCpp <- function(genotype) {
     .Call('detectRUNS_genoConvertCpp', PACKAGE = 'detectRUNS', genotype)
+}
+
+#' Function to check whether a window is (loosely) homozygous or not
+#'
+#' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
+#'
+#' @param x vector of 0/1 genotypes (from genoConvert())
+#' @param gaps vector of differences between consecutive positions (gaps) in bps
+#' @param maxHet max n. of heterozygous SNP in a homozygous window
+#' @param maxMiss max n. of missing in a window
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#'
+#' @return TRUE/FALSE (whether a window is homozygous or NOT)
+#'
+#' @examples
+#' maxHom <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^6
+#' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+#'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+#' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
+#'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
+#' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is true
+#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+#' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is false
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+#' @export
+#'
+homoZygotTestCpp <- function(x, gaps, maxHet, maxMiss, maxGap) {
+    .Call('detectRUNS_homoZygotTestCpp', PACKAGE = 'detectRUNS', x, gaps, maxHet, maxMiss, maxGap)
 }
 
 #' Function to return a vector of T/F for whether a SNP is or not in a RUN
@@ -36,6 +72,7 @@ genoConvertCpp <- function(genotype) {
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #' @export
+#'
 snpInRunCpp <- function(RunVector, windowSize, threshold) {
     .Call('detectRUNS_snpInRunCpp', PACKAGE = 'detectRUNS', RunVector, windowSize, threshold)
 }
