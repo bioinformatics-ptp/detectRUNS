@@ -22,6 +22,5 @@ Function to count number of times a SNP is in a RUN
 \examples{
 #not yet
 
-
 }
 

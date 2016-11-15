@@ -23,6 +23,5 @@ The ratio between homozygous/heterozygous windows and total n. of windows is com
 \examples{
 #not yet
 
-
 }
 

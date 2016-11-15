@@ -29,6 +29,5 @@ Requires a map file (other filename to read or R object)
 \examples{
 #not yet
 
-
 }
 

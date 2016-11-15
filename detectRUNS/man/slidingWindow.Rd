@@ -33,6 +33,5 @@ This is a core function. The functions to detect RUNS are slidden over the genom
 \examples{
 #not yet
 
-
 }
 
