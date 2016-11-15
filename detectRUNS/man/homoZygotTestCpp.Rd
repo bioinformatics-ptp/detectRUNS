@@ -39,5 +39,6 @@ gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
 test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
 # test is false
+
 }
 

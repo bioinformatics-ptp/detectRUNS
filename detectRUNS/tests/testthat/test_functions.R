@@ -181,6 +181,10 @@ test_that("Testing heteroZygotTest", {
   test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
   expect_false(test)
 
+  # check Cpp function
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+  expect_false(test)
+
   x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
          1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
   gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
@@ -188,15 +192,27 @@ test_that("Testing heteroZygotTest", {
   test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
   expect_true(test)
 
+  # check Cpp function
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+  expect_true(test)
+
   # insert two missing values (> naxMIss)
   x[1:2] <- c(NA, NA)
   test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+  expect_false(test)
+
+  # check Cpp function
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
   expect_false(test)
 
   # revert, and change maxGap
   x[1:2] <- c(0, 1)
   gaps[10] <- maxGap + gaps[10]
   test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+  expect_false(test)
+
+  # check Cpp function
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
   expect_false(test)
 })
 
