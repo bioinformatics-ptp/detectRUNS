@@ -143,7 +143,7 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
   }
 
   // count Homozygots
-  int nHom = std::count(x.begin(), x.end(), 1);
+  int nHom = std::count(x.begin(), x.end(), 0);
 
   // count missing values
   int nMiss = std::count(x.begin(), x.end(), NA_INTEGER);
@@ -154,6 +154,92 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 
   // if I pass all checks
   return true;
+}
+
+
+//' Function to slide a window over a vector (individual's genotypes)
+//'
+//' This is a core function. The functions to detect RUNS are slidden over the genome
+//'
+//' @param data vector of 0/1/2 genotypes
+//' @param gaps vector of differences between consecutive positions (gaps) in bps
+//' @param windowSize size of window (n. of SNP)
+//' @param step by which (how many SNP) is the window slidden
+//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//' @param ROHet shall we detect ROHet or ROHom?
+//' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+//' @param maxMiss max. n. of missing SNP
+//'
+//' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
+//'
+//' @examples #not yet
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
+                               int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
+
+  // get data lenght
+  int data_length = data.size();
+
+  // calculate spots size
+  int spots_lenght = data_length - windowSize+1;
+
+  // initialize results
+  LogicalVector results(spots_lenght, false);
+
+  // convert genotype
+  IntegerVector y = genoConvertCpp(data);
+
+  // declare iterators
+  IntegerVector::const_iterator from, to;
+
+  // eval RoHet or RoHom
+  if (ROHet == true) {
+    Rcout << "Analysing Runs of Heterozygosity (ROHet)" << std::endl;
+  } else {
+    Rcout << "Analysing Runs of Homozygosity (ROHom)" << std::endl;
+  }
+
+  // evaluating windows
+  for (int i=1; i<spots_lenght; i++) {
+    // calculate y_spots
+    from = y.begin() + i*step;
+    to = y.begin() + i*step + windowSize;
+
+    //Slice the original vector
+    IntegerVector y_spots(from, to);
+
+    // calculate gaps_spots
+    from = gaps.begin() + i*step;
+    to = gaps.begin() + i*step + windowSize -1;
+    IntegerVector gaps_spots(from, to);
+
+    // debug
+    // Rcout << y_spots << std::endl;
+    // Rcout << gaps_spots << std::endl;
+
+    // eval RoHet or RoHom
+    if (ROHet == true) {
+      // calculate result
+      results[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << results[i] << std::endl;
+
+    } else {
+      // calculate result
+      results[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << results[i] << std::endl;
+    }
+
+  }
+
+  // check this affermation
+  Rcout << "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): " << results.size() << std::endl;
+
+  return results;
 }
 
 

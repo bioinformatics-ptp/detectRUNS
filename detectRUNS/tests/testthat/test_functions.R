@@ -23,19 +23,18 @@ test_that("Testing snpInRun", {
   # get map data
   mapFile <- chillingham_map
 
-  # get animals
-  animals <- genotype[ ,c(1,2)]
-
   # remove unnecessary fields from the .raw file
   genotype <- genotype[ ,-c(1:6)]
 
   # require "plyr"
   n_of_individuals <- vector(length = nrow(genotype))
 
+  # calculate gaps
+  gaps <- diff(mapFile$bps)
+
   # define an internal function
-  is_run <- function(x, animal) {
-    gaps <- diff(mapFile$bps)
-    y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
+  is_run <- function(x) {
+    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # calculate snpRun (R mode)
     snpRun <- snpInRun(y, windowSize, threshold)
@@ -48,10 +47,7 @@ test_that("Testing snpInRun", {
   }
 
   for (i in 1:nrow(genotype)) {
-    n_of_individuals[i] <- is_run(
-      as.vector(genotype[i, ]),
-      animal = animals[i, ]
-    )
+    n_of_individuals[i] <- is_run( as.integer(genotype[i, ]) )
   }
 
 })
@@ -91,31 +87,25 @@ test_that("Testing slidingWindow", {
   # get map data
   mapFile <- chillingham_map
 
-  # get animals
-  animals <- genotype[ ,c(1,2)]
-
   # remove unnecessary fields from the .raw file
   genotype <- genotype[ ,-c(1:6)]
 
   # define an internal function
-  is_run <- function(x, animal) {
+  is_run <- function(x) {
     gaps <- diff(mapFile$bps)
 
     # call R function
-    y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
+    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # call cppFunction
-    test <- slidingWindowCpp(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
+    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # testing function
-    expect_equal(test, y)
+    expect_identical(test, y)
   }
 
   for (i in 1:nrow(genotype)) {
-    is_run(
-      as.vector(genotype[i, ]),
-      animal = animals[i, ]
-    )
+    is_run( as.integer(genotype[i, ]) )
   }
 
 })

@@ -65,11 +65,12 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   # a vector to record if ROH if is written or not (FALSE, TRUE)
   is_run <- vector()
 
+  # calculate gaps
+  gaps <- diff(mapFile$bps)
+
   # require "plyr"
   n_of_individuals <- daply(genotype,"IID",function(x) {
-
-    gaps <- diff(mapFile$bps)
-    y <- slidingWindow(as.integer(x[-c(1,2)]),gaps,windowSize,step=1,ROHet=ROHet,maxOppositeGenotype,maxMiss,maxGap);
+    y <- slidingWindow(as.integer(x[-c(1,2)]), gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 

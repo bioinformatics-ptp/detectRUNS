@@ -105,17 +105,17 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param windowSize size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
 #' @examples #not yet
 #'
-slidingWindow <- function(data, gaps, windowSize, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
+slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
   data_length <- length(data)
   spots <- seq(from = 1, to = (data_length - windowSize + 1), by = step)

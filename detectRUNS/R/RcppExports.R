@@ -96,6 +96,31 @@ heteroZygotTestCpp <- function(x, gaps, maxHom, maxMiss, maxGap) {
     .Call('detectRUNS_heteroZygotTestCpp', PACKAGE = 'detectRUNS', x, gaps, maxHom, maxMiss, maxGap)
 }
 
+#' Function to slide a window over a vector (individual's genotypes)
+#'
+#' This is a core function. The functions to detect RUNS are slidden over the genome
+#'
+#' @param data vector of 0/1/2 genotypes
+#' @param gaps vector of differences between consecutive positions (gaps) in bps
+#' @param windowSize size of window (n. of SNP)
+#' @param step by which (how many SNP) is the window slidden
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param ROHet shall we detect ROHet or ROHom?
+#' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+#' @param maxMiss max. n. of missing SNP
+#'
+#' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
+#'
+#' @examples #not yet
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+#' @export
+#'
+slidingWindowCpp <- function(data, gaps, windowSize, step, maxGap, ROHet = TRUE, maxOppositeGenotype = 1L, maxMiss = 1L) {
+    .Call('detectRUNS_slidingWindowCpp', PACKAGE = 'detectRUNS', data, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
+}
+
 #' Function to return a vector of T/F for whether a SNP is or not in a RUN
 #'
 #' This is a core function. The function to determine whether a SNP is or not in a RUN.

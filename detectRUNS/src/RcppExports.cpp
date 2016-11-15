@@ -46,6 +46,24 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// slidingWindowCpp
+LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step, int maxGap, bool ROHet, int maxOppositeGenotype, int maxMiss);
+RcppExport SEXP detectRUNS_slidingWindowCpp(SEXP dataSEXP, SEXP gapsSEXP, SEXP windowSizeSEXP, SEXP stepSEXP, SEXP maxGapSEXP, SEXP ROHetSEXP, SEXP maxOppositeGenotypeSEXP, SEXP maxMissSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< IntegerVector >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type gaps(gapsSEXP);
+    Rcpp::traits::input_parameter< int >::type windowSize(windowSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type step(stepSEXP);
+    Rcpp::traits::input_parameter< int >::type maxGap(maxGapSEXP);
+    Rcpp::traits::input_parameter< bool >::type ROHet(ROHetSEXP);
+    Rcpp::traits::input_parameter< int >::type maxOppositeGenotype(maxOppositeGenotypeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxMiss(maxMissSEXP);
+    __result = Rcpp::wrap(slidingWindowCpp(data, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss));
+    return __result;
+END_RCPP
+}
 // snpInRunCpp
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold);
 RcppExport SEXP detectRUNS_snpInRunCpp(SEXP RunVectorSEXP, SEXP windowSizeSEXP, SEXP thresholdSEXP) {
