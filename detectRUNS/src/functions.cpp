@@ -1,4 +1,18 @@
 #include <Rcpp.h>
+#include <string>
+#include <sstream>
+
+// http://stackoverflow.com/questions/12975341/to-string-is-not-a-member-of-std-says-g
+namespace patch {
+  template < typename T > std::string to_string( const T& n ) {
+    std::ostringstream stm ;
+    stm << n ;
+    return stm.str() ;
+  }
+}
+
+#include <iostream>
+
 using namespace Rcpp;
 
 //' Convert 0/1/2 genotypes to 0/1
@@ -182,6 +196,9 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
                                int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
 
+  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
+  Rcpp::Function msg("message");
+
   // get data lenght
   int data_length = data.size();
 
@@ -198,11 +215,11 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   IntegerVector::const_iterator from, to;
 
   // eval RoHet or RoHom
-  if (ROHet == true) {
-    Rcout << "Analysing Runs of Heterozygosity (ROHet)" << std::endl;
-  } else {
-    Rcout << "Analysing Runs of Homozygosity (ROHom)" << std::endl;
-  }
+  // if (ROHet == true) {
+  //   msg(std::string("Analysing Runs of Heterozygosity (ROHet)"));
+  // } else {
+  //   msg(std::string("Analysing Runs of Homozygosity (ROHom)"));
+  // }
 
   // evaluating windows
   for (int i=0; i<spots_lenght; i++) {
@@ -236,8 +253,8 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
 
   }
 
-  // check this affermation
-  Rcout << "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): " << results.size() << std::endl;
+  // check this affermation (could be N of SNPs - window +1)
+  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), results.size());
 
   return results;
 }
@@ -261,12 +278,16 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
 //'
 // [[Rcpp::export]]
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold) {
+  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
+  Rcpp::Function msg("message");
+
   // get vector size
   int RunVector_length = RunVector.size();
 
-  Rcout << "Length of input vector: " << RunVector_length << std::endl;
-  Rcout << "Window size: " << windowSize << std::endl;
-  Rcout << "Threshold for calling SNP in a Run: " << threshold << std::endl;
+  // debug
+  // msg(std::string("Length of input vector: "), RunVector_length);
+  // msg(std::string("Window size: "), windowSize);
+  // msg(std::string("Threshold for calling SNP in a Run: ") + patch::to_string(threshold));
 
   // compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
   // initialize a vector with window as default value
@@ -312,7 +333,7 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   }
 
   //debug
-  Rcout << "Lenght of output file: " << snpRun.size() << std::endl;
+  //msg(std::string("Lenght of output vector: "), snpRun.size());
 
   return snpRun;
 }
