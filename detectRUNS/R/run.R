@@ -39,7 +39,17 @@
 RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
 
-  animals <- NULL
+    # debug
+  if (ROHet == TRUE) {
+    message("Analysing Runs of Heterozygosity (ROHet)")
+  } else if (ROHet == FALSE) {
+    message("Analysing Runs of Homozygosity (ROHom)")
+  } else {
+    stop(paste("Unknown ROHet value:",ROHet, ". It MUST be only TRUE/FALSE (see documentation)"))
+  }
+
+  message(paste("Window size:", windowSize))
+  message(paste("Threshold for calling SNP in a Run:", threshold))
 
   if(!is.data.frame(genotype)) {
 
@@ -72,6 +82,7 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
     }
   }
 
+  # setting colnames
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
   #remove unnecessary fields from the .raw file
@@ -92,8 +103,8 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   # define an internal function
   is_run <- function(x, animal) {
     # use sliding windows
-    y <- slidingWindow(as.integer(x), gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    snpRun <- snpInRun(y,windowSize,threshold)
+    y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    snpRun <- snpInRunCpp(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 
     # this function will write ROH on report_filename (defined inside writeRUN)
@@ -103,7 +114,7 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
 
   for (i in 1:nrow(genotype)) {
     n_of_individuals[i] <- is_run(
-      as.vector(genotype[i, ]),
+      as.integer(genotype[i, ]),
       animal = animals[i, ]
     )
   }

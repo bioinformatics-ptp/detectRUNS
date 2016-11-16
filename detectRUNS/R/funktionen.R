@@ -204,6 +204,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @export
 #'
 #' @import utils
+#' @import itertools
 #' @importFrom stats na.omit
 #'
 #' @examples #not yet
@@ -219,16 +220,28 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   from <- c(1,cutPoints+1)
   to <- c(cutPoints,length(snpRun))
 
-  iLaenge <- izip(a = from,b = to)
+  iLaenge <- itertools::izip(a = from,b = to)
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
 
   dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
   dL <- dL[dL$nSNP>minSNP,]
   dL <- na.omit(dL)
 
-  chroms <- mapa[dL$from,"Chrom"]
-  dL$from <- mapa[dL$from,"bps"]
-  dL$to <- mapa[dL$to,"bps"]
+  # data.frame and data.table have different methods to access columns by name
+  if (class(mapa)[1] == "data.frame") {
+    chroms <- mapa[dL$from,"Chrom"]
+    dL$from <- mapa[dL$from,"bps"]
+    dL$to <- mapa[dL$to,"bps"]
+
+  } else if (class(mapa)[1] == "data.table") {
+    chroms <- mapa[dL$from, Chrom]
+    dL$from <- mapa[dL$from, bps]
+    dL$to <- mapa[dL$to, bps]
+  } else {
+    stop(paste("Unknown data type:", class(mapa)))
+  }
+
+  # setting other values
   dL$chrom <- as.integer(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
@@ -238,7 +251,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL <- dL[dL$SNPdensity > minDensity, ]
   dL$SNPdensity <- NULL
 
-  print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
+  #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
   return(dL)
 }
 
@@ -263,9 +276,9 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
   dRUN$breed <- rep(breed,nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
-  print(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
-
   if(nrow(dRUN) > 0) {
+    # debug
+    message(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
 
     append = FALSE
     headers = TRUE
@@ -282,8 +295,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
     )
     is_run <- TRUE
   } else {
-
-    print(paste("No RUNs found for animal",ind,sep=" "))
+    message(paste("No RUNs found for animal",ind,sep=" "))
     is_run <- FALSE
   }
   return(is_run)

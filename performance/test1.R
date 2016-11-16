@@ -85,7 +85,7 @@ for (i in steps ) {
   y <- slidingWindow(subset_genotype, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap)
 
   test_sliding <- microbenchmark(
-    slidingWindow(subset_genotype, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap),
+    slidingWindow(subset_genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss),
     unit = 'ms',
     times = times
   )
@@ -95,6 +95,20 @@ for (i in steps ) {
   test_language <- rep("R", times)
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_sliding$time, language=test_language)
   tests <- rbind(tests, tmp)
+
+  # check cpp slidingWindow
+  test_slidingCpp <- microbenchmark(
+    slidingWindowCpp(subset_genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("sliding", times)
+  test_step <- rep(i, times)
+  test_language <- rep("Cpp", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingCpp$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
 
   # vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
   snpRun <- snpInRun(y,windowSize,threshold)
