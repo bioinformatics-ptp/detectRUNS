@@ -70,8 +70,8 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
 
   # require "plyr"
   n_of_individuals <- daply(genotype,"IID",function(x) {
-    y <- slidingWindow(as.integer(x[-c(1,2)]), gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    snpRun <- snpInRun(y,windowSize,threshold)
+    y <- slidingWindowCpp(as.integer(x[-c(1,2)]), gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    snpRun <- snpInRunCpp(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 
     # this function will write ROH on report_filename (defined inside writeRUN)
@@ -81,9 +81,4 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
 
   return(sum(n_of_individuals))
 }
-
-
-
-
-
 
