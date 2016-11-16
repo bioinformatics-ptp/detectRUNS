@@ -27,7 +27,7 @@
 #' @import ggplot2
 #' @import itertools
 #' @import data.table
-#' @importFrom utils read.table write.table
+#' @import utils
 #' @importFrom bigmemory read.big.matrix
 #'
 #' @examples
@@ -78,7 +78,7 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   genotype <- genotype[ ,-c(1:6)]
 
   ## write out populations/individuals for further plots (snpInRuns)
-  write.table(animals, file="genotype.raw", quote=FALSE, row.names=FALSE, col.names=TRUE)
+  utils::write.table(animals, file="genotype.raw", quote=FALSE, row.names=FALSE, col.names=TRUE)
 
   report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
   if(file.exists(report_filename)) file.remove(report_filename)
@@ -86,10 +86,13 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   # require "plyr"
   n_of_individuals <- vector(length = nrow(genotype))
 
+  # calculate gaps
+  gaps <- diff(mapFile$bps)
+
   # define an internal function
   is_run <- function(x, animal) {
-    gaps <- diff(mapFile$bps)
-    y <- slidingWindow(x, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap);
+    # use sliding windows
+    y <- slidingWindow(as.integer(x), gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 
