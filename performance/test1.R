@@ -5,7 +5,7 @@
 rm(list = ls())
 
 # source library
-source('~/Projects/RoHet/performance/helper.R')
+source('helper.R')
 
 # importing libraries
 library(detectRUNS)
@@ -24,6 +24,12 @@ maxMiss <- 1
 maxGap <- 10^6
 minLengthBps <- 1000
 minDensity <- 1/10
+
+# how many times perform test
+times <- 100
+
+# how many points in X axis
+x_points <- 10
 
 # get genotype data
 genotype_path  <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
@@ -48,12 +54,12 @@ mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detec
 mapfile <- fread(mapfile_path, header = F)
 
 # calculate sequence. 11 elements, then remove the first
-steps <- ceiling(seq(1, length(x), length.out = 11))[-1]
+steps <- ceiling(seq(1, ncol(x)-2, length.out = (x_points+1) ))[-1]
 
 # a dataframe in which i will store everything
-tests <- data.frame(type=character(), step=integer(), time=integer())
+tests <- data.frame(fun=character(), step=integer(), time=integer(), language=character())
 
-# iterate over 10 steps
+# iterate over times steps
 for (i in steps ) {
   # get a subset
   subset_map <- mapfile$bps[1:i]
@@ -65,12 +71,14 @@ for (i in steps ) {
   # value diff
   test_diff <- microbenchmark(
     diff(subset_map),
-    unit = "ms" #microseconds
+    unit = "ms", #microseconds
+    times = times
   )
 
-  test_type = rep("diff", 100)
-  test_step = rep(i, 100)
-  tmp <- data.frame(type=test_type, step=test_step, time=test_diff$time)
+  test_fun <- rep("diff", times)
+  test_step <- rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_diff$time, language=test_language)
   tests <- rbind(tests, tmp)
 
   # calculate sliding window
@@ -78,12 +86,14 @@ for (i in steps ) {
 
   test_sliding <- microbenchmark(
     slidingWindow(subset_genotype, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap),
-    unit = 'ms'
+    unit = 'ms',
+    times = times
   )
 
-  test_type = rep("sliding", 100)
-  test_step = rep(i, 100)
-  tmp <- data.frame(type=test_type, step=test_step, time=test_sliding$time)
+  test_fun <- rep("sliding", times)
+  test_step <- rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_sliding$time, language=test_language)
   tests <- rbind(tests, tmp)
 
   # vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -91,12 +101,27 @@ for (i in steps ) {
 
   test_snpInRun <- microbenchmark(
     snpInRun(y,windowSize,threshold),
-    unit = 'ms'
+    unit = 'ms',
+    times = times
   )
 
-  test_type = rep("snpInRun", 100)
-  test_step = rep(i, 100)
-  tmp <- data.frame(type=test_type, step=test_step, time=test_snpInRun$time)
+  test_fun <- rep("snpInRun", times)
+  test_step = rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInRun$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
+  # check cpp snpInRun
+  test_snpInRunCpp <- microbenchmark(
+    snpInRunCpp(y,windowSize,threshold),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("snpInRun", times)
+  test_step <- rep(i, times)
+  test_language <- rep("Cpp", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInRunCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
   # a data.frame with RUNS per animal
@@ -104,12 +129,14 @@ for (i in steps ) {
 
   test_createRUNdf <- microbenchmark(
     createRUNdf(snpRun, chillingham_map, minSNP, minLengthBps, minDensity),
-    unit = 'ms'
+    unit = 'ms',
+    times = times
   )
 
-  test_type = rep("createRUNdf", 100)
-  test_step = rep(i, 100)
-  tmp <- data.frame(type=test_type, step=test_step, time=test_createRUNdf$time)
+  test_fun <- rep("createRUNdf", times)
+  test_step <- rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_createRUNdf$time, language=test_language)
   tests <- rbind(tests, tmp)
 }
 
@@ -128,23 +155,44 @@ for (i in steps ) {
 # )
 
 # as described by http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
-testsc <- summarySE(tests, measurevar="time", groupvars=c("type","step"))
+testsc <- summarySE(tests, measurevar="time", groupvars=c("fun","step", "language"))
 
-# Standard error of the mean
-graph <- ggplot(testsc, aes(x=step, y=time, colour=type)) +
-  geom_errorbar(aes(ymin=time-se, ymax=time+se), width=.1) +
-  geom_line() +
-  geom_point()
+plotGraph <- function(mydata) {
+  # Standard error of the mean
+  graph <- ggplot(testsc, aes(x=step, y=time, colour=language)) +
+    geom_errorbar(aes(ymin=time-se, ymax=time+se), width=.1) +
+    geom_line() +
+    geom_point()
 
-formatter1e6 <- function(x){
-  x/10e6
+  formatter1e6 <- function(x){
+    x/10e6
+  }
+
+  # scaling data to millisecond
+  graph <- graph +
+    scale_y_continuous(labels = formatter1e6) +
+    ylab("time (ms)") +
+    xlab("N° of SNPs")
+
+  # plot subgraps
+  graph <- graph + facet_wrap(~fun, ncol = 2, scales = "free_y")
+
+  # change labels
+  graph <- graph +
+    theme(axis.title.y = element_text(size = rel(1.5), angle = 90)) +
+    theme(axis.title.x = element_text(size = rel(1.5))) +
+    theme(plot.title = element_text(size = rel(2))) +
+    theme_bw()
+
+  # return graph object
+  return(graph)
 }
 
-# scaling data to millisecond
-graph <- graph +
-  scale_y_continuous(labels = formatter1e6) +
-  ylab("time (ms)") +
-  xlab("N° of SNPs")
+# get a graph object
+graph <- plotGraph(testsc)
 
-# visualize graph in rstudio
+# write graph in a file
+png("test_performance.png", width = 1024, height = 768)
 print(graph)
+dev.off()
+

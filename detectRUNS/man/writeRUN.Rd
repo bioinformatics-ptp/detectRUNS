@@ -24,6 +24,5 @@ Function to write out RUNS per individual animal
 \examples{
 #not yet
 
-
 }
 

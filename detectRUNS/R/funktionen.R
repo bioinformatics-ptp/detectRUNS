@@ -3,23 +3,24 @@
 #####################
 
 
-#' Function to convert 0/1/2 genotypes to 0/1 (either homozygous/heterozygous)
+#' Convert 0/1/2 genotypes to 0/1
 #'
-#' This is a utility function.
+#' This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
+#' (either homozygous/heterozygous)
 #'
 #' @param x vector of 0/1/2 genotypes
 #'
-#' @return converted vector of genotypes
+#' @return converted vector of genotypes (0/1)
 #' @export
 #'
-#' @examples #not yet
-#'
+#' @examples
+#' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
+#' geno01 <- genoConvert(geno012)
 #'
 genoConvert <- function(x) {
-
-  neues <- c(0,1,0,NA)
-  altes <- c(0,1,2,NA)
-  return(neues[match(x,altes)])
+  new <- c(0,1,0,NA)
+  old <- c(0,1,2,NA)
+  return(new[match(x,old)])
 }
 
 #' Function to check whether a window is (loosely) homozygous or not
@@ -35,10 +36,23 @@ genoConvert <- function(x) {
 #' @return TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
+#' @examples
+#' maxHom <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^6
+#' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+#'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+#' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
+#'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is true
+#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is false
 #'
-#'
-
 homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 
   nHet <- sum(x==1,na.rm=TRUE)
@@ -59,8 +73,22 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
-#'
+#' @examples
+#' maxHom <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^6
+#' x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+#'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
+#' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
+#'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
+#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is false
+#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
+#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
+#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' # test is true
 #'
 heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 
@@ -75,24 +103,22 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #'
 #' @param data vector of 0/1/2 genotypes
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
-#' @param window size of window (n. of SNP)
+#' @param windowSize size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
 #' @examples #not yet
 #'
-#'
+slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
-slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1, maxGap) {
-
-  total <- length(data)
-  spots <- seq(from = 1, to = (total - window + 1), by = step)
+  data_length <- length(data)
+  spots <- seq(from = 1, to = (data_length - windowSize + 1), by = step)
   result <- vector(length = length(spots))
   y <- genoConvert(data)
 
@@ -101,17 +127,17 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    # for(i in (length(spots)+1):total) result[i] <- heteroZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    # for(i in (length(spots)+1):data_length) result[i] <- heteroZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+window-1)],gaps[spots[i]:(spots[i]+window-2)],maxOppositeGenotype,maxMiss,maxGap)
+      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
-    #for(i in (length(spots)+1):total) result[i] <- homoZygotTest(y[seq(i,total)],maxOppositeGenotype,maxMiss)
+    #for(i in (length(spots)+1):data_length) result[i] <- homoZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   }
 
   print(paste(
@@ -127,7 +153,7 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
 #' The ratio between homozygous/heterozygous windows and total n. of windows is computed here
 #'
 #' @param RunVector vector of TRUE/FALSE (is a window homozygous/heterozygous?)
-#' @param window size of window (n. of SNP)
+#' @param windowSize size of window (n. of SNP)
 #' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
@@ -135,18 +161,17 @@ slidingWindow <- function(data, gaps, window, step, ROHet=TRUE, maxOppositeGenot
 #'
 #' @examples #not yet
 #'
-#'
-snpInRun <- function(RunVector,window,threshold) {
+snpInRun <- function(RunVector,windowSize,threshold) {
 
-  total <- length(RunVector)
+  RunVector_length <- length(RunVector)
 
-  print(paste("Length of imput vector:",total,sep=" "))
-  print(paste("Window size:",window,sep=" "))
+  print(paste("Length of imput vector:",RunVector_length,sep=" "))
+  print(paste("Window size:",windowSize,sep=" "))
   print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,window),rep(window,(total-(2*window))),seq(window,1))
+  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-(2*windowSize))),seq(windowSize,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   iWin <- enumerate(nWin)
@@ -178,18 +203,17 @@ snpInRun <- function(RunVector,window,threshold) {
 #' @return a data.frame with RUNS per animal
 #' @export
 #'
+#' @import utils
 #' @importFrom stats na.omit
 #'
 #' @examples #not yet
 #'
-#'
-
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
 
   #requires itertools
 
   ## write out map file for subsequent plots (snpInRuns)
-  write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
+  utils::write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
 
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
@@ -229,10 +253,10 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #' @return TRUE/FALSE if RUNS are written out or not
 #' @export
 #'
+#' @import utils
+#'
 #' @examples #not yet
 #'
-#'
-
 writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
@@ -252,7 +276,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
       append = TRUE
       headers = FALSE
     }
-    write.table(
+    utils::write.table(
       sep=';', dRUN, file=report_filename, quote=FALSE,
       col.names=headers, row.names=FALSE, append=append
     )
@@ -276,13 +300,13 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #' @return dataframe with counts per SNP in runs (per population)
 #' @export
 #'
+#' @import utils
+#'
 #' @examples #not yet
 #'
-#'
-
 snp_inside_ROH <- function(runs, mapChrom, popFile = "genotype.raw") {
 
-  pops <- read.table(popFile,header=TRUE)
+  pops <- utils::read.table(popFile,header=TRUE)
   pops <- pops[,c(1,2)]
   names(pops) <- c("POP","ID")
 
