@@ -37,6 +37,18 @@
 RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP = 3, ROHet = TRUE,
                      maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
 
+  # debug
+  if (ROHet == TRUE) {
+    message("Analysing Runs of Heterozygosity (ROHet)")
+  } else if (ROHet == FALSE) {
+    message("Analysing Runs of Homozygosity (ROHom)")
+  } else {
+    stop(paste("Unknown ROHet value:",ROHet, ". It MUST be only TRUE/FALSE (see documentation)"))
+  }
+
+  message(paste("Window size:", windowSize))
+  message(paste("Threshold for calling SNP in a Run:", threshold))
+
   if(!is.data.frame(genotype)) {
 
     if(file.exists(genotype)){
@@ -51,6 +63,7 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
     }
   }
 
+  # setting colnames
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
   #remove unnecessary fields from the .raw file

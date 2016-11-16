@@ -238,7 +238,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL <- dL[dL$SNPdensity > minDensity, ]
   dL$SNPdensity <- NULL
 
-  print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
+  #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
   return(dL)
 }
 
@@ -263,9 +263,9 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
   dRUN$breed <- rep(breed,nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
-  print(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
-
   if(nrow(dRUN) > 0) {
+    # debug
+    message(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
 
     append = FALSE
     headers = TRUE
@@ -282,8 +282,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
     )
     is_run <- TRUE
   } else {
-
-    print(paste("No RUNs found for animal",ind,sep=" "))
+    message(paste("No RUNs found for animal",ind,sep=" "))
     is_run <- FALSE
   }
   return(is_run)
