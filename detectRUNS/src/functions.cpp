@@ -186,7 +186,7 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   int data_length = data.size();
 
   // calculate spots size
-  int spots_lenght = data_length - windowSize+1;
+  int spots_lenght = (data_length - windowSize) / step +1;
 
   // initialize results
   LogicalVector results(spots_lenght, false);
@@ -205,7 +205,7 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   }
 
   // evaluating windows
-  for (int i=1; i<spots_lenght; i++) {
+  for (int i=0; i<spots_lenght; i++) {
     // calculate y_spots
     from = y.begin() + i*step;
     to = y.begin() + i*step + windowSize;

@@ -90,15 +90,34 @@ test_that("Testing slidingWindow", {
   # remove unnecessary fields from the .raw file
   genotype <- genotype[ ,-c(1:6)]
 
+  # calculating gaps
+  gaps <- diff(mapFile$bps)
+
   # define an internal function
   is_run <- function(x) {
-    gaps <- diff(mapFile$bps)
-
     # call R function
-    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # call cppFunction
-    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+
+    # testing function
+    expect_identical(test, y)
+
+    # call R function for RoHom
+    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
+
+    # call cppFunction
+    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
+
+    # testing function
+    expect_identical(test, y)
+
+    # call R function and change steps
+    y <- slidingWindow(x, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+
+    # call cppFunction
+    test <- slidingWindowCpp(x, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # testing function
     expect_identical(test, y)
