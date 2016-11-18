@@ -32,7 +32,7 @@ RUNS.run(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP = 3,
 \item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
 }
 \value{
-n. of individuals for which runs have been written out
+a dataframe with RUNs of Homozygosity or Heterozygosity
 }
 \description{
 This is the main function of RUNS and would probably require

@@ -1,6 +1,6 @@
 
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("Using development version for detectRUNS")
+  packageStartupMessage("Using detectRUNS v0.2.3")
 }
 
 .onUnload <- function (libpath) {

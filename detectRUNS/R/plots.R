@@ -59,7 +59,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 
     if (suppressInds) optionen <- ggplot2::theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
 
-    #lughezza in mb
+    #size in mb
     teilsatz$START <- (teilsatz$START/(10^6))
     teilsatz$END <- (teilsatz$END/(10^6))
 

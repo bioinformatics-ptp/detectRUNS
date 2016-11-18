@@ -210,12 +210,6 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @examples #not yet
 #'
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
-
-  #requires itertools
-
-  ## write out map file for subsequent plots (snpInRuns)
-  utils::write.table(mapa,file="plink.map",quote=FALSE,row.names=FALSE,col.names=FALSE)
-
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
   to <- c(cutPoints,length(snpRun))
@@ -242,7 +236,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   }
 
   # setting other values
-  dL$chrom <- as.integer(chroms)
+  dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
   #filters on minimum run length and minimum SNP density
