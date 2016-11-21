@@ -2,6 +2,7 @@
 ### Compute ROH in R (a la Plink)
 ##################################
 
+
 #' Run functions to detect RUNS (ROHom/ROHet)
 #'
 #' This is the main function of RUNS and would probably require
@@ -26,9 +27,7 @@
 #' @import itertools
 #' @import ggplot2
 #' @import itertools
-#' @import data.table
 #' @import utils
-#' @importFrom bigmemory read.big.matrix
 #'
 #' @examples
 #' data(chillingam)
@@ -54,44 +53,15 @@ RUNS.run <- function(genotype, mapFile, windowSize = 15, threshold = 0.1, minSNP
   message(paste("Window size:", windowSize))
   message(paste("Threshold for calling SNP in a Run:", threshold))
 
-  if(!is.data.frame(genotype)) {
+  # check input data
+  RUNs_data <- check_data(genotype, mapFile)
 
-    if(file.exists(genotype)){
-      genotype_path <- genotype
-      # using bigmemory to read data
-      genotype <- read.big.matrix(genotype_path, sep = " ", header = T, type = "short")
-      colClasses <- c(
-        rep("character", 2),
-        rep("NULL", ncol(genotype)-2)
-      )
-
-      animals <- fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
-    } else {
-      stop(paste("file", genotype, "doesn't exists"))
-    }
-
-  } else {
-    # read animals properly
-    animals <- genotype[ ,c(1,2)]
-  }
-
-  if(!is.data.frame(mapFile)) {
-
-    if(file.exists(mapFile)){
-      # using data.table to read data
-      mapFile <- fread(mapFile, header = F)
-    } else {
-      stop(paste("file", mapFile, "doesn't exists"))
-    }
-  }
-
-  # TODO: check that genotype columns and mapFile rows (+6) are identical
-
-  # setting colnames
-  names(mapFile) <- c("Chrom","SNP","cM","bps")
-
-  #remove unnecessary fields from the .raw file
-  genotype <- genotype[ ,-c(1:6)]
+  # reload data
+  genotype <- RUNs_data$genotype
+  mapFile <- RUNs_data$mapFile
+  animals <- RUNs_data$animals
+  pair <- RUNs_data$pair
+  rm(RUNs_data)
 
   # record all runs in a dataframe
   RUNs <- data.frame(breed=character(), id=character(), chrom=character(), nSNP=integer(),
