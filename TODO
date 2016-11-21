@@ -25,3 +25,9 @@
   - ped file doesn't have any header
 
 * RUNs.run neet to work only with ped file positions, not raw
+
+* deal with ped file, not raw
+  - fix chillingam dataset
+  - no more data load in data.frame or similar
+  - using file position
+  - no more daset
