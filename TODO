@@ -1,0 +1,27 @@
+
+* Fix filenames and positions: shuold be written or returned as dataframe?
+  Ask for file removal / overwrite
+  - no file is written
+
+* genotype.raw need to be removed. Reads breed and animal name from input file (.raw)
+  also plink.map is not useful
+
+* Calculate the number of genotypes (SNPs) from map file.
+
+* Calculate by chromosome (cut mapfile by chrom, then subset genotype)
+
+* check that genotype columns and mapfile rows are indentical (6+number_or_rows)
+  - done
+
+* convert ped into 0/1 (ex AA->0, AG->1, two identical letters 0, otherwise 1)
+  number. 11 21/12 22
+  letter  AC CA/AC CC (ATCG)
+  ABFormat AA AB/BA BB
+  missing: '0 0' '5 5' 'N N'
+
+* plotSnpsInRuns need to be fixed (genotype.raw and plink.map were removed)
+
+* Does input file have always header? or not?
+  - ped file doesn't have any header
+
+* RUNs.run neet to work only with ped file positions, not raw

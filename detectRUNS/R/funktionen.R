@@ -2,7 +2,7 @@
 ## FUNCTIONS FOR RUNS
 #####################
 
-# internal function
+# internal function - no roxygen documentation need to be defined
 check_data <- function(genotype, mapFile) {
   # initalize results
   result <- list(pair=FALSE, genotype=NULL, mapFile=NULL, animals=NULL)
