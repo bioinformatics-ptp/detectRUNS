@@ -2,10 +2,15 @@ library(testthat)
 library(detectRUNS)
 context("Testing functions")
 
-test_that("Testing snpInRun", {
-  # importing data
-  data("chillingam")
+# get file paths
+genotype_path  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
+# inporting data once
+chillingham_genotype <- read.table(genotype_path, sep = " ", header = TRUE)
+chillingham_map <- read.delim(mapfile_path, header = FALSE)
+
+test_that("Testing snpInRun", {
   # parameters
   windowSize <- 10
   threshold <- 0.1
@@ -67,9 +72,6 @@ test_that("Testing genoConvert", {
 })
 
 test_that("Testing slidingWindow", {
-  # importing data
-  data("chillingam")
-
   # parameters
   windowSize <- 10
   threshold <- 0.1
