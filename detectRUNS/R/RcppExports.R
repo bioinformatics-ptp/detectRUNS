@@ -12,13 +12,33 @@
 #'
 #' @examples
 #' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-#' geno01 <- genoConvert(geno012)
+#' geno01 <- genoConvertCpp(geno012)
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #' @export
 #'
 genoConvertCpp <- function(genotype) {
     .Call('detectRUNS_genoConvertCpp', PACKAGE = 'detectRUNS', genotype)
+}
+
+#' Convert ped genotypes to 0/1
+#'
+#' This is a utility function, that convert ped genotypes (AA/AB/BB) into 0/1
+#' (either homozygous/heterozygous)
+#'
+#' @param genotype vector of pair of genotypes (01, AA, AG)
+#'
+#' @return converted vector of genotypes (0/1)
+#'
+#' @examples
+#' ped <- c("A", "A", "A", "B", "5", "5")
+#' geno01 <- pedConvertCpp(ped)
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+#' @export
+#'
+pedConvertCpp <- function(genotype) {
+    .Call('detectRUNS_pedConvertCpp', PACKAGE = 'detectRUNS', genotype)
 }
 
 #' Function to check whether a window is (loosely) homozygous or not
@@ -100,7 +120,7 @@ heteroZygotTestCpp <- function(x, gaps, maxHom, maxMiss, maxGap) {
 #'
 #' This is a core function. The functions to detect RUNS are slidden over the genome
 #'
-#' @param data vector of 0/1/2 genotypes
+#' @param data vector of pair of genotypes (01, AA, AG)
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param windowSize size of window (n. of SNP)
 #' @param step by which (how many SNP) is the window slidden

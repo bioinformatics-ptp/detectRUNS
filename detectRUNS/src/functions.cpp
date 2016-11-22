@@ -26,7 +26,7 @@ using namespace Rcpp;
 //'
 //' @examples
 //' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-//' geno01 <- genoConvert(geno012)
+//' geno01 <- genoConvertCpp(geno012)
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -54,6 +54,78 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 
   return results;
 }
+
+//' Convert ped genotypes to 0/1
+//'
+//' This is a utility function, that convert ped genotypes (AA/AB/BB) into 0/1
+//' (either homozygous/heterozygous)
+//'
+//' @param genotype vector of pair of genotypes (01, AA, AG)
+//'
+//' @return converted vector of genotypes (0/1)
+//'
+//' @examples
+//' ped <- c("A", "A", "A", "B", "5", "5")
+//' geno01 <- pedConvertCpp(ped)
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+IntegerVector pedConvertCpp(CharacterVector genotype) {
+  // deal with map STL class (http://www.cprogramming.com/tutorial/stl/stlmap.html)
+  std::map <std::string, int> missing;
+  std::string allele1, allele2;
+
+  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
+  Rcpp::Function warn("warning");
+  Rcpp::Function stop("stop");
+
+  // check genotype size
+  if (genotype.size() % 2 != 0 ) {
+    stop(std::string("Need .ped input with 2 alleles per marker"));
+  }
+
+  // set values
+  missing["0"] = NA_INTEGER;
+  missing["5"] = NA_INTEGER;
+  missing["N"] = NA_INTEGER;
+
+  // the converted vector
+  IntegerVector results(genotype.size() / 2);
+
+  for (int i = 0; i < genotype.size(); i=i+2) {
+    // for semplicity
+    allele1 = genotype[i];
+    allele2 = genotype[i+1];
+
+    if (allele1 != allele2) {
+      // test for only one allele missing (http://www.cprogramming.com/tutorial/stl/stlmap.html)
+      // check that one allele isn't in the missing map structure
+      if (missing.find(allele1) != missing.end() || missing.find(allele2) != missing.end()) {
+        warn(std::string("Found only one allele missing in a pair"));
+      }
+
+      // Set allele as heterozygous
+      results[i/2] = 1;
+
+    } else {
+      //test for missing allele (allele are equals condition)
+      if (missing.find(allele1) != missing.end()) {
+        results[i/2] = NA_INTEGER;
+
+      } else {
+        // alleles are homozygous
+        results[i/2] = 0;
+      }
+
+    } //allele are equals condition
+
+  } // cicle for allele pair
+
+  return results;
+}
+
 
 
 //' Function to check whether a window is (loosely) homozygous or not
@@ -175,7 +247,7 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //'
 //' This is a core function. The functions to detect RUNS are slidden over the genome
 //'
-//' @param data vector of 0/1/2 genotypes
+//' @param data vector of pair of genotypes (01, AA, AG)
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param windowSize size of window (n. of SNP)
 //' @param step by which (how many SNP) is the window slidden
@@ -193,23 +265,23 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //' @export
 //'
 // [[Rcpp::export]]
-LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
+LogicalVector slidingWindowCpp(CharacterVector data, IntegerVector gaps, int windowSize, int step,
                                int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
 
   // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
   Rcpp::Function msg("message");
 
+  // convert genotype
+  IntegerVector y = pedConvertCpp(data);
+
   // get data lenght
-  int data_length = data.size();
+  int data_length = y.size();
 
   // calculate spots size
   int spots_lenght = (data_length - windowSize) / step +1;
 
   // initialize results
   LogicalVector results(spots_lenght, false);
-
-  // convert genotype
-  IntegerVector y = genoConvertCpp(data);
 
   // declare iterators
   IntegerVector::const_iterator from, to;

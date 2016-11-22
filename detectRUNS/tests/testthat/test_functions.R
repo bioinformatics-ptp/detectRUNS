@@ -5,10 +5,12 @@ context("Testing functions")
 # get file paths
 genotype_path  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+raw_path <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
 
 # inporting data once
-chillingham_genotype <- read.table(genotype_path, sep = " ", header = TRUE)
+chillingham_genotype <- read.table(genotype_path, sep = " ", header = FALSE, stringsAsFactors = FALSE)
 chillingham_map <- read.delim(mapfile_path, header = FALSE)
+chillingham_raw <- read.table(raw_path, sep=" ", header = TRUE)
 
 test_that("Testing snpInRun", {
   # parameters
@@ -22,14 +24,17 @@ test_that("Testing snpInRun", {
   minLengthBps <- 1000
   minDensity <- 1/10
 
-  # get genotype data
-  genotype <- chillingham_genotype
+  # get genotype data (using raw for tests)
+  genotype <- chillingham_raw
+
+  # remove unnecessary fields from the .ped file
+  genotype <- genotype[ ,-c(1:6)]
 
   # get map data
   mapFile <- chillingham_map
 
-  # remove unnecessary fields from the .ped file
-  genotype <- genotype[ ,-c(1:6)]
+  # setting colnames
+  names(mapFile) <- c("Chrom","SNP","cM","bps")
 
   # require "plyr"
   n_of_individuals <- vector(length = nrow(genotype))
@@ -51,6 +56,7 @@ test_that("Testing snpInRun", {
     expect_identical(snpRun, snpRunCpp)
   }
 
+  # using raw data for testing functions
   for (i in 1:nrow(genotype)) {
     n_of_individuals[i] <- is_run( as.integer(genotype[i, ]) )
   }
@@ -71,6 +77,34 @@ test_that("Testing genoConvert", {
   expect_equal(test, geno01)
 })
 
+test_that("Testing pedConvert", {
+  # create a PED like genotype
+  ped <- c("B", "B", "A", "A", "B", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N")
+  geno01 <- c(0, 0, 1, 0, 1, 0, 1, 0, NA, NA, NA)
+
+  # testing Cpp pedConvertCpp
+  test <- pedConvertCpp(ped)
+  expect_equal(test, geno01)
+})
+
+test_that("Testing pedConvert with odd input", {
+  # create a PED like genotype
+  ped <- c("B", "B", "A")
+
+  # testing Cpp pedConvertCpp
+  expect_error(pedConvertCpp(ped), "Need .ped input with 2 allel")
+})
+
+test_that("Testing pedConvert with a missing value in a pair", {
+  # create ped like genotype
+  ped <- c("B", "B", "A", "A", "5", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N")
+  geno01 <- c(0, 0, 1, 0, 1, 0, 1, 0, NA, NA, NA)
+
+  # testing pedConvertCpp
+  expect_warning(test <- pedConvertCpp(ped), "Found only one allele missing in a pair")
+  expect_equal(test, geno01)
+})
+
 test_that("Testing slidingWindow", {
   # parameters
   windowSize <- 10
@@ -85,20 +119,25 @@ test_that("Testing slidingWindow", {
 
   # get genotype data
   genotype <- chillingham_genotype
+  genotype_raw <- chillingham_raw
+
+  # remove unnecessary fields from the .ped file
+  genotype <- genotype[ ,-c(1:6)]
+  genotype_raw <- genotype_raw[ ,-c(1:6)]
 
   # get map data
   mapFile <- chillingham_map
 
-  # remove unnecessary fields from the .ped file
-  genotype <- genotype[ ,-c(1:6)]
+  # setting colnames
+  names(mapFile) <- c("Chrom","SNP","cM","bps")
 
   # calculating gaps
   gaps <- diff(mapFile$bps)
 
   # define an internal function
-  is_run <- function(x) {
+  is_run <- function(x, x_raw) {
     # call R function
-    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    y <- slidingWindow(x_raw, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # call cppFunction
     test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
@@ -107,7 +146,7 @@ test_that("Testing slidingWindow", {
     expect_identical(test, y)
 
     # call R function for RoHom
-    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
+    y <- slidingWindow(x_raw, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
 
     # call cppFunction
     test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
@@ -116,7 +155,7 @@ test_that("Testing slidingWindow", {
     expect_identical(test, y)
 
     # call R function and change steps
-    y <- slidingWindow(x, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    y <- slidingWindow(x_raw, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # call cppFunction
     test <- slidingWindowCpp(x, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
@@ -125,8 +164,9 @@ test_that("Testing slidingWindow", {
     expect_identical(test, y)
   }
 
+  # test genotype with ped file for Cpp function and raw file for R functions
   for (i in 1:nrow(genotype)) {
-    is_run( as.integer(genotype[i, ]) )
+    is_run( as.character(genotype[i, ]), as.integer(genotype_raw[i, ]) )
   }
 
 })

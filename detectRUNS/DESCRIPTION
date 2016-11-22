@@ -16,8 +16,7 @@ Imports:
     plyr,
     itertools,
     ggplot2,
-    Rcpp,
-    data.table
+    Rcpp
 RoxygenNote: 5.0.1
 Suggests: testthat
 LinkingTo: Rcpp

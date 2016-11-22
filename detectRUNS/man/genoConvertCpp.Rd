@@ -18,6 +18,6 @@ This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
 }
 \examples{
 geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-geno01 <- genoConvert(geno012)
+geno01 <- genoConvertCpp(geno012)
 }
 
