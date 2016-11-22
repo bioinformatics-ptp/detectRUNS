@@ -2,65 +2,6 @@
 ## FUNCTIONS FOR RUNS
 #####################
 
-# internal function - no roxygen documentation need to be defined
-check_data <- function(genotype, mapFile) {
-  # initalize results
-  result <- list(pair=FALSE, genotype=NULL, mapFile=NULL, animals=NULL)
-
-  if(!is.data.frame(genotype)) {
-    # if genotype is file, read with read.big.matrix
-    if(file.exists(genotype)){
-      genotype_path <- genotype
-      # using bigmemory to read data
-      genotype <- bigmemory::read.big.matrix(genotype_path, sep = " ", header = T, type = "short")
-      colClasses <- c(
-        rep("character", 2),
-        rep("NULL", ncol(genotype)-2)
-      )
-
-      animals <- data.table::fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
-    } else {
-      stop(paste("file", genotype, "doesn't exists"))
-    }
-
-    # genotype is dataframe
-  } else {
-    # read animals properly
-    animals <- genotype[ ,c(1,2)]
-  }
-
-  if(!is.data.frame(mapFile)) {
-
-    if(file.exists(mapFile)){
-      # using data.table to read data
-      mapFile <- data.table::fread(mapFile, header = F)
-    } else {
-      stop(paste("file", mapFile, "doesn't exists"))
-    }
-  }
-
-  # check that genotype columns and mapFile rows (+6) are identical
-  if ((ncol(genotype)-6) == nrow(mapFile)*2) {
-    warning("genotype with 2 alles for marker detected")
-    result$pair <- TRUE
-  } else if ((ncol(genotype)-6) != nrow(mapFile)) {
-    stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
-  }
-
-  # setting colnames
-  names(mapFile) <- c("Chrom","SNP","cM","bps")
-
-  #remove unnecessary fields from the .raw file
-  genotype <- genotype[ ,-c(1:6)]
-
-  # assign values
-  result$mapFile <- mapFile
-  result$animals <- animals
-  result$genotype <- genotype
-
-  return(result)
-}
-
 
 #' Convert 0/1/2 genotypes to 0/1
 #'

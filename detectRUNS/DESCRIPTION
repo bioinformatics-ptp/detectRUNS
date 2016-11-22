@@ -17,7 +17,6 @@ Imports:
     itertools,
     ggplot2,
     Rcpp,
-    bigmemory,
     data.table
 RoxygenNote: 5.0.1
 Suggests: testthat
