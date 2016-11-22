@@ -28,7 +28,7 @@ test_that("Testing snpInRun", {
   # get map data
   mapFile <- chillingham_map
 
-  # remove unnecessary fields from the .raw file
+  # remove unnecessary fields from the .ped file
   genotype <- genotype[ ,-c(1:6)]
 
   # require "plyr"
@@ -89,7 +89,7 @@ test_that("Testing slidingWindow", {
   # get map data
   mapFile <- chillingham_map
 
-  # remove unnecessary fields from the .raw file
+  # remove unnecessary fields from the .ped file
   genotype <- genotype[ ,-c(1:6)]
 
   # calculating gaps
