@@ -56,17 +56,18 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
     # read data in normal way
-    genotype.sample <- read.delim(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = T)
+    genotype.sample <- read.table(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
     genotype.colclass <- sapply(genotype.sample,class)
     genotype.colclass[1:6] <- rep("NULL", 6)
-    genotype <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = genotype.colclass)
+    genotype <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = genotype.colclass, stringsAsFactors = FALSE)
 
     # read animals properly
     colClasses <- c(
       rep("character", 2),
       rep("NULL", ncol(genotype.sample)-2)
     )
-    animals <- data.table::fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
+    animals <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
+    names(animals) <- c("FID","IID")
 
   } else {
     stop(paste("file", genotype_path, "doesn't exists"))
@@ -74,20 +75,18 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
 
   if(file.exists(mapfile_path)){
     # using data.table to read data
-    mapFile <- data.table::fread(mapfile_path, header = F)
+    mapFile <- read.delim(mapfile_path, header = F)
   } else {
     stop(paste("file", mapfile_path, "doesn't exists"))
   }
 
   # check that genotype columns and mapFile rows (+6) are identical
-  if (ncol(genotype) == nrow(mapFile)*2) {
-    warning("genotype with 2 alles for marker detected")
-  } else if (ncol(genotype) != nrow(mapFile)) {
+  if (ncol(genotype) != nrow(mapFile)*2) {
     stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
   }
 
   # setting colnames
-  names(mapFile) <- c("Chrom","SNP","cM","bps")
+  colnames(mapFile) <- c("Chrom","SNP","cM","bps")
 
   #remove unnecessary fields from the .ped file
   genotype <- genotype[ ,-c(1:6)]

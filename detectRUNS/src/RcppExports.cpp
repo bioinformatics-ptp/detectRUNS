@@ -16,6 +16,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// pedConvertCpp
+IntegerVector pedConvertCpp(CharacterVector genotype);
+RcppExport SEXP detectRUNS_pedConvertCpp(SEXP genotypeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type genotype(genotypeSEXP);
+    __result = Rcpp::wrap(pedConvertCpp(genotype));
+    return __result;
+END_RCPP
+}
 // homoZygotTestCpp
 bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap);
 RcppExport SEXP detectRUNS_homoZygotTestCpp(SEXP xSEXP, SEXP gapsSEXP, SEXP maxHetSEXP, SEXP maxMissSEXP, SEXP maxGapSEXP) {
@@ -47,12 +58,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // slidingWindowCpp
-LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step, int maxGap, bool ROHet, int maxOppositeGenotype, int maxMiss);
+LogicalVector slidingWindowCpp(CharacterVector data, IntegerVector gaps, int windowSize, int step, int maxGap, bool ROHet, int maxOppositeGenotype, int maxMiss);
 RcppExport SEXP detectRUNS_slidingWindowCpp(SEXP dataSEXP, SEXP gapsSEXP, SEXP windowSizeSEXP, SEXP stepSEXP, SEXP maxGapSEXP, SEXP ROHetSEXP, SEXP maxOppositeGenotypeSEXP, SEXP maxMissSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< IntegerVector >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type data(dataSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type gaps(gapsSEXP);
     Rcpp::traits::input_parameter< int >::type windowSize(windowSizeSEXP);
     Rcpp::traits::input_parameter< int >::type step(stepSEXP);
