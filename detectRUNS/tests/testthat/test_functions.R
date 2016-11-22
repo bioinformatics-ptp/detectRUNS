@@ -105,6 +105,17 @@ test_that("Testing pedConvert with a missing value in a pair", {
   expect_equal(test, geno01)
 })
 
+test_that("Testing data conversion", {
+  ped <- chillingham_genotype[ , -c(1:6)]
+  raw <-  chillingham_raw[ , -c(1:6)]
+
+  t1 <- apply(ped, 1, pedConvertCpp)
+  t2 <- apply(raw, 1, genoConvertCpp)
+
+  # testing conversion
+  expect_identical(t1, t2)
+})
+
 test_that("Testing slidingWindow", {
   # parameters
   windowSize <- 10
