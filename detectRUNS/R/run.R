@@ -57,16 +57,17 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   if(file.exists(genotype_path)){
     # read data in normal way
     genotype.sample <- read.table(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
-    genotype.colclass <- sapply(genotype.sample,class)
-    genotype.colclass[1:6] <- rep("NULL", 6)
-    genotype <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = genotype.colclass, stringsAsFactors = FALSE)
+    # read ped file
+    genotype.colclass <- rep("NULL", ncol(genotype.sample))
+    genotype.colclass[7:length(genotype.colclass)] <- rep("character", length(genotype.colclass)-6)
+    genotype <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = genotype.colclass, stringsAsFactors = FALSE)
 
     # read animals properly
     colClasses <- c(
       rep("character", 2),
       rep("NULL", ncol(genotype.sample)-2)
     )
-    animals <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
+    animals <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
     names(animals) <- c("FID","IID")
 
   } else {
@@ -75,7 +76,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
 
   if(file.exists(mapfile_path)){
     # using data.table to read data
-    mapFile <- read.delim(mapfile_path, header = F)
+    mapFile <- data.table::fread(mapfile_path, header = F)
   } else {
     stop(paste("file", mapfile_path, "doesn't exists"))
   }
