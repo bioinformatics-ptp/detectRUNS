@@ -88,9 +88,6 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   # setting colnames
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  #remove unnecessary fields from the .ped file
-  genotype <- genotype[ ,-c(1:6)]
-
   # record all runs in a dataframe
   RUNs <- data.frame(breed=character(), id=character(), chrom=character(), nSNP=integer(),
                      from=integer(), to=integer(), lengthBps=integer())
