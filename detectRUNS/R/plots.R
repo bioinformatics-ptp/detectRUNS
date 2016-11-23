@@ -46,7 +46,7 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
     id <- unique(teilsatz$IND)
     teilsatz$NEWID=newID[match(teilsatz$IND,id)]
 
-    optionen <- scale_y_discrete("IDs",limits=unique(teilsatz$IND))
+    optionen <- ggplot2::scale_y_discrete("IDs",limits=unique(teilsatz$IND))
     alfa <- 1
     grosse <- 1
 
