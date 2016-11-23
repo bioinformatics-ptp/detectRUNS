@@ -56,7 +56,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
     # read data in normal way
-    genotype.sample <- read.table(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
+    genotype.sample <- data.table::fread(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
     # read ped file
     genotype.colclass <- rep("NULL", ncol(genotype.sample))
     genotype.colclass[7:length(genotype.colclass)] <- rep("character", length(genotype.colclass)-6)
@@ -85,6 +85,10 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   if (ncol(genotype) != nrow(mapFile)*2) {
     stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
   }
+
+  # converting ped file into raw matrix
+  genotype <- apply(genotype, 1, pedConvertCpp)
+  genotype <- t(genotype)
 
   # setting colnames
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
@@ -125,7 +129,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
 
   for (i in 1:nrow(genotype)) {
     a_run <- find_run(
-      as.character(genotype[i, ]),
+      genotype[i, ],
       animal = animals[i, ]
     )
 

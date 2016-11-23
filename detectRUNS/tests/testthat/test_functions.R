@@ -136,6 +136,10 @@ test_that("Testing slidingWindow", {
   genotype <- genotype[ ,-c(1:6)]
   genotype_raw <- genotype_raw[ ,-c(1:6)]
 
+  # converting ped file into raw matrix
+  genotype <- apply(genotype, 1, pedConvertCpp)
+  genotype <- t(genotype)
+
   # get map data
   mapFile <- chillingham_map
 
@@ -177,7 +181,7 @@ test_that("Testing slidingWindow", {
 
   # test genotype with ped file for Cpp function and raw file for R functions
   for (i in 1:nrow(genotype)) {
-    is_run( as.character(genotype[i, ]), as.integer(genotype_raw[i, ]) )
+    is_run( genotype[i, ], as.integer(genotype_raw[i, ]) )
   }
 
 })
