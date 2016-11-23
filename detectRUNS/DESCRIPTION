@@ -14,6 +14,7 @@ License: GPL-3
 LazyData: TRUE
 Imports:
     plyr,
+    iterators,
     itertools,
     ggplot2,
     Rcpp,
