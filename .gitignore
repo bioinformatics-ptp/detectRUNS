@@ -8,3 +8,5 @@
 detected.ROHet.csv
 genotype.raw
 plink.map
+detectRUNS/R/RcppExports.R
+detectRUNS/src/RcppExports.cpp
