@@ -2,18 +2,20 @@
 % Please edit documentation in R/plots.R
 \name{plotRuns}
 \alias{plotRuns}
-\title{Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
-IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)}
+\title{Function to plot runs per animal}
 \usage{
-plotRuns(runsFile = "detected.ROHet.csv", suppressInds = FALSE,
-  savePlots = TRUE)
+plotRuns(runs, suppressInds = FALSE, savePlots = FALSE,
+  title_prefix = NULL)
 }
 \arguments{
-\item{runsFile}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+\item{runs}{a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+obtained from RUNS.run}
 
 \item{suppressInds}{shall we suppress individual IDs on the y-axis? (defaults to FALSE)}
 
 \item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
+
+\item{title_prefix}{title prefix (the base name of graph, if savePlots is TRUE)}
 }
 \value{
 plot of runs by chromosome (pdf files)
@@ -23,8 +25,16 @@ Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 }
 \examples{
-#not yet
+# getting map and ped paths
+genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
+# calculating runs of Homozygosity
+runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+
+# plot runs per animal (interactive)
+plotRuns(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
 
 }
 

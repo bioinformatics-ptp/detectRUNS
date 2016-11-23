@@ -2,33 +2,40 @@
 % Please edit documentation in R/plots.R
 \name{plotSnpsInRuns}
 \alias{plotSnpsInRuns}
-\title{PLOT N. of TIMES SNP IS IN RUNS
-Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
-Proportions on the y-axis, bps on the x-axis}
+\title{Plot N. of times SNP is in runs}
 \usage{
-plotSnpsInRuns(runsFile = "detected.ROHet.csv", mapFile = "plink.map",
-  rawFile = "genotype.raw", savePlots = TRUE)
+plotSnpsInRuns(runs, genotype_path, mapfile_path, savePlots = FALSE,
+  title_prefix = NULL)
 }
 \arguments{
-\item{runsFile}{output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv}
+\item{runs}{a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)}
 
-\item{mapFile}{map file (optional) #defaults to plink.map}
+\item{genotype_path}{genotype (.ped) file location}
 
-\item{rawFile}{raw file of 0/1/2 genotypes (optional) #defaults to genotype.raw}
+\item{mapfile_path}{map file (.map) file location}
 
 \item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
+
+\item{title_prefix}{title prefix (the base name of graph, if savePlots is TRUE)}
 }
 \value{
 plot of n. of times a SNP is in a run by chromosome and population (pdf files)
 }
 \description{
-PLOT N. of TIMES SNP IS IN RUNS
 Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
 Proportions on the y-axis, bps on the x-axis
 }
 \examples{
-#not yet
+# getting map and ped paths
+genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
+# calculating runs of Homozygosity
+runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+
+# plot runs per animal (interactive)
+plotSnpsInRuns(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
 
 }
 

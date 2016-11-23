@@ -7,12 +7,16 @@
 # ii) stacked runs per animal
 # iii) n. of times a SNP is in a run in the population
 
+#' Function to plot runs per animal
+#'
 #' Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 #' IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
-#' @param runsFile output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
+#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' obtained from RUNS.run
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of runs by chromosome (pdf files)
 #' @export
@@ -20,15 +24,20 @@
 #' @import utils
 #' @importFrom grDevices dev.off pdf
 #'
-#' @examples #not yet
+#' @examples
+#' # getting map and ped paths
+#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 #'
-#plot
+#' # plot runs per animal (interactive)
+#' plotRuns(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
+#'
 
-plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, savePlots = TRUE) {
-
-
-  runs <- utils::read.table(file=runsFile, header=TRUE, sep=';')
+plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
@@ -68,7 +77,11 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
     teilsatz$IND <- as.factor(teilsatz$IND)
     teilsatz$IND <- factor(teilsatz$IND, levels = unique(teilsatz$IND[order(teilsatz$NEWID)]))
 
-    titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chromosome",chrom,sep="_")
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix, "chromosome", chrom, sep="_")
+    } else {
+      titel <- paste("chromosome", chrom, sep="_")
+    }
 
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=alfa, size=grosse)
@@ -86,12 +99,14 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 }
 
 
-#' PLOT STACKED RUNS
+#' Plot stacked runs
+#'
 #' Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs)
 #' Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
-#' @param runsFile output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
+#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of stacked runs by population and by chromosome (pdf files)
 #' @export
@@ -99,15 +114,21 @@ plotRuns <- function(runsFile = 'detected.ROHet.csv', suppressInds = FALSE, save
 #' @import utils
 #' @importFrom grDevices dev.off pdf
 #'
-#' @examples #not yet
+#' @examples
+#' # getting map and ped paths
+#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 #'
-#plot
+#' # plot runs per animal (interactive)
+#' plotStackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
+#'
 
-plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
+plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
-
-  runs <- utils::read.table(file=runsFile, header=TRUE, sep=';')
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #select a POPULATION
@@ -162,7 +183,11 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
       krom$ypos <- ypos;
       utils::head(krom)
 
-      titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,rasse,"stacked",sep="_")
+      if (! is.null(title_prefix)) {
+        titel <- paste(title_prefix, "chr", chrom, rasse, "stacked", sep="_")
+      } else {
+        titel <- paste("chr", chrom, rasse, "stacked", sep="_")
+      }
 
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
@@ -182,14 +207,16 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 
 }
 
-#' PLOT N. of TIMES SNP IS IN RUNS
+#' Plot N. of times SNP is in runs
+#'
 #' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
 #' Proportions on the y-axis, bps on the x-axis
 #'
-#' @param runsFile output file with runs per animal (breed, id, chrom, nSNP, start, end, length) #defaults to detectRUNS.ROHet.csv
-#' @param mapFile map file (optional) #defaults to plink.map
-#' @param rawFile raw file of 0/1/2 genotypes (optional) #defaults to genotype.raw
+#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param genotype_path genotype (.ped) file location
+#' @param mapfile_path map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
 #' @export
@@ -197,18 +224,31 @@ plotStackedRuns <- function(runsFile = 'detected.ROHet.csv', savePlots = TRUE) {
 #' @importFrom grDevices dev.off pdf
 #' @import utils
 #'
-#' @examples #not yet
+#' @examples
+#' # getting map and ped paths
+#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 #'
-#plot
+#' # plot runs per animal (interactive)
+#' plotSnpsInRuns(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
+#'
 
-plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'plink.map', rawFile = 'genotype.raw', savePlots = TRUE) {
 
+plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix=NULL) {
 
-  runs <- utils::read.table(runsFile,header=TRUE,sep=";")
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  mappa <- utils::read.table(mapFile)
+  if(file.exists(mapfile_path)){
+    # using data.table to read data
+    mappa <- data.table::fread(mapfile_path, header = F)
+  } else {
+    stop(paste("file", mapfile_path, "doesn't exists"))
+  }
+
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
 
@@ -221,7 +261,7 @@ plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'plink.map
     mapKrom <- mappa[mappa$CHR==chrom,]
     print(paste("N.of SNP is",nrow(mapKrom)))
 
-    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, popFile = rawFile)
+    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -229,7 +269,11 @@ plotSnpsInRuns <- function(runsFile = 'detected.ROHet.csv', mapFile = 'plink.map
     p <- p + scale_y_continuous(limits = c(-0, 100)) + xlab("Mbps")
     p <- p + scale_x_continuous(limits = c(-0, max(snpInRuns$POSITION/(10^6))+1))
 
-    titel <- paste(unlist(strsplit(runsFile,"\\."))[2],"chr",chrom,"SNP",sep="_")
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix, "chr", chrom, "SNP", sep="_")
+    } else {
+      titel <- paste("chr", chrom, "SNP", sep="_")
+    }
 
     if(savePlots) {
       pdf(paste(titel,".pdf",sep=""),height=8,width=10)

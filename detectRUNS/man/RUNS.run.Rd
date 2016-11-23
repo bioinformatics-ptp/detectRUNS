@@ -42,7 +42,7 @@ some good documentation.
 # getting map and ped paths
 genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-x <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
 ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
 
 }
