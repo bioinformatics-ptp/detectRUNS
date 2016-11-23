@@ -265,17 +265,14 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //' @export
 //'
 // [[Rcpp::export]]
-LogicalVector slidingWindowCpp(CharacterVector data, IntegerVector gaps, int windowSize, int step,
+LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
                                int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
 
   // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
   Rcpp::Function msg("message");
 
-  // convert genotype
-  IntegerVector y = pedConvertCpp(data);
-
   // get data lenght
-  int data_length = y.size();
+  int data_length = data.size();
 
   // calculate spots size
   int spots_lenght = (data_length - windowSize) / step +1;
@@ -296,8 +293,8 @@ LogicalVector slidingWindowCpp(CharacterVector data, IntegerVector gaps, int win
   // evaluating windows
   for (int i=0; i<spots_lenght; i++) {
     // calculate y_spots
-    from = y.begin() + i*step;
-    to = y.begin() + i*step + windowSize;
+    from = data.begin() + i*step;
+    to = data.begin() + i*step + windowSize;
 
     //Slice the original vector
     IntegerVector y_spots(from, to);
