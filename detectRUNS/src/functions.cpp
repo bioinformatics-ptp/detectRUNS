@@ -78,7 +78,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
   std::string allele1, allele2;
 
   // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
-  Rcpp::Function warn("warning");
   Rcpp::Function stop("stop");
 
   // check genotype size
@@ -103,7 +102,7 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
       // test for only one allele missing (http://www.cprogramming.com/tutorial/stl/stlmap.html)
       // check that one allele isn't in the missing map structure
       if (missing.find(allele1) != missing.end() || missing.find(allele2) != missing.end()) {
-        warn(std::string("Found only one allele missing in a pair"));
+        stop(std::string("Found only one allele missing in a pair"));
       }
 
       // Set allele as heterozygous

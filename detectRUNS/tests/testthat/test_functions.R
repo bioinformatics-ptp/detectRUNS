@@ -98,11 +98,9 @@ test_that("Testing pedConvert with odd input", {
 test_that("Testing pedConvert with a missing value in a pair", {
   # create ped like genotype
   ped <- c("B", "B", "A", "A", "5", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N")
-  geno01 <- c(0, 0, 1, 0, 1, 0, 1, 0, NA, NA, NA)
 
   # testing pedConvertCpp
-  expect_warning(test <- pedConvertCpp(ped), "Found only one allele missing in a pair")
-  expect_equal(test, geno01)
+  expect_error(test <- pedConvertCpp(ped), "Found only one allele missing in a pair")
 })
 
 test_that("Testing data conversion", {
