@@ -38,8 +38,9 @@
 #'
 
 # TODO add output file parameter
-RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1, minSNP = 3, ROHet = TRUE,
-                     maxOppositeGenotype = 1, maxMiss = 1, maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
+RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
+                     minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
+                     maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
 
   # debug
   if (ROHet == TRUE) {
@@ -53,22 +54,10 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   message(paste("Window size:", windowSize))
   message(paste("Threshold for calling SNP in a Run:", threshold))
 
-  # if genotype is file, read with read.big.matrix
+  # if genotype is file, read first line to check columns
   if(file.exists(genotype_path)){
     # read data in normal way
-    genotype.sample <- data.table::fread(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
-    # read ped file
-    genotype.colclass <- rep("NULL", ncol(genotype.sample))
-    genotype.colclass[7:length(genotype.colclass)] <- rep("character", length(genotype.colclass)-6)
-    genotype <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = genotype.colclass, stringsAsFactors = FALSE)
-
-    # read animals properly
-    colClasses <- c(
-      rep("character", 2),
-      rep("NULL", ncol(genotype.sample)-2)
-    )
-    animals <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
-    names(animals) <- c("FID","IID")
+    genotype.sample <- data.table::fread(genotype_path, sep = " ", header = FALSE, nrows = 1, stringsAsFactors = FALSE)
 
   } else {
     stop(paste("file", genotype_path, "doesn't exists"))
@@ -82,13 +71,9 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   }
 
   # check that genotype columns and mapFile rows (+6) are identical
-  if (ncol(genotype) != nrow(mapFile)*2) {
+  if (ncol(genotype.sample)-6 != nrow(mapFile)*2) {
     stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
   }
-
-  # converting ped file into raw matrix
-  genotype <- apply(genotype, 1, pedConvertCpp)
-  genotype <- t(genotype)
 
   # setting colnames
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
@@ -127,20 +112,32 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     return(dRUN)
   }
 
-  for (i in 1:nrow(genotype)) {
-    a_run <- find_run(
-      genotype[i, ],
-      animal = animals[i, ]
-    )
+  # read file line by line (http://stackoverflow.com/questions/4106764/what-is-a-good-way-to-read-line-by-line-in-r)
+  con  <- file(genotype_path, open = "r")
+
+  while (length(oneLine <- readLines(con, n = 1, warn = FALSE)) > 0) {
+    genotype <- (strsplit(oneLine, " "))
+    genotype <- as.character(genotype[[1]])
+
+    # get animal
+    animal <- list(FID=genotype[1], IID=genotype[2])
+
+    # convert into genotype (use from 7th column to last column)
+    genotype <- pedConvertCpp(genotype[7:length(genotype)])
+
+    # find run for this genotype
+    a_run <- find_run(genotype, animal)
 
     # bind this run (if has rows) to others RUNs (if any)
     RUNs <- rbind(RUNs, a_run)
+
   }
+
+  # close input stream
+  close(con)
 
   # fix row names
   row.names(RUNs) <- NULL
-
-  # TODO: write output file if requested
 
   # return calculated runs (data.frame)
   return(RUNs)
