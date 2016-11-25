@@ -54,11 +54,9 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   message(paste("Window size:", windowSize))
   message(paste("Threshold for calling SNP in a Run:", threshold))
 
-  # if genotype is file, read first line to check columns
+  # if genotype is file, open file
   if(file.exists(genotype_path)){
-    # read data in normal way
-    genotype.sample <- data.table::fread(genotype_path, sep = " ", header = FALSE, nrows = 1, stringsAsFactors = FALSE)
-
+    conn  <- file(genotype_path, open = "r")
   } else {
     stop(paste("file", genotype_path, "doesn't exists"))
   }
@@ -68,11 +66,6 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     mapFile <- data.table::fread(mapfile_path, header = F)
   } else {
     stop(paste("file", mapfile_path, "doesn't exists"))
-  }
-
-  # check that genotype columns and mapFile rows (+6) are identical
-  if (ncol(genotype.sample)-6 != nrow(mapFile)*2) {
-    stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
   }
 
   # setting colnames
@@ -113,11 +106,14 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   }
 
   # read file line by line (http://stackoverflow.com/questions/4106764/what-is-a-good-way-to-read-line-by-line-in-r)
-  con  <- file(genotype_path, open = "r")
-
-  while (length(oneLine <- readLines(con, n = 1, warn = FALSE)) > 0) {
+  while (length(oneLine <- readLines(conn, n = 1, warn = FALSE)) > 0) {
     genotype <- (strsplit(oneLine, " "))
     genotype <- as.character(genotype[[1]])
+
+    # check that genotype columns and mapFile rows (+6) are identical
+    if (length(genotype)-6 != nrow(mapFile)*2) {
+      stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
+    }
 
     # get animal
     animal <- list(FID=genotype[1], IID=genotype[2])
@@ -134,7 +130,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   }
 
   # close input stream
-  close(con)
+  close(conn)
 
   # fix row names
   row.names(RUNs) <- NULL
