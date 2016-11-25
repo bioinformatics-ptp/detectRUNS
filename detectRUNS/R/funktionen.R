@@ -304,13 +304,17 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
-    # read data in normal way
-    genotype.sample <- data.table::fread(genotype_path, sep = " ", header = FALSE, nrows = 2, stringsAsFactors = FALSE)
+    # read data. I need to know only number of columns
+    # TODO: do this in C++?
+    conn  <- file(genotype_path, open = "r")
+    oneLine <- readLines(conn, n = 1, warn = FALSE)
+    genotype.sample <- (strsplit(oneLine, " "))
+    genotype.sample <- as.character(genotype.sample[[1]])
 
     # read animals properly
     colClasses <- c(
       rep("character", 2),
-      rep("NULL", ncol(genotype.sample)-2)
+      rep("NULL", length(genotype.sample)-2)
     )
     pops <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
     names(pops) <- c("POP","ID")

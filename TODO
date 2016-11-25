@@ -4,3 +4,5 @@
 * Calculate by chromosome (cut mapfile by chrom, then subset genotype)
 
 * plotSnpsInRuns need to be fixed (genotype.raw and plink.map were removed)
+
+* get n of columns of a ped file via CPP
