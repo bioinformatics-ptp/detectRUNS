@@ -45,10 +45,15 @@ def try_file(files):
             chro=[]
             #lista=[]
             for line in ff:
-                if 'CHROMOSOME' in line: continue
+                if 'CHROMOSOME'  in line: continue
+                if 'CHR'  in line: continue
                 #BREED,ANIMAL,CHROMOSOME,COUNT,START,END,LENGTH=line.strip().split(";")
                 if 'chrom' in line:continue
-                BREED,ANIMAL,CHROMOSOME,START,END,COUNT,LENGTH=line.strip().split(";")
+                if len(line.strip().split()) == 7:
+                    BREED,ANIMAL,CHROMOSOME,COUNT,START,END,LENGTH=line.strip().split(";")
+                else:
+                    BREED,ANIMAL,PHE,CHROMOSOME,SNP1,SNP2,START,END,LENGTH,COUNT,DENSITY,PHOM,PHET=line.strip().split()
+
                 chro.append(int(CHROMOSOME))
                 #if not n_animal.has_key(BREED):n_animal[BREED]=[]
                 #if not ANIMAL in lista:
@@ -134,7 +139,12 @@ def snp_inside_ROH(dati_roh,map_file,save,n_breed,nchrom):
             #if 'CHROMOSOME' in read:continue
             #breed,animal,chrom,conta,inizio,fine,differenza=read.strip().split(';')
             if 'chrom' in read:continue
-            breed,animal,chrom,conta,inizio,fine,differenza=read.strip().split(';')
+            if 'CHR' in read:continue
+            if len(read.strip().split()) == 7:
+                breed,animal,chrom,conta,inizio,fine,differenza=read.strip().split(';') 
+            else:
+                breed,animal,PHE,chrom,SNP1,SNP2,inizio,fine,differenza,conta,DENSITY,PHOM,PHET=read.strip().split()
+
             #print inizio,fine
             if chrom=='30' or breed !=bre:continue ### THIS WORKS ONLY ON COW
 
