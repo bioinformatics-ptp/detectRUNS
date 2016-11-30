@@ -77,9 +77,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
   std::map <std::string, int> missing;
   std::string allele1, allele2;
 
-  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
-  Rcpp::Function stop("stop");
-
   // check genotype size
   if (genotype.size() % 2 != 0 ) {
     stop(std::string("Need .ped input with 2 alleles per marker"));
@@ -267,9 +264,6 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
                                int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
 
-  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
-  Rcpp::Function msg("message");
-
   // get data lenght
   int data_length = data.size();
 
@@ -346,9 +340,6 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
 //'
 // [[Rcpp::export]]
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold) {
-  // Loading message function from R (https://github.com/RcppCore/Rcpp/issues/195)
-  Rcpp::Function msg("message");
-
   // get vector size
   int RunVector_length = RunVector.size();
 

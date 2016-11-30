@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .spyproject/
+*.Rproj
 
 # temporary files produced by RUNS.run
 detected.ROHet.csv
