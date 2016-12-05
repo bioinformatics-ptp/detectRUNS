@@ -11,3 +11,6 @@ genotype.raw
 plink.map
 detectRUNS/R/RcppExports.R
 detectRUNS/src/RcppExports.cpp
+
+# mac specific files
+.DS_Store
