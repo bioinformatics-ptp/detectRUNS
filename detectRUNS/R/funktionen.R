@@ -310,7 +310,8 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
     oneLine <- readLines(conn, n = 1, warn = FALSE)
     genotype.sample <- (strsplit(oneLine, " "))
     genotype.sample <- as.character(genotype.sample[[1]])
-
+    close(conn)
+    
     # read animals properly
     colClasses <- c(
       rep("character", 2),
@@ -357,6 +358,6 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
       mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
       M <- rbind.data.frame(M,mapChrom)
     }
-
+  
   return(M)
 }
