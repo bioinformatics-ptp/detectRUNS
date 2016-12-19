@@ -304,21 +304,8 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
-    # read data. I need to know only number of columns
-    # TODO: do this in C++?
-    conn  <- file(genotype_path, open = "r")
-    oneLine <- readLines(conn, n = 1, warn = FALSE)
-    genotype.sample <- (strsplit(oneLine, " "))
-    genotype.sample <- as.character(genotype.sample[[1]])
-    close(conn)
-    
-    # read animals properly
-    colClasses <- c(
-      rep("character", 2),
-      rep("NULL", length(genotype.sample)-2)
-    )
-    pops <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
-    names(pops) <- c("POP","ID")
+    # read first two columns of PED with a CPP function
+    pops <- readPOPCpp(genotype_path)
 
   } else {
     stop(paste("file", genotype_path, "doesn't exists"))
@@ -358,6 +345,6 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
       mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
       M <- rbind.data.frame(M,mapChrom)
     }
-  
+
   return(M)
 }

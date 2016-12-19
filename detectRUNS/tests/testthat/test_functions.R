@@ -280,3 +280,28 @@ test_that("Testing heteroZygotTest", {
   expect_false(test)
 })
 
+test_that("Testing loading pop from ped", {
+  # read data. I need to know only number of columns
+  conn  <- file(genotype_path, open = "r")
+  oneLine <- readLines(conn, n = 1, warn = FALSE)
+  genotype.sample <- (strsplit(oneLine, " "))
+  genotype.sample <- as.character(genotype.sample[[1]])
+  close(conn)
+
+  # read animals properly
+  colClasses <- c(
+    rep("character", 2),
+    rep("NULL", length(genotype.sample)-2)
+  )
+
+  # loading reference_pops
+  reference_pops <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
+  names(reference_pops) <- c("POP","ID")
+
+  # load pops with a Cpp function
+  test_pops <- readPOPCpp(genotype_path)
+
+  # testing
+  expect_equal(test_pops, reference_pops)
+
+})

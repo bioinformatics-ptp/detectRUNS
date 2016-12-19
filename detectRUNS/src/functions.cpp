@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 // http://stackoverflow.com/questions/12975341/to-string-is-not-a-member-of-std-says-g
 namespace patch {
@@ -395,4 +396,55 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   //msg(std::string("Lenght of output vector: "), snpRun.size());
 
   return snpRun;
+}
+
+//' Function to return a dataframe of population (POP, ID)
+//'
+//' This is a core function. Read PED file and returns a data.frame with the first two
+//' columns
+//'
+//' @param genotype_path genotype (.ped) file location
+//'
+//' @return a dataframe of POP, ID
+//'
+//' @examples
+//' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+//' pops <- readPOPCpp(genotype_path)
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame readPOPCpp(std::string genotype_path) {
+  // the columns of data.frame
+  CharacterVector POP;
+  CharacterVector ID;
+
+  // open genotype_path
+  std::ifstream ifile(genotype_path.c_str());
+
+  // we read the full line here
+  std::string line;
+
+  // A tocken for read columns
+  std::string token;
+
+  // read the current line (http://stackoverflow.com/questions/30181600/reading-two-columns-in-csv-file-in-c)
+  while (std::getline(ifile, line)) {
+    // construct a string stream from line
+    std::istringstream iss(line);
+
+    // current token
+    std::getline(iss, token, ' ');
+    POP.push_back(token);
+
+    std::getline(iss, token, ' ');
+    ID.push_back(token);
+  }
+
+  // This is the resulting new dataframe (New Data Frame). A Cpp instance of
+  // stringsAsFactors = TRUE data.frame
+  DataFrame NDF = DataFrame::create(Named("POP")=POP, Named("ID")=ID, _["stringsAsFactors"] = false);
+
+  return NDF;
 }
