@@ -1,10 +1,11 @@
 Package: detectRUNS
 Type: Package
 Title: Detect RoHom and RoHet in diploid genomes
-Version: 0.2.4
+Version: 0.2.5
 Date: 2016-11-15
 Authors@R: as.person(c(
     "Filippo Biscarini <filippo.biscarini@ptp.it> [aut, cre]", 
+    "Gabriele Marras <gabriele.marras@ptp.it> [aut]",
     "Paolo Cozzi <paolo.cozzi@ptp.it> [ctb]"
   ))
 Description: Detection of RUNS of Homozygosity (RoHom) and of Heterozygosity (RoHet)
