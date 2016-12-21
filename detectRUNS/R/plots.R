@@ -284,3 +284,31 @@ plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
   }
 
 }
+
+#' READ ROH OUTPUT FILE FROM PLINK
+#' Function to read in the output file from ROH analysis with Plink
+#' Relevant columns are selected, converted and renamed
+#'
+#' @param plinkFile name of output file from Plink ROH analysis #defaults to plink.hom
+#'
+#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
+#' @export
+#'
+#' @examples #not yet
+#'
+#'
+
+readFromPlink <- function(plinkFile="plink.hom") {
+
+  plinkDatei <- read.table(file=plinkFile, header=TRUE)
+  plinkDatei <- plinkDatei[,c("FID","IID","CHR","NSNP","POS1","POS2","KB")]
+
+  #convert kbps to bps
+  plinkDatei$KB <- (plinkDatei$KB*1000)
+
+  #rename columns
+  names(plinkDatei) <- c("breed","id","chrom","nSNP","von","bis","lengthBps")
+
+  return(plinkDatei)
+}
+
