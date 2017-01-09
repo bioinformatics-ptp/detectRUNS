@@ -77,10 +77,10 @@ test_that("Testing genoConvert", {
   expect_equal(test, geno01)
 })
 
-test_that("Testing pedConvert", {
+test_that("Testing pedConvert with correct values", {
   # create a PED like genotype
-  ped <- c("B", "B", "A", "A", "B", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N")
-  geno01 <- c(0, 0, 1, 0, 1, 0, 1, 0, NA, NA, NA)
+  ped <- c("B", "B", "A", "A", "B", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N", "-", "-")
+  geno01 <- c(0, 0, 1, 0, 1, 0, 1, 0, NA, NA, NA, NA)
 
   # testing Cpp pedConvertCpp
   test <- pedConvertCpp(ped)

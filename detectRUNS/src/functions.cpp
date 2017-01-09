@@ -83,10 +83,11 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
     stop(std::string("Need .ped input with 2 alleles per marker"));
   }
 
-  // set values
+  // set all possible missing values
   missing["0"] = NA_INTEGER;
   missing["5"] = NA_INTEGER;
   missing["N"] = NA_INTEGER;
+  missing["-"] = NA_INTEGER;
 
   // the converted vector
   IntegerVector results(genotype.size() / 2);
