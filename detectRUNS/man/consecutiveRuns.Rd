@@ -31,16 +31,6 @@ data frame of runs per individual
 This is a core function. It implements the consecutive method for run detection
 }
 \examples{
-indVect <- bison.raw8[1,]
-indVect <- dati[1,]
-
-genotype <- indVect[7:length(indVect)]
-individual <- list(FID=indVect[1], IID=indVect[2])
-
-mappa <- mappa
-mappa <- bison.map8
-
-consecutiveRuns(genotype,individual,mappa, ROHet=FALSE, minSNP=3,maxOppositeGenotype=0,maxMiss=1,maxGap=10^4)
 
 }
 

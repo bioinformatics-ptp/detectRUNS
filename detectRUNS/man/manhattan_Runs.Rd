@@ -34,7 +34,8 @@ mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detec
 
 # calculating runs of Homozygosity
 runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10,
+method='slidingWindow')
 
 # plot runs per animal (interactive)
 manhattan_Runs(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")

@@ -6,7 +6,8 @@
 \usage{
 RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
-  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10)
+  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
+  method = c("slidingWindow", "consecutiveRuns"))
 }
 \arguments{
 \item{genotype_path}{genotype (.ped) file location}
@@ -30,6 +31,8 @@ RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
 \item{minLengthBps}{minimum length of run in bps (defaults to 1000 bps = 1 kbps)}
 
 \item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
+
+\item{method}{one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)}
 }
 \value{
 a dataframe with RUNs of Homozygosity or Heterozygosity
@@ -43,7 +46,8 @@ some good documentation.
 genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
+minDensity = 1/10, method='slidingWindow')
 
 }
 
