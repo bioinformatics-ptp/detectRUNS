@@ -320,31 +320,31 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
                    stringsAsFactors=FALSE
   )
 
-    for (ras in unique(runs$POPULATION)) {
+  for (ras in unique(runs$POPULATION)) {
 
-      print(paste("Breed is:", ras))
-      runsBreed <- runs[runs$POPULATION==ras,]
-      nBreed <- nrow(pops[pops$POP==as.character(ras),])
-      print(paste("N. of animals of breed",ras,nBreed,sep=" "))
+    #print(paste("Population is:", ras))
+    runsBreed <- runs[runs$POPULATION==ras,]
+    nBreed <- nrow(pops[pops$POP==as.character(ras),])
+    #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 
-      iPos <- itertools::ihasNext(mapChrom$POSITION)
-      snpCount <- rep(NA,nrow(mapChrom))
+    iPos <- itertools::ihasNext(mapChrom$POSITION)
+    snpCount <- rep(NA,nrow(mapChrom))
 
-      i <- 1
-      while(hasNext(iPos)) {
+    i <- 1
+    while(hasNext(iPos)) {
 
-        pos <- iterators::nextElem(iPos)
-        inRun <- (pos >= runsBreed$START & pos <= runsBreed$END)
-        snpCount[i] <- length(inRun[inRun==TRUE])
-        i <- i + 1
-      }
-
-      mapChrom$COUNT <- snpCount
-      mapChrom$BREED <- rep(ras,nrow(mapChrom))
-      mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
-      mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
-      M <- rbind.data.frame(M,mapChrom)
+      pos <- iterators::nextElem(iPos)
+      inRun <- (pos >= runsBreed$START & pos <= runsBreed$END)
+      snpCount[i] <- length(inRun[inRun==TRUE])
+      i <- i + 1
     }
+
+    mapChrom$COUNT <- snpCount
+    mapChrom$BREED <- rep(ras,nrow(mapChrom))
+    mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
+    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
+    M <- rbind.data.frame(M,mapChrom)
+  }
 
   return(M)
 }
