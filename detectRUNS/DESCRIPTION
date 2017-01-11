@@ -1,10 +1,10 @@
 Package: detectRUNS
 Type: Package
 Title: Detect RoHom and RoHet in diploid genomes
-Version: 0.2.6
+Version: 0.3.0
 Date: 2016-11-15
 Authors@R: as.person(c(
-    "Filippo Biscarini <filippo.biscarini@ptp.it> [aut, cre]", 
+    "Filippo Biscarini <filippo.biscarini@ptp.it> [aut, cre]",
     "Gabriele Marras <gabriele.marras@ptp.it> [aut]",
     "Paolo Cozzi <paolo.cozzi@ptp.it> [ctb]"
   ))

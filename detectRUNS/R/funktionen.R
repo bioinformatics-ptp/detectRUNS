@@ -245,7 +245,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #' @param ind ID of animal
 #' @param dRUN data.frame with RUNS per animal
 #' @param ROHet shall we detect ROHet or ROHom?
-#' @param breed breed (factor)
+#' @param group group (factor): population, breed, ethnicity, case/control etc.
 #'
 #' @return TRUE/FALSE if RUNS are written out or not
 #' @export
@@ -254,10 +254,10 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #'
 #' @examples #not yet
 #'
-writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
+writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
-  dRUN$breed <- rep(breed,nrow(dRUN))
+  dRUN$group <- rep(group,nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
   if(nrow(dRUN) > 0) {
@@ -279,7 +279,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
     )
     is_run <- TRUE
   } else {
-    message(paste("No RUNs found for animal",ind,sep=" "))
+    message(paste("No RUNs found for sample",ind,sep=" "))
     is_run <- FALSE
   }
   return(is_run)
@@ -366,16 +366,6 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @export
 #'
 #' @examples
-#' indVect <- bison.raw8[1,]
-#' indVect <- dati[1,]
-#'
-#' genotype <- indVect[7:length(indVect)]
-#' individual <- list(FID=indVect[1], IID=indVect[2])
-#'
-#' mappa <- mappa
-#' mappa <- bison.map8
-#'
-#' consecutiveRuns(genotype,individual,mappa, ROHet=FALSE, minSNP=3,maxOppositeGenotype=0,maxMiss=1,maxGap=10^4)
 #'
 
 consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, maxOppositeGenotype=1, maxMiss=1, maxGap=10^6) {
@@ -388,36 +378,36 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   group <- as.character(individual$FID)
 
   #initialize variables
-  startChrom <- min(mapFile$V1)
+  startChrom <- min(mapFile[,"Chrom"])
   nOpposite <- 0
   nMiss <- 0
   runH <- 0
-  lastPos <- mapFile$V4[1]
-  startPos <- mapFile$V4[1]
+  lastPos <- mapFile$bps[1]
+  startPos <- mapFile$bps[1]
 
   #initialize dataframe of results
-  res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0),"length"=numeric(0))
+  res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0),"lengthBps"=numeric(0))
 
   for (i in seq_along(indGeno)) {
 
-    currentChrom <- mapFile$V1[i]
+    currentChrom <- mapFile$Chrom[i]
     if (currentChrom!=startChrom) {
 
       startChrom <- currentChrom
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"length"=lengte))
+      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
 
       runH <- 0
-      startPos <- mapFile$V4[i]
+      startPos <- mapFile$bps[i]
     }
 
-    gap <- (mapFile$V4[i] - lastPos)
+    gap <- (mapFile$bps[i] - lastPos)
 
     if (gap>=maxGap) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"length"=lengte))
+      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
 
       runH <- 0
-      startPos <- mapFile$V4[i]
+      startPos <- mapFile$bps[i]
     }
 
     if(indGeno[i]==typ) {
@@ -433,29 +423,36 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
     if (nOpposite > maxOppositeGenotype) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"length"=lengte))
+      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
 
       runH <- 0
-      startPos <- mapFile$V4[i]
+      startPos <- mapFile$bps[i]
     }
 
     if (nMiss > maxMiss) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"length"=lengte))
+      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
 
       runH <- 0
-      startPos <- mapFile$V4[i]
+      startPos <- mapFile$bps[i]
     }
 
     if(i==length(indGeno)) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"length"=lengte))
+      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
       runH <- 0
-      startPos <- mapFile$V4[i]
+      startPos <- mapFile$bps[i]
     }
 
-    lastPos <- mapFile$V4[i]
+    lastPos <- mapFile$bps[i]
     lengte <- (lastPos-startPos)
+  }
+
+  # debug
+  if(nrow(res) > 0) {
+    message(paste("N. of RUNS for individual", ind, "is:", nrow(res)))
+  } else {
+    message(paste("No RUNs found for animal",ind))
   }
 
   return(res)
