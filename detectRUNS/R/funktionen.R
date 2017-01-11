@@ -351,10 +351,11 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 
 #' Function to detect consecutive runs in a vector (individual's genotypes)
 #'
-#' This is a core function. It implements the consecutive method for run detection
+#' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+#' (see Marras et al. 2015)
 #'
 #' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
-#' @param individual group (breed, population, case/control etc.) and ID of individual sample
+#' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
 #' @param mapFile Plink map file (for SNP position)
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param minSNP minimum number of SNP in a run
@@ -363,7 +364,13 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @param minLengthBps min length of a run in bps
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
-#' @return data frame of runs per individual
+#' @details
+#' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+#' No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+#' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+#' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+#'
+#' @return A data frame of runs per individual sample
 #' @export
 #'
 #' @examples
