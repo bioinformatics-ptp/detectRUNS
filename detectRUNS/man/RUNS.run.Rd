@@ -14,9 +14,10 @@ RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
 
 \item{mapfile_path}{map file (.map) file location}
 
-\item{windowSize}{the size of sliding window}
+\item{windowSize}{the size of sliding window (only for the slidingWindow method)}
 
-\item{threshold}{the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN}
+\item{threshold}{the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
+(only for the slidingWindow method)}
 
 \item{minSNP}{minimum n. of SNP in a RUN}
 
@@ -30,7 +31,8 @@ RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
 
 \item{minLengthBps}{minimum length of run in bps (defaults to 1000 bps = 1 kbps)}
 
-\item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
+\item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
+(only for the slidingWindow method)}
 
 \item{method}{one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)}
 }

@@ -360,6 +360,7 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @param minSNP minimum number of SNP in a run
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
+#' @param minLengthBps min length of a run in bps
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #'
 #' @return data frame of runs per individual
@@ -368,7 +369,8 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @examples
 #'
 
-consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, maxOppositeGenotype=1, maxMiss=1, maxGap=10^6) {
+consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, maxOppositeGenotype=1,
+                            maxMiss=1, minLengthBps=1000, maxGap=10^6) {
 
   #runs of heterozygosity or of homozygosity?
   typ <- ifelse(ROHet,1,0)
@@ -384,62 +386,85 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   runH <- 0
   lastPos <- mapFile$bps[1]
   startPos <- mapFile$bps[1]
+  lengte <- 0
 
   #initialize dataframe of results
-  res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0),"lengthBps"=numeric(0))
+  res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
+                    "from"=integer(0),"to"=integer(0),"lengthBps"=numeric(0))
 
   for (i in seq_along(indGeno)) {
 
+    #check when chromosome changes
     currentChrom <- mapFile$Chrom[i]
     if (currentChrom!=startChrom) {
 
       startChrom <- currentChrom
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
-
+      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
+                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
+                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
+                                                           "lengthBps"=lengte)
+                                                )
       runH <- 0
       startPos <- mapFile$bps[i]
     }
 
+    #calculate gap between consecutive SNP
     gap <- (mapFile$bps[i] - lastPos)
 
+    #check if current gap is larger than max allowed gap
     if (gap>=maxGap) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
-
+      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
+                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
+                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
+                                                           "lengthBps"=lengte)
+                                                )
       runH <- 0
       startPos <- mapFile$bps[i]
     }
 
+    #begin calculating runs (heterozygosity or homozygosity depending on the ROHet argument)
+    #count also n. of missing and opposite genotypes
     if(indGeno[i]==typ) {
-
       runH <- runH+1;
     } else if (indGeno[i]==abs(1-typ)) {
-
       nOpposite <- nOpposite + 1
     } else if (is.na(indGeno[i])) {
-
       nMiss <- nMiss + 1
     }
 
+    #check if max n. of opposite genotypes has been reached
     if (nOpposite > maxOppositeGenotype) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
-
+      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
+                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
+                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
+                                                           "lengthBps"=lengte)
+                                                )
       runH <- 0
       startPos <- mapFile$bps[i]
     }
 
+    #check if max n. of missing genotypes has been reached
     if (nMiss > maxMiss) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
-
+      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
+                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
+                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
+                                                           "lengthBps"=lengte)
+                                                )
       runH <- 0
       startPos <- mapFile$bps[i]
     }
 
+    #check if we are at the end of the genome
     if(i==length(indGeno)) {
 
-      if(runH > minSNP) res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=runH,"from"=startPos,"to"=lastPos,"lengthBps"=lengte))
+      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
+                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
+                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
+                                                           "lengthBps"=lengte)
+                                                )
       runH <- 0
       startPos <- mapFile$bps[i]
     }

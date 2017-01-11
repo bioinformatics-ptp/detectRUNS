@@ -10,8 +10,9 @@
 #'
 #' @param genotype_path genotype (.ped) file location
 #' @param mapfile_path map file (.map) file location
-#' @param windowSize the size of sliding window
+#' @param windowSize the size of sliding window (only for the slidingWindow method)
 #' @param threshold the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
+#' (only for the slidingWindow method)
 #' @param minSNP minimum n. of SNP in a RUN
 #' @param ROHet should we look for ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
@@ -19,6 +20,7 @@
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
+#' (only for the slidingWindow method)
 #' @param method one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)
 #'
 #' @return a dataframe with RUNs of Homozygosity or Heterozygosity
@@ -138,8 +140,8 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     } else {
 
       a_run <- consecutiveRuns(genotype, animal, mapFile=mapFile, ROHet=ROHet, minSNP=minSNP,
-                               maxOppositeGenotype=maxOppositeGenotype,
-                               maxMiss=maxMiss, maxGap = maxGap)
+                               maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                               minLengthBps=minLengthBps, maxGap = maxGap)
     }
 
     # bind this run (if has rows) to others RUNs (if any)
