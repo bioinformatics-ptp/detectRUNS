@@ -66,7 +66,8 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
       grosse <- 0.25
     }
 
-    if (suppressInds) optionen <- ggplot2::theme(axis.text.y=element_blank(), axis.title.y=element_blank(),axis.ticks.y=element_blank())
+    if (suppressInds) optionen <- ggplot2::theme(axis.text.y=element_blank(), 
+                                                 axis.title.y=element_blank(),axis.ticks.y=element_blank())
 
     #size in mb
     teilsatz$START <- (teilsatz$START/(10^6))
@@ -84,7 +85,8 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
     }
 
     p <- ggplot2::ggplot(teilsatz)
-    p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, yend = IND,colour=as.factor(POPULATION)), alpha=alfa, size=grosse)
+    p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END, 
+                                                     yend = IND,colour=as.factor(POPULATION)),alpha=alfa, size=grosse)
     p <- p + ggplot2::xlim(0, max(teilsatz$END)) + ggplot2::ggtitle(paste('Chromosome:',chrom))
     p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
     p <- p + optionen
@@ -191,7 +193,8 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
-      p <- p + ggplot2::geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos), colour="lightcoral", alpha=1, size=0.75)
+      p <- p + ggplot2::geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos), 
+                                     colour="lightcoral", alpha=1, size=0.75)
       p <- p + xlim(0, max(krom$END/(10^6))+10) + ylim(0,length(yread))
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
@@ -221,7 +224,7 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
 #' @export
 #'
-#' @importFrom grDevices dev.off pdf
+#' @importFrom grDevices dev.off pdf 
 #' @import utils
 #'
 #' @examples
@@ -252,7 +255,11 @@ plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
 
-  for (chrom in sort(unique(runs$CHROMOSOME))) {
+  chr_order <-c((1:99),"X","Y","XY","MT")
+  list_chr=unique(runs$CHROMOSOME)
+  new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
+  
+  for (chrom in new_list_chr) {
 
     print(paste("Chromosome is: ",chrom))
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
@@ -312,3 +319,157 @@ readFromPlink <- function(plinkFile="plink.hom") {
   return(plinkDatei)
 }
 
+
+
+
+
+#' Plot N. of times SNP is in runs - MANHATTAN PLOT
+#'
+#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
+#' Proportions on the y-axis, bps on the x-axis
+#'
+#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param genotype_path genotype (.ped) file location
+#' @param mapfile_path map file (.map) file location
+#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
+#' @param main_titel title in plot #FILIPPO
+#' 
+#' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files) using manhattan
+#' @export
+#'
+#' @importFrom grDevices dev.off pdf 
+#' 
+#' @import utils
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+#'
+#' # plot runs per animal (interactive)
+#' manhattan_Runs(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
+#' 
+
+
+manhattan_Runs <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
+  
+  #change colnames in runs file
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  
+  #read map file
+  if(file.exists(mapfile_path)){
+    # using data.table to read data
+    mappa <- data.table::fread(mapfile_path, header = F)
+  } else {
+    stop(paste("file", mapfile_path, "doesn't exists"))
+  }
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  
+  #Start calculation % SNP in ROH
+  print("Calculation % SNP in ROH") #FILIPPO
+  all_SNPinROH <- data.frame("SNP_NAME"=character(),
+                             "CHR"=integer(),
+                             "POSITION"=numeric(),
+                             "COUNT"=integer(),
+                             "BREED"=factor(),
+                             "PERCENTAGE"=numeric(),
+                             stringsAsFactors=FALSE)
+  
+  # create progress bar
+  total <- length(unique(runs$CHROMOSOME))
+  print(paste('Chromosome founds: ',total)) #FILIPPO
+  n=0
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  
+  for (chrom in sort(unique(runs$CHROMOSOME))) {
+    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    mapKrom <- mappa[mappa$CHR==chrom,]
+    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
+    all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns) 
+    n=n+1
+    setTxtProgressBar(pb, n)
+  }
+  close(pb)
+  print("Calculation % SNP in ROH finish") #FILIPPO
+    
+  print("Manhattan plot: START") #FILIPPO
+  group_list=unique(all_SNPinROH$BREED)
+  for (group in group_list){
+    print(paste('Processing Groups:',group)) #FILIPPO
+    
+    #list of Groups
+    subset_group=subset(all_SNPinROH,all_SNPinROH$BREED==group)
+    names(subset_group) <- c("SNP","CHR","BP","COUNT", "GROUP","P")
+    subset_group <- subset_group[,c(1,2,3,6)]
+    
+    #sort a file
+    subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
+    row.names(subset_group) <- 1:nrow(subset_group)
+    
+    #create a new position
+    chrNum <- length(unique(subset_group$CHR))
+    chroms <- as.integer(unique(subset_group$CHR))
+    for (i in chroms){ 
+      index <- which(chroms==i)
+      ndx <- which(subset_group[, "CHR"]==i)
+      lstMrk <- max(subset_group[ndx, "BP"])
+      if (index < chrNum) ndx2 <- which(subset_group[, "CHR"]==chroms[index+1])
+      if (index < chrNum) subset_group[ndx2, "BP"] <- subset_group[ndx2, "BP"] + lstMrk
+    }
+    
+    #search a crhomosome center
+    bpMidVec <- vector(length=chrNum)
+    for (i in chroms){
+      ndx <- which((subset_group[, 2])==i)
+      posSub <- subset_group[ndx, 3]
+      bpMidVec[which(chroms==i)] <- ((max(posSub) - min(posSub))/2) + min(posSub)
+    }
+    
+    #create a title for manhattan plot
+    if (! is.null(main_titel)) {
+      main_title <- paste(main_titel,group,sep = ' - ')
+    } 
+    else {
+      main_title <- paste("Manhattan Plot - % SNP in ROH for",group) #FILIPPO
+    }
+    
+    #Manhattan plot using ggplot2
+    print(paste("Creating Manhattan plot for ",group)) #FILIPPO
+    p <- ggplot(subset_group)
+    p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
+    p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
+    p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
+    p <- p + theme_bw(base_size=11) + theme(legend.position='none')
+    p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
+    #p <- p + geom_hline(yintercept=4.08, linetype=1, col='red', lwd=0.5)  #linea significativa ?? #FILIPPO
+    roh_plot <- p + ggtitle(main_title) + xlab('CHROMOSOME') + ylab('% SNP in ROH')
+    
+    #main_titel=NULL
+    
+    #create a title for manhattan plot
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix,group,sep = ' - ')
+    } 
+    else {
+      titel <- paste("Manhattan_Plot_SNP_in_ROH_",group) #FILIPPO
+    }
+    
+    #Save plot
+    if(savePlots) {
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(roh_plot)
+      dev.off()
+      print(paste('Manhattan plot created for ',group)) #FILIPPO
+    } 
+    else {
+      print(roh_plot)
+    }
+  }
+  
+}
