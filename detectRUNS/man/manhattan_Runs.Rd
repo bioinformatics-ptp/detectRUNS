@@ -18,7 +18,7 @@ manhattan_Runs(runs, genotype_path, mapfile_path, savePlots = FALSE,
 
 \item{title_prefix}{title prefix (the base name of graph, if savePlots is TRUE)}
 
-\item{main_titel}{title in plot #FILIPPO}
+\item{main_titel}{title in plot}
 }
 \value{
 plot of n. of times a SNP is in a run by chromosome and population (pdf files) using manhattan
@@ -33,9 +33,9 @@ genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "dete
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
 # calculating runs of Homozygosity
-runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10,
-method='slidingWindow')
+runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+minLengthBps = 1000, minDensity = 1/10, method='slidingWindow')
 
 # plot runs per animal (interactive)
 manhattan_Runs(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")

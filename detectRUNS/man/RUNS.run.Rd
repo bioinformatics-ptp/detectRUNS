@@ -2,7 +2,7 @@
 % Please edit documentation in R/run.R
 \name{RUNS.run}
 \alias{RUNS.run}
-\title{Run functions to detect RUNS (ROHom/ROHet)}
+\title{Main function to detect RUNS (ROHom/ROHet)}
 \usage{
 RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
@@ -37,11 +37,26 @@ RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
 \item{method}{one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)}
 }
 \value{
-a dataframe with RUNs of Homozygosity or Heterozygosity
+A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset
 }
 \description{
-This is the main function of RUNS and would probably require
-some good documentation.
+This is the main function of detectRUNS and is used to detect runs (of homozygosity or heterozygosity)
+in the genome. All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
+max n. of opposite genotypes etc.) are specified here.
+Input data are in the ped/map Plink format
+}
+\details{
+This function is a wrapper for many component functions that handle the input data (ped/map files), performs internal conversions,
+accepts parameters specifications, selects the statistical method to detect runs (sliding windows, consecutive loci) and whether
+runs of homozygosity (RoHom) or of heterozygosity (RoHet) are looked for.
+
+In the ped file, the groups samples belong to can be specified (first column). This is important if comparisons between
+human ethnic groups or between animal breeds or plant varieties or biological populations are to be performed.
+Also, if cases and controls are to be compared, this is the place where this information needs to be specified.
+
+This function returns a data frame with all runs detected in the dataset. This data frame can then be written out to a csv file.
+The data frame is, in turn, the input for other functions of the detectRUNS package that create plots and produce statistics
+of the results (see plot and statistic functions in this manual, and/or refer to the vignette of detectRUNS).
 }
 \examples{
 # getting map and ped paths

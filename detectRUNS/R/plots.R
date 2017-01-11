@@ -30,8 +30,9 @@
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+#' minLengthBps = 1000, minDensity = 1/10)
 #'
 #' # plot runs per animal (interactive)
 #' plotRuns(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
@@ -122,8 +123,9 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+#' minLengthBps = 1000, minDensity = 1/10)
 #'
 #' # plot runs per animal (interactive)
 #' plotStackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
@@ -233,11 +235,13 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+#' minLengthBps = 1000, minDensity = 1/10)
 #'
 #' # plot runs per animal (interactive)
-#' plotSnpsInRuns(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
+#' plotSnpsInRuns(runs, genotype_path, mapfile_path,
+#' savePlots=FALSE, title_prefix="ROHom")
 #'
 
 
@@ -333,7 +337,7 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' @param mapfile_path map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
-#' @param main_titel title in plot #FILIPPO
+#' @param main_titel title in plot
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files) using manhattan
 #' @export
@@ -348,9 +352,9 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10,
-#' method='slidingWindow')
+#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+#' minLengthBps = 1000, minDensity = 1/10, method='slidingWindow')
 #'
 #' # plot runs per animal (interactive)
 #' manhattan_Runs(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")

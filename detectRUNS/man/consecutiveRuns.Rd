@@ -11,7 +11,7 @@ consecutiveRuns(indGeno, individual, mapFile, ROHet = TRUE, minSNP = 3,
 \arguments{
 \item{indGeno}{vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)}
 
-\item{individual}{group (breed, population, case/control etc.) and ID of individual sample}
+\item{individual}{list of group (breed, population, case/control etc.) and ID of individual sample}
 
 \item{mapFile}{Plink map file (for SNP position)}
 
@@ -28,10 +28,17 @@ consecutiveRuns(indGeno, individual, mapFile, ROHet = TRUE, minSNP = 3,
 \item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
 }
 \value{
-data frame of runs per individual
+A data frame of runs per individual sample
 }
 \description{
-This is a core function. It implements the consecutive method for run detection
+This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+(see Marras et al. 2015)
+}
+\details{
+The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
 }
 \examples{
 
