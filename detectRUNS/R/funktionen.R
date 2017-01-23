@@ -432,14 +432,22 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
     #begin calculating runs (heterozygosity or homozygosity depending on the ROHet argument)
     #count also n. of missing and opposite genotypes
-    if(indGeno[i]==typ) {
+#     if(indGeno[i]==typ) {
+#       runH <- runH+1;
+#     } else if (indGeno[i]==abs(1-typ)) {
+#       nOpposite <- nOpposite + 1
+#     } else if (is.na(indGeno[i])) {
+#       nMiss <- nMiss + 1
+#     }
+
+    if(is.na(indGeno[i])) { #check on missingness (otherwise it couldn't count runs!)
+      nMiss <- nMiss + 1
+    } else if (indGeno[i]==typ) {
       runH <- runH+1;
     } else if (indGeno[i]==abs(1-typ)) {
       nOpposite <- nOpposite + 1
-    } else if (is.na(indGeno[i])) {
-      nMiss <- nMiss + 1
     }
-
+ 
     #check if max n. of opposite genotypes has been reached
     if (nOpposite > maxOppositeGenotype) {
 
