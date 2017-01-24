@@ -387,7 +387,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   group <- as.character(individual$FID)
 
   #initialize variables
-  startChrom <- min(mapFile[,"Chrom"])
+  startChrom <- min(mapFile$Chrom)
   nOpposite <- 0
   nMiss <- 0
   runH <- 0
