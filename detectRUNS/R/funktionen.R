@@ -349,6 +349,7 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
   return(M)
 }
 
+
 #' Function to detect consecutive runs in a vector (individual's genotypes)
 #'
 #' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
@@ -387,13 +388,12 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   group <- as.character(individual$FID)
 
   #initialize variables
-  startChrom <- min(mapFile$Chrom)
-  nOpposite <- 0
-  nMiss <- 0
-  runH <- 0
-  lastPos <- mapFile$bps[1]
-  startPos <- mapFile$bps[1]
-  lengte <- 0
+  startChrom <- min(mapFile$Chrom) # first chromosome in ordered mapFile
+
+  defaultParam <- list("nOpposite"=0,"nMiss"=0,"runH"=0,"lastPos"=mapFile$bps[1],"startPos"=mapFile$bps[1],"lengte"=0)
+  param <- defaultParam
+
+  print(paste("initialized parameters:",param))
 
   #initialize dataframe of results
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
@@ -406,28 +406,34 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
     if (currentChrom!=startChrom) {
 
       startChrom <- currentChrom
-      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
-                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
-                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
-                                                           "lengthBps"=lengte)
-                                                )
-      runH <- 0
-      startPos <- mapFile$bps[i]
+      if(param$runH > minSNP & param$lengte >= minLengthBps) {
+
+        res <- rbind.data.frame(
+          res,
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
+                     "to"=lastPos, "lengthBps"=lengte)
+        )
+      }
+
+      param <- defaultParam
     }
 
     #calculate gap between consecutive SNP
-    gap <- (mapFile$bps[i] - lastPos)
+    gap <- (mapFile$bps[i] - param$lastPos)
 
     #check if current gap is larger than max allowed gap
     if (gap>=maxGap) {
 
-      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
-                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
-                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
-                                                           "lengthBps"=lengte)
-                                                )
-      runH <- 0
-      startPos <- mapFile$bps[i]
+      if(param$runH > minSNP & param$lengte >= minLengthBps) {
+
+        res <- rbind.data.frame(
+          res,
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
+                     "to"=lastPos, "lengthBps"=lengte)
+        )
+      }
+
+      param <- defaultParam
     }
 
     #begin calculating runs (heterozygosity or homozygosity depending on the ROHet argument)
@@ -441,51 +447,63 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 #     }
 
     if(is.na(indGeno[i])) { #check on missingness (otherwise it couldn't count runs!)
-      nMiss <- nMiss + 1
+      param$nMiss <- param$nMiss + 1
+      param$runH <- param$runH+1;
     } else if (indGeno[i]==typ) {
-      runH <- runH+1;
+      param$runH <- param$runH+1;
     } else if (indGeno[i]==abs(1-typ)) {
-      nOpposite <- nOpposite + 1
-    }
- 
-    #check if max n. of opposite genotypes has been reached
-    if (nOpposite > maxOppositeGenotype) {
-
-      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
-                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
-                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
-                                                           "lengthBps"=lengte)
-                                                )
-      runH <- 0
-      startPos <- mapFile$bps[i]
+      param$nOpposite <- param$nOpposite + 1
+      param$runH <- param$runH+1;
     }
 
     #check if max n. of missing genotypes has been reached
-    if (nMiss > maxMiss) {
+    if (param$nMiss >= maxMiss) {
 
-      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
-                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
-                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
-                                                           "lengthBps"=lengte)
-                                                )
-      runH <- 0
-      startPos <- mapFile$bps[i]
+      if(param$runH > minSNP & param$lengte >= minLengthBps) {
+
+        res <- rbind.data.frame(
+          res,
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
+                     "to"=lastPos, "lengthBps"=lengte)
+        )
+      }
+
+      param <- defaultParam
+    }
+
+    #check if max n. of opposite genotypes has been reached
+    if (param$nOpposite >= maxOppositeGenotype) {
+
+      if(param$runH > minSNP & param$lengte >= minLengthBps) {
+
+        res <- rbind.data.frame(
+          res,
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
+                     "to"=lastPos, "lengthBps"=lengte)
+        )
+      }
+
+      param <- defaultParam
     }
 
     #check if we are at the end of the genome
     if(i==length(indGeno)) {
 
-      if(runH > minSNP & lengte >= minLengthBps) res <- rbind.data.frame(res,
-                                                data.frame("group"=group,"id"=ind,"chrom"=currentChrom,
-                                                           "nSNP"=runH,"from"=startPos,"to"=lastPos,
-                                                           "lengthBps"=lengte)
-                                                )
-      runH <- 0
-      startPos <- mapFile$bps[i]
+      if(param$runH > minSNP & param$lengte >= minLengthBps) {
+
+        res <- rbind.data.frame(
+          res,
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
+                     "to"=lastPos, "lengthBps"=lengte)
+        )
+      }
+
+      param <- defaultParam
     }
 
-    lastPos <- mapFile$bps[i]
-    lengte <- (lastPos-startPos)
+    param$lastPos <- mapFile$bps[i]
+    param$lengte <- (param$lastPos-param$startPos)
+    # print(paste("runH at:",runH))
   }
 
   # debug
@@ -497,3 +515,4 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
   return(res)
 }
+
