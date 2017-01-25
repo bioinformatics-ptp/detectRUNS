@@ -42,7 +42,11 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  for (chrom in sort(unique(runs$CHROMOSOME))) {
+  chr_order <-c((0:99),"X","Y","XY","MT")
+  list_chr=unique(runs$CHROMOSOME)
+  new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
+  
+  for (chrom in new_list_chr) {
 
     #subset by chromosome
     krom <- subset(runs,CHROMOSOME==chrom)
@@ -140,8 +144,12 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
     print(paste('Current population: ',rasse))
     teilsatz <- subset(runs,runs$POPULATION==rasse)
 
+    chr_order <-c((0:99),"X","Y","XY","MT")
+    list_chr=unique(teilsatz$CHROMOSOME)
+    new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
+    
     #select a chromosome
-    for (chrom in sort(unique(teilsatz$CHROMOSOME))){
+    for (chrom in new_list_chr){
 
       print(paste('CHR: ',chrom))
       krom <- subset(teilsatz,CHROMOSOME==chrom)
@@ -197,7 +205,7 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
       p <- ggplot2::ggplot()
       p <- p + ggplot2::geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos),
                                      colour="lightcoral", alpha=1, size=0.75)
-      p <- p + xlim(0, max(krom$END/(10^6))+10) + ylim(0,length(yread))
+      p <- p + xlim(0, max(krom$END/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
 
@@ -259,7 +267,7 @@ plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
 
-  chr_order <-c((1:99),"X","Y","XY","MT")
+  chr_order <-c((0:99),"X","Y","XY","MT")
   list_chr=unique(runs$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
@@ -414,12 +422,19 @@ manhattan_Runs <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
     subset_group <- subset_group[,c(1,2,3,6)]
 
     #sort a file
-    subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
+    #subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
+    subset_group=subset_group[order(subset_group$CHR),]
+    
+    
     row.names(subset_group) <- 1:nrow(subset_group)
 
     #create a new position
     chrNum <- length(unique(subset_group$CHR))
-    chroms <- as.integer(unique(subset_group$CHR))
+    chr_order <-c((0:99),"X","Y","XY","MT")
+    list_chr=unique(subset_group$CHR)
+    new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
+    chroms = new_list_chr
+    
     for (i in chroms){
       index <- which(chroms==i)
       ndx <- which(subset_group[, "CHR"]==i)
@@ -428,6 +443,7 @@ manhattan_Runs <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
       if (index < chrNum) subset_group[ndx2, "BP"] <- subset_group[ndx2, "BP"] + lstMrk
     }
 
+  
     #search a crhomosome center
     bpMidVec <- vector(length=chrNum)
     for (i in chroms){

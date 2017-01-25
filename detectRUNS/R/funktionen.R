@@ -393,14 +393,14 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   defaultParam <- list("nOpposite"=0,"nMiss"=0,"runH"=0,"lastPos"=mapFile$bps[1],"startPos"=mapFile$bps[1],"lengte"=0)
   param <- defaultParam
 
-  print(paste("initialized parameters:",param))
+  #print(paste("initialized parameters:",param))
 
   #initialize dataframe of results
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
                     "from"=integer(0),"to"=integer(0),"lengthBps"=numeric(0))
 
   for (i in seq_along(indGeno)) {
-
+   
     #check when chromosome changes
     currentChrom <- mapFile$Chrom[i]
     if (currentChrom!=startChrom) {
@@ -455,7 +455,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       param$nOpposite <- param$nOpposite + 1
       param$runH <- param$runH+1;
     }
-
+    print(param)
     #check if max n. of missing genotypes has been reached
     if (param$nMiss >= maxMiss) {
 
@@ -503,7 +503,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
     param$lastPos <- mapFile$bps[i]
     param$lengte <- (param$lastPos-param$startPos)
-    # print(paste("runH at:",runH))
+    #print(paste("runH at:",param$runH))
   }
 
   # debug
