@@ -390,10 +390,11 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   #initialize variables
   startChrom <- min(mapFile$Chrom) # first chromosome in ordered mapFile
 
-  defaultParam <- list("nOpposite"=0,"nMiss"=0,"runH"=0,"lastPos"=mapFile$bps[1],"startPos"=mapFile$bps[1],"lengte"=0)
-  param <- defaultParam
+  lastPos=mapFile$bps[1]
+  startPos=mapFile$bps[1]
 
-  #print(paste("initialized parameters:",param))
+  defaultParam <- list("nOpposite"=0,"nMiss"=0,"runH"=0,"lengte"=0)
+  param <- defaultParam
 
   #initialize dataframe of results
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
@@ -410,16 +411,18 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
         res <- rbind.data.frame(
           res,
-          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
-                     "to"=lastPos, "lengthBps"=lengte)
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=startPos,
+                     "to"=lastPos, "lengthBps"=param$lengte)
         )
       }
 
       param <- defaultParam
+      lastPos=mapFile$bps[i]
+      startPos=mapFile$bps[i]
     }
 
     #calculate gap between consecutive SNP
-    gap <- (mapFile$bps[i] - param$lastPos)
+    gap <- (mapFile$bps[i] - lastPos)
 
     #check if current gap is larger than max allowed gap
     if (gap>=maxGap) {
@@ -428,12 +431,14 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
         res <- rbind.data.frame(
           res,
-          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
-                     "to"=lastPos, "lengthBps"=lengte)
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=startPos,
+                     "to"=lastPos, "lengthBps"=param$lengte)
         )
       }
 
       param <- defaultParam
+      lastPos=mapFile$bps[i]
+      startPos=mapFile$bps[i]
     }
 
     #begin calculating runs (heterozygosity or homozygosity depending on the ROHet argument)
@@ -463,12 +468,14 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
         res <- rbind.data.frame(
           res,
-          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
-                     "to"=lastPos, "lengthBps"=lengte)
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=startPos,
+                     "to"=lastPos, "lengthBps"=param$lengte)
         )
       }
 
       param <- defaultParam
+      lastPos=mapFile$bps[i]
+      startPos=mapFile$bps[i]
     }
 
     #check if max n. of opposite genotypes has been reached
@@ -478,12 +485,14 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
         res <- rbind.data.frame(
           res,
-          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
-                     "to"=lastPos, "lengthBps"=lengte)
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=startPos,
+                     "to"=lastPos, "lengthBps"=param$lengte)
         )
       }
 
       param <- defaultParam
+      lastPos=mapFile$bps[i]
+      startPos=mapFile$bps[i]
     }
 
     #check if we are at the end of the genome
@@ -493,17 +502,20 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
         res <- rbind.data.frame(
           res,
-          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=param$startPos,
-                     "to"=lastPos, "lengthBps"=lengte)
+          data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,"from"=startPos,
+                     "to"=lastPos, "lengthBps"=param$lengte)
         )
       }
 
       param <- defaultParam
+      lastPos=mapFile$bps[i]
+      startPos=mapFile$bps[i]
     }
 
-    param$lastPos <- mapFile$bps[i]
-    param$lengte <- (param$lastPos-param$startPos)
-    #print(paste("runH at:",param$runH))
+
+    lastPos <- mapFile$bps[i]
+    param$lengte <- (lastPos-startPos)
+    # print(paste("runH at:",runH))
   }
 
   # debug
