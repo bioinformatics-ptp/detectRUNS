@@ -443,13 +443,6 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
     #begin calculating runs (heterozygosity or homozygosity depending on the ROHet argument)
     #count also n. of missing and opposite genotypes
-#     if(indGeno[i]==typ) {
-#       runH <- runH+1;
-#     } else if (indGeno[i]==abs(1-typ)) {
-#       nOpposite <- nOpposite + 1
-#     } else if (is.na(indGeno[i])) {
-#       nMiss <- nMiss + 1
-#     }
 
     if(is.na(indGeno[i])) { #check on missingness (otherwise it couldn't count runs!)
       param$nMiss <- param$nMiss + 1
@@ -460,9 +453,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       param$nOpposite <- param$nOpposite + 1
       param$runH <- param$runH+1;
     }
-    print(param)
+    
     #check if max n. of missing genotypes has been reached
-    if (param$nMiss >= maxMiss) {
+    if (param$nMiss > maxMiss) {
 
       if(param$runH > minSNP & param$lengte >= minLengthBps) {
 
@@ -479,7 +472,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
     }
 
     #check if max n. of opposite genotypes has been reached
-    if (param$nOpposite >= maxOppositeGenotype) {
+    if (param$nOpposite > maxOppositeGenotype) {
 
       if(param$runH > minSNP & param$lengte >= minLengthBps) {
 
@@ -515,7 +508,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
     lastPos <- mapFile$bps[i]
     param$lengte <- (lastPos-startPos)
-    # print(paste("runH at:",runH))
+    #print(paste("runH at:",param$runH))
   }
 
   # debug
