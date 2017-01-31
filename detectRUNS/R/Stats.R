@@ -444,3 +444,132 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
 
 
 
+
+#' Summary table  for Runs file
+#' Report a list data frame for all analisys
+#'
+#' @param genotype_path Plink ped file (for SNP position)
+#' @param mapfile_path Plink map file (for SNP position)
+#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param threshold default 0.7
+#'
+#' @details
+#' Table
+#'
+#' @return FILIPPO
+#' @export
+#'
+#' @examples
+#'
+#'
+
+table_roh <- function(runs,genotype_path, mapfile_path, threshold = 0.5) {
+  
+  #set a threshold
+  threshold_used=threshold*100
+  print(paste('Threshold used:',threshold_used))
+  
+  #change colnames in runs file
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  
+  #read map file
+  if(file.exists(mapfile_path)){
+    # using data.table to read data
+    mappa <- data.table::fread(mapfile_path, header = F)
+  } else {
+    stop(paste("file", mapfile_path, "doesn't exists"))
+  }
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  
+  #Start calculation % SNP in ROH
+  print("Calculation % SNP in ROH") #FILIPPO
+  all_SNPinROH <- data.frame("SNP_NAME"=character(),
+                             "CHR"=integer(),
+                             "POSITION"=numeric(),
+                             "COUNT"=integer(),
+                             "BREED"=factor(),
+                             "PERCENTAGE"=numeric(),
+                             stringsAsFactors=FALSE)
+  
+  # create progress bar
+  total <- length(unique(runs$CHROMOSOME))
+  print(paste('Chromosome founds: ',total)) #FILIPPO
+  n=0
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  
+  #SNP in ROH
+  for (chrom in sort(unique(runs$CHROMOSOME))) {
+    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    mapKrom <- mappa[mappa$CHR==chrom,]
+    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
+    all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
+    n=n+1
+    setTxtProgressBar(pb, n)
+  }
+  close(pb)
+  print("Calculation % SNP in ROH finish") #FILIPPO
+  
+  all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
+
+  final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
+                            "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
+  
+
+  #print(head(all_SNPinROH))
+  group_list=as.vector(unique(all_SNPinROH$BREED))
+
+  for (grp in group_list){
+
+    group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
+    #print(group_subset)
+    
+    print(paste('controllo questa: ',grp))
+
+    #variable
+    old_pos=group_subset[1,7]
+    snp_pos1=group_subset[1,3]
+    Start_SNP=group_subset[1,1]
+    snp_count=0
+    
+    x=2
+    while(x <= length(rownames(group_subset))) {
+      
+      snp_count = snp_count + 1
+      new_pos=group_subset[x,7]
+      old_pos=group_subset[x-1,7]
+      chr_old=group_subset[x-1,2]
+      chr_new =group_subset[x,2]
+      
+      #print(paste('X --> ',x,' new:',new_pos,' Old:',old_pos))
+      diff=new_pos-old_pos
+      
+      if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
+        print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
+        #print(group_subset[x-1,])
+        #print(group_subset[x,])
+        final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5], 
+                                                                           "Start_SNP"=Start_SNP,
+                                                                           "End_SNP"=group_subset[x-1,1],
+                                                                           "chrom"=group_subset[x-1,2],
+                                                                           "nSNP"=snp_count,
+                                                                           "from"=snp_pos1,
+                                                                           "to"=group_subset[x-1,3]))
+        
+        #reset variable
+        snp_count=0
+        snp_pos1=group_subset[x,3]
+        Start_SNP=group_subset[x,1]
+      }
+      
+      #upgrade x value
+      x <- x+1
+      
+    }
+  }
+  return(final_table)
+}
+
+
+
+
