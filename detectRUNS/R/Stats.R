@@ -451,7 +451,7 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
 #' @param genotype_path Plink ped file (for SNP position)
 #' @param mapfile_path Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
-#' @param threshold default 0.7
+#' @param threshold value 0 to 1 (default 0.7)
 #'
 #' @details
 #' Table
@@ -463,15 +463,12 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
 #'
 #'
 
-table_roh <- function(runs,genotype_path, mapfile_path, threshold = 0.5) {
-  
+table_roh <- function(runs=NULL,SnpInRuns=NULL,genotype_path, mapfile_path, threshold = 0.5) {
+
   #set a threshold
   threshold_used=threshold*100
   print(paste('Threshold used:',threshold_used))
-  
-  #change colnames in runs file
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  
+
   #read map file
   if(file.exists(mapfile_path)){
     # using data.table to read data
@@ -482,49 +479,67 @@ table_roh <- function(runs,genotype_path, mapfile_path, threshold = 0.5) {
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
   
-  #Start calculation % SNP in ROH
-  print("Calculation % SNP in ROH") #FILIPPO
-  all_SNPinROH <- data.frame("SNP_NAME"=character(),
-                             "CHR"=integer(),
-                             "POSITION"=numeric(),
-                             "COUNT"=integer(),
-                             "BREED"=factor(),
-                             "PERCENTAGE"=numeric(),
-                             stringsAsFactors=FALSE)
   
-  # create progress bar
-  total <- length(unique(runs$CHROMOSOME))
-  print(paste('Chromosome founds: ',total)) #FILIPPO
-  n=0
-  pb <- txtProgressBar(min = 0, max = total, style = 3)
-  
-  #SNP in ROH
-  for (chrom in sort(unique(runs$CHROMOSOME))) {
-    runsChrom <- runs[runs$CHROMOSOME==chrom,]
-    mapKrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
-    all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
-    n=n+1
-    setTxtProgressBar(pb, n)
+  if(!is.null(runs) & is.null(SnpInRuns)){
+    print('I found only Runs data frame. GOOD!')
+    
+    #change colnames in runs file
+    names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+    
+    #Start calculation % SNP in ROH
+    print("Calculation % SNP in ROH") #FILIPPO
+    all_SNPinROH <- data.frame("SNP_NAME"=character(),
+                               "CHR"=integer(),
+                               "POSITION"=numeric(),
+                               "COUNT"=integer(),
+                               "BREED"=factor(),
+                               "PERCENTAGE"=numeric(),
+                               stringsAsFactors=FALSE)
+    
+    # create progress bar
+    total <- length(unique(runs$CHROMOSOME))
+    print(paste('Chromosome founds: ',total)) #FILIPPO
+    n=0
+    pb <- txtProgressBar(min = 0, max = total, style = 3)
+    
+    #SNP in ROH
+    for (chrom in sort(unique(runs$CHROMOSOME))) {
+      runsChrom <- runs[runs$CHROMOSOME==chrom,]
+      mapKrom <- mappa[mappa$CHR==chrom,]
+      snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
+      all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
+      n=n+1
+      setTxtProgressBar(pb, n)
+    }
+    close(pb)
+    print("Calculation % SNP in ROH finish") #FILIPPO
+    
   }
-  close(pb)
-  print("Calculation % SNP in ROH finish") #FILIPPO
+  else if (is.null(runs) & !is.null(SnpInRuns)) {
+    print('I found only SNPinRuns data frame. GOOD!')
+    all_SNPinROH=SnpInRuns
+    
+  }
+  else{
+    stop('You gave me Runs and SNPinRuns! Please choose one!')
+  }
   
+  #consecutive number
   all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
 
+  #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
                             "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
   
 
-  #print(head(all_SNPinROH))
+  #vector of breeds
   group_list=as.vector(unique(all_SNPinROH$BREED))
 
   for (grp in group_list){
-
-    group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-    #print(group_subset)
-    
     print(paste('controllo questa: ',grp))
+    
+    #create subset for group/thresold
+    group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
 
     #variable
     old_pos=group_subset[1,7]
@@ -541,13 +556,10 @@ table_roh <- function(runs,genotype_path, mapfile_path, threshold = 0.5) {
       chr_old=group_subset[x-1,2]
       chr_new =group_subset[x,2]
       
-      #print(paste('X --> ',x,' new:',new_pos,' Old:',old_pos))
       diff=new_pos-old_pos
       
       if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
         print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
-        #print(group_subset[x-1,])
-        #print(group_subset[x,])
         final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5], 
                                                                            "Start_SNP"=Start_SNP,
                                                                            "End_SNP"=group_subset[x-1,1],
@@ -567,6 +579,8 @@ table_roh <- function(runs,genotype_path, mapfile_path, threshold = 0.5) {
       
     }
   }
+  
+  rownames(final_table) <- seq(1,length(row.names(final_table)))
   return(final_table)
 }
 
