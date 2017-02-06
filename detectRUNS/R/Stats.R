@@ -287,6 +287,7 @@ Froh_inbreeding_Class <- function(file_runs,path_map,Class=2){
     head(file_runs)
     
     subset_roh <- file_runs[file_runs$MB >= i,]  
+    if(nrow(subset_roh)<1) next
     
     Froh_temp <- ddply(subset_roh,.(IND),summarize,sum=sum(LENGTH))
     Froh_temp[[paste("Froh_Class_",i,sep="")]] =  Froh_temp$sum/sum(LengthGenome$CHR_LENGTH)
@@ -367,7 +368,7 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(GROUP,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ GROUP ,value.var = "sum")
-  summary_ROH_mean_class$CLASS = name_CLASS[0:5]
+  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
   summary_ROH_mean_class
   
   #RESULTS!!!!!
