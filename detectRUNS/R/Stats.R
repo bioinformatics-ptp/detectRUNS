@@ -348,7 +348,6 @@ Froh_inbreeding_Class <- function(file_runs,path_map,Class=2){
 #'
 #'
 
-
 runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
   print("inizio a controllare i file")
   print(paste("classe usata:",Class))
@@ -402,17 +401,17 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
   # summary_ROH_mean_chr
 
   #RESULTS!!!!!
-  summary_ROH_count = as.data.frame( daply(runs,.(CLASS,GROUP),nrow))
-  summary_ROH_percentage = t(as.data.frame( t(summary_ROH_count)/colSums(summary_ROH_count,na.rm=TRUE)))
+  summary_ROH_count = ddply(runs,.(CLASS,GROUP),nrow)
+  names(summary_ROH_count)[3] <- "nRuns"
+  summary_ROH_percentage <- summary_ROH_count[,c(1,2)]
+  summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
 
   #RESULTS!!!!!
-  summary_ROH_count_chr = as.data.frame( daply(runs,.(CHROMOSOME,GROUP),nrow))
-  summary_ROH_count_chr$CHROMOSOME <- row.names(summary_ROH_count_chr)
-  summary_ROH_count_chr <- summary_ROH_count_chr[,c(ncol(summary_ROH_count_chr),1:ncol(summary_ROH_count_chr)-1)]
+  summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
+  names(summary_ROH_count_chr)[3] <- "nRuns"
   summary_ROH_count_chr <- reorderDF(summary_ROH_count_chr)
-  summary_ROH_percentage_chr = as.data.frame(t(as.data.frame( t(summary_ROH_count_chr[,-1])/colSums(summary_ROH_count_chr[,-1],na.rm=TRUE))))
-  summary_ROH_percentage_chr$CHROMOSOME <- row.names(summary_ROH_percentage_chr)
-  summary_ROH_percentage_chr <- summary_ROH_percentage_chr[,c(ncol(summary_ROH_percentage_chr),1:ncol(summary_ROH_percentage_chr)-1)]
+  summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
+  summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
 
   result_summary <- list(summary_ROH_count_chr=summary_ROH_count_chr,
                           summary_ROH_percentage_chr=summary_ROH_percentage_chr,
