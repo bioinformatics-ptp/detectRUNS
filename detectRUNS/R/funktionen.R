@@ -171,11 +171,12 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-(2*windowSize))),seq(windowSize,1))
+  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-windowSize-1)),seq(windowSize,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
-  iWin <- enumerate(nWin)
-  hWin <- sapply(iWin, function(n) sum(RunVector[n$index:(n$index+n$value-1)]), simplify = TRUE)
+  # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
+  iInd <- izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
+  hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
@@ -403,7 +404,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
   ##########################################################################################
   #PAOLO (c++)
   for (i in seq_along(indGeno)) {
-    
+
     #check for last SNP
     if (i==length(indGeno) & indGeno[i]==typ & !is.na(indGeno[i]) ){
       param$runH <- param$runH+1 ; lastPos=mapFile$bps[i-1] ; param$lengte <- (lastPos-startPos)
@@ -413,8 +414,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
                                                "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
       }
     }
-    
-    #Check for Chromosome    
+
+    #Check for Chromosome
     currentChrom <- mapFile$Chrom[i]
     if (currentChrom!=startChrom ) {
       if(param$runH >= minSNP & param$lengte >= minLengthBps) {
@@ -424,10 +425,10 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       startChrom <- currentChrom
       param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
     }
-    
+
     #calculate gap between consecutive SNP
     gap <- (mapFile$bps[i] - lastPos)
-    
+
     #check if current gap is larger than max allowed gap
     if (gap>=maxGap ) {
       if(param$runH >= minSNP & param$lengte >= minLengthBps) {
@@ -437,7 +438,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
     }
 
-    #All variable 0 if it's a first    
+    #All variable 0 if it's a first
     if (param$runH == 0){
       param <- defaultParam ; lastPos=mapFile$bps[i] ;  startPos=mapFile$bps[i]
       if (indGeno[i] == typ & !is.na(indGeno[i])){
@@ -446,7 +447,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
         next
       }else{next}
     }
-    
+
     #Start for ==
     if (indGeno[i] == typ & !is.na(indGeno[i])){
       param$runH <- param$runH+1 ; lastPos=mapFile$bps[i] ; param$lengte <- (lastPos-startPos)
@@ -474,7 +475,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
         next
       }
     }
-    #start if 'NA'   
+    #start if 'NA'
     else if (is.na(indGeno[i])){
       param$nMiss <- param$nMiss + 1
       if (param$nMiss <= maxMiss){
@@ -496,9 +497,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
         next
       }
     }
-  }  
-  
-   
+  }
+
+
   # debug
   if(nrow(res) > 0) {
     message(paste("N. of RUNS for individual", ind, "is:", nrow(res)))
