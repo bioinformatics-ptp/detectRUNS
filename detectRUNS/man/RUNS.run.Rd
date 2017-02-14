@@ -6,8 +6,8 @@
 \usage{
 RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
-  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
-  method = c("slidingWindow", "consecutiveRuns"))
+  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10, maxOppRun,
+  maxMissRun, method = c("slidingWindow", "consecutiveRuns"))
 }
 \arguments{
 \item{genotype_path}{genotype (.ped) file location}
@@ -33,6 +33,10 @@ RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
 
 \item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
 (only for the slidingWindow method)}
+
+\item{maxOppRun}{max n. of opposite genotype SNPs in the run (optional)}
+
+\item{maxMissRun}{max n. of missing SNPs in the run (optional)}
 
 \item{method}{one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)}
 }
