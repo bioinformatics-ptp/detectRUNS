@@ -32,6 +32,19 @@ This is a core function. The functions to detect RUNS are slidden over the genom
 }
 \examples{
 #not yet
-
+windowSize <- 5
+step= 1
+maxOppositeGenotype <- 1
+maxMiss <- 1
+maxGap <- 10^5
+ROHet= FALSE
+x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
+       1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
+gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
+          4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
+test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
+# test is false
+x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+       1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
 }
 

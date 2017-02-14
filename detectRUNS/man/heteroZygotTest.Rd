@@ -4,7 +4,7 @@
 \alias{heteroZygotTest}
 \title{Function to check whether a window is (loosely) heterozygous or not}
 \usage{
-heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
 }
 \arguments{
 \item{x}{vector of 0/1 genotypes (from genoConvert())}
@@ -16,6 +16,10 @@ heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
 \item{maxMiss}{max n. of missing in a window}
 
 \item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
+
+\item{i}{index along the genome (genome-vector for each individual)}
+
+\item{windowSize}{size of window (n. of SNP)}
 }
 \value{
 TRUE/FALSE (whether a window is heterozygous or NOT)
@@ -27,17 +31,19 @@ This is a core function. Parameters on how to consider a window heterozygous are
 maxHom <- 1
 maxMiss <- 1
 maxGap <- 10^6
-x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+i <- 150 #random index
+x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
 gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
-test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+windowSize <- length(x)
+test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
 # test is false
 x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-       1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+       1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
 gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
 # test is true
 
 }

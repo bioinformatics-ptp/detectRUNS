@@ -4,7 +4,7 @@
 \alias{homoZygotTest}
 \title{Function to check whether a window is (loosely) homozygous or not}
 \usage{
-homoZygotTest(x, gaps, maxHet, maxMiss, maxGap)
+homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 }
 \arguments{
 \item{x}{vector of 0/1 genotypes (from genoConvert())}
@@ -16,6 +16,10 @@ homoZygotTest(x, gaps, maxHet, maxMiss, maxGap)
 \item{maxMiss}{max n. of missing in a window}
 
 \item{maxGap}{max distance between consecutive SNP in a window to be stil considered a potential run}
+
+\item{i}{index along the genome (genome-vector for each individual)}
+
+\item{windowSize}{size of window (n. of SNP)}
 }
 \value{
 TRUE/FALSE (whether a window is homozygous or NOT)
@@ -27,11 +31,13 @@ This is a core function. Parameters on how to consider a window homozygous are h
 maxHom <- 1
 maxMiss <- 1
 maxGap <- 10^6
-x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+i <- 175
+x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+windowSize <- length(x)
+test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
 # test is true
 x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)

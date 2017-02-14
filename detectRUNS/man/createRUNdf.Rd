@@ -6,7 +6,7 @@
 Requires a map file (other filename to read or R object)}
 \usage{
 createRUNdf(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
-  minDensity = 1/10)
+  minDensity = 1/10, oppositeAndMissingSNP, maxOppRun, maxMissRun)
 }
 \arguments{
 \item{snpRun}{vector of TRUE/FALSE (is the SNP in a RUN?)}
@@ -18,6 +18,12 @@ createRUNdf(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
 \item{minLengthBps}{minimum length of run in bps (defaults to 1000 bps = 1 kbps)}
 
 \item{minDensity}{minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)}
+
+\item{oppositeAndMissingSNP}{indexed array of missing and opposite genotypes (SNP order in the genome is the index)}
+
+\item{maxOppRun}{max n. of opposite genotype SNPs in the run (not in the window!)}
+
+\item{maxMissRun}{max n. of missing SNPs in the run (not in the window!)}
 }
 \value{
 a data.frame with RUNS per animal
