@@ -98,18 +98,11 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     group <- as.character(animal$FID)
 
     # use sliding windows
-<<<<<<< HEAD
-    y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    #y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    #snpRun <- snpInRunCpp(y,windowSize,threshold)
-    snpRun <- snpInRun(y,windowSize,threshold)
-    dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
-=======
     # y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     res <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    snpRun <- snpInRunCpp(res$windowStatus,windowSize,threshold)
+    #snpRun <- snpInRunCpp(res$windowStatus,windowSize,threshold)
+    snpRun <- snpInRun(res$windowStatus,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity,res$oppositeAndMissingGenotypes,maxOppRun,maxMissRun)
->>>>>>> refs/remotes/origin/devel
 
     
     # manipulate dRUN to order columns

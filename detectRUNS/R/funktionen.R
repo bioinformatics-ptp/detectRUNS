@@ -215,14 +215,14 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
-  #print(paste("Length of imput vector:",RunVector_length,sep=" "))
-  #print(paste("Window size:",windowSize,sep=" "))
-  #print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
+  # print(paste("Length of imput vector:",RunVector_length,sep=" "))
+  # print(paste("Window size:",windowSize,sep=" "))
+  # print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
   nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-windowSize-1)),seq(windowSize,1))
-
+  
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
   iInd <- izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
@@ -265,7 +265,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10,oppositeAndMissingSNP, maxOppRun, maxMissRun) {
-
+  
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
   to <- c(cutPoints,length(snpRun))
