@@ -96,9 +96,12 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
 
     # use sliding windows
     y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    snpRun <- snpInRunCpp(y,windowSize,threshold)
+    #y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    #snpRun <- snpInRunCpp(y,windowSize,threshold)
+    snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
 
+    
     # manipulate dRUN to order columns
     dRUN$id <- rep(ind, nrow(dRUN))
     dRUN$group <- rep(group, nrow(dRUN))
