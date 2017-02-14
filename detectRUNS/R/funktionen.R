@@ -143,7 +143,7 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
   print(paste(
     "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file):",
     length(result),sep=" "))
-
+  
   return(result)
 }
 
@@ -165,24 +165,25 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
-  print(paste("Length of imput vector:",RunVector_length,sep=" "))
-  print(paste("Window size:",windowSize,sep=" "))
-  print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
+  #print(paste("Length of imput vector:",RunVector_length,sep=" "))
+  #print(paste("Window size:",windowSize,sep=" "))
+  #print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
   #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-(2*windowSize))),seq(windowSize,1))
-
+  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-windowSize-1)),seq(windowSize,1))
+  
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
-  iWin <- enumerate(nWin)
-  hWin <- sapply(iWin, function(n) sum(RunVector[n$index:(n$index+n$value-1)]), simplify = TRUE)
+  # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
+  iInd <- izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
+  hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]),simplify=TRUE)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
 
+  
   #vector of SNP belonging to a ROH
   snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
-
   print(paste(
     "Lenght of output file:",
     length(snpRun),sep=" "))
@@ -210,15 +211,16 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @examples #not yet
 #'
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
+ 
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
   to <- c(cutPoints,length(snpRun))
 
   iLaenge <- itertools::izip(a = from,b = to)
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
-
+  
   dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
-  dL <- dL[dL$nSNP>minSNP,]
+  dL <- dL[dL$nSNP>=minSNP,]
   dL <- na.omit(dL)
 
   chroms <- mapa[dL$from,"Chrom"]
@@ -229,10 +231,11 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
+  
   #filters on minimum run length and minimum SNP density
-  dL <- dL[dL$lengthBps > minLengthBps,]
+  dL <- dL[dL$lengthBps >= minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
-  dL <- dL[dL$SNPdensity > minDensity, ]
+  dL <- dL[dL$SNPdensity >= minDensity, ]
   dL$SNPdensity <- NULL
 
   #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
