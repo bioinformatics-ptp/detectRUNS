@@ -23,5 +23,8 @@ Imports:
     Rcpp,
     data.table
 RoxygenNote: 5.0.1
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp
+VignetteBuilder: knitr

@@ -23,6 +23,8 @@
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
 #' (only for the slidingWindow method)
+#' @param maxOppRun max n. of opposite genotype SNPs in the run (optional)
+#' @param maxMissRun max n. of missing SNPs in the run (optional)
 #' @param method one of either 'slidingWindow' (a la Plink) or 'consecutiveRuns' (a la Marras)
 #'
 #' @details
@@ -60,6 +62,7 @@
 RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
                      minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
                      maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
+                     maxOppRun, maxMissRun,
                      method=c('slidingWindow','consecutiveRuns')) {
 
   # debug
@@ -95,11 +98,18 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     group <- as.character(animal$FID)
 
     # use sliding windows
+<<<<<<< HEAD
     y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     #y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     #snpRun <- snpInRunCpp(y,windowSize,threshold)
     snpRun <- snpInRun(y,windowSize,threshold)
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
+=======
+    # y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    res <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    snpRun <- snpInRunCpp(res$windowStatus,windowSize,threshold)
+    dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity,res$oppositeAndMissingGenotypes,maxOppRun,maxMissRun)
+>>>>>>> refs/remotes/origin/devel
 
     
     # manipulate dRUN to order columns
