@@ -189,9 +189,9 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
     #for(i in (length(spots)+1):data_length) result[i] <- homoZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   }
 
-  print(paste(
-    "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file):",
-    length(result),sep=" "))
+  # print(paste(
+  #   "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file):",
+  #   length(result),sep=" "))
 
   return(list("windowStatus"=result,"oppositeAndMissingGenotypes"=oppositeAndMissingGenotypes))
 
@@ -234,9 +234,9 @@ snpInRun <- function(RunVector,windowSize,threshold) {
   
   #vector of SNP belonging to a ROH
   snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
-  print(paste(
-    "Lenght of output file:",
-    length(snpRun),sep=" "))
+  # print(paste(
+  #   "Lenght of output file:",
+  #   length(snpRun),sep=" "))
 
   return(snpRun)
 }
