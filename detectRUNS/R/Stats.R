@@ -211,7 +211,7 @@ plot_Violin_ROH <- function(file_runs, method=c("sum","mean")){
 #' @export
 #'
 #' @examples
-#' Froh_new <- Froh_inbreeding(file_runs = runs2, path_map = path_map2, genome_wide = TRUE)
+#' 
 
 
 Froh_inbreeding <- function(file_runs,path_map,genome_wide=TRUE){
@@ -267,7 +267,7 @@ Froh_inbreeding <- function(file_runs,path_map,genome_wide=TRUE){
 #' @export
 #'
 #' @examples
-#'Froh_new_class <- Froh_inbreeding_Class(file_runs = runs2, path_map = path_map2, Class = 2)
+#'
 #'
 
 
