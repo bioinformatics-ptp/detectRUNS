@@ -211,7 +211,7 @@ plot_Violin_ROH <- function(file_runs, method=c("sum","mean")){
 #' @export
 #'
 #' @examples
-#' 
+#'
 
 
 Froh_inbreeding <- function(file_runs,path_map,genome_wide=TRUE){
@@ -409,7 +409,7 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
   #RESULTS!!!!!
   summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
   names(summary_ROH_count_chr)[3] <- "nRuns"
-  summary_ROH_count_chr <- reorderDF(summary_ROH_count_chr)
+  summary_ROH_count_chr <- reorderDF(dcast(summary_ROH_count_chr,CHROMOSOME ~ GROUP ,value.var = "nRuns"))
   summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
   summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
 
