@@ -47,10 +47,10 @@ test_that("Testing snpInRun", {
     y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # calculate snpRun (R mode)
-    snpRun <- snpInRun(y, windowSize, threshold)
+    snpRun <- snpInRun(y$windowStatus, windowSize, threshold)
 
     # calculate snpRun (cpp)
-    snpRunCpp <- snpInRunCpp(y, windowSize, threshold)
+    snpRunCpp <- snpInRunCpp(y$windowStatus, windowSize, threshold)
 
     # test every record
     expect_identical(snpRun, snpRunCpp)
