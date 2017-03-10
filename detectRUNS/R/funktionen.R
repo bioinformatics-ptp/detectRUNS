@@ -48,24 +48,15 @@ genoConvert <- function(x) {
 #' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 #' windowSize <- length(x)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
 #' # test is true
 #' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 #'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 #' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
 #'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
 #' # test is false
 #'
-
-# OLD FUNCTION
-# homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
-#
-#   nHet <- sum(x==1,na.rm=TRUE)
-#   nMiss <- sum(is.na(x))
-#   ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
-# }
-
 homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
   nHet <- sum(x==1,na.rm=TRUE)
@@ -215,23 +206,22 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
-  # print(paste("Length of imput vector:",RunVector_length,sep=" "))
+  # print(paste("Length of input vector:",RunVector_length,sep=" "))
   # print(paste("Window size:",windowSize,sep=" "))
   # print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
-  #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-windowSize-1)),seq(windowSize,1))
-  
+  nWin <- c(seq(1,windowSize), rep(windowSize,(RunVector_length-windowSize-1)), seq(windowSize,1))
+
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
-  iInd <- izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
+  iInd <- itertools::izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
   hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
 
-  
+
   #vector of SNP belonging to a ROH
   snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
   # print(paste(
@@ -265,14 +255,14 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 
 createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10,oppositeAndMissingSNP, maxOppRun, maxMissRun) {
-  
+
   cutPoints <- which(diff(sign(snpRun))!=0)
   from <- c(1,cutPoints+1)
   to <- c(cutPoints,length(snpRun))
 
   iLaenge <- itertools::izip(a = from,b = to)
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
-  
+
   dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
   dL <- dL[dL$nSNP>=minSNP,]
   dL <- na.omit(dL)
@@ -285,7 +275,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
-  
+
   #filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps >= minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps

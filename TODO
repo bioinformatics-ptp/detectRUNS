@@ -6,3 +6,28 @@
 * plotSnpsInRuns need to be fixed (genotype.raw and plink.map were removed)
 
 * get n of columns of a ped file via CPP
+
+* remove all subsetChillingham.* files
+  - remove all subsetChillingham.* occurence in test e documentation
+  - remove files from repository (bfg?)
+  - replace with Kijas2016_Sheep_subset
+
+* Fix notes:
+  - Malformed Description field: should contain one or more complete sentences
+    (ex. http://r.789695.n4.nabble.com/what-constitutes-a-complete-sentence-td4709358.html -
+    subject verb object)
+  - no visible binding for global variable <name>:
+    http://stackoverflow.com/questions/8096313/no-visible-binding-for-global-variable-note-in-r-cmd-check
+  - Dropping empty section \examples
+
+* Fix warnings:
+  - Undocumented arguments in documentation object
+  - Argument items with no description in Rd object
+
+* Fix errors:
+  - Running examples in ‘detectRUNS-Ex.R’ failed
+
+* Cpp support
+
+* Private functions
+  - tests?
