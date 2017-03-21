@@ -1,7 +1,9 @@
+
 #include <Rcpp.h>
 #include <string>
 #include <sstream>
 #include <fstream>
+
 
 // http://stackoverflow.com/questions/12975341/to-string-is-not-a-member-of-std-says-g
 namespace patch {
@@ -12,9 +14,20 @@ namespace patch {
   }
 }
 
+
+// http://stackoverflow.com/questions/17694579/use-stdfill-to-populate-vector-with-increasing-numbers
+struct IncGenerator {
+  int current_;
+  IncGenerator (int start) : current_(start) {}
+  int operator() () { return current_++; }
+};
+
+
 #include <iostream>
 
+
 using namespace Rcpp;
+
 
 //' Convert 0/1/2 genotypes to 0/1
 //'
@@ -55,6 +68,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 
   return results;
 }
+
 
 //' Convert ped genotypes to 0/1
 //'
@@ -123,7 +137,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 
   return results;
 }
-
 
 
 //' Function to check whether a window is (loosely) homozygous or not
@@ -345,20 +358,74 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   // get vector size
   int RunVector_length = RunVector.size();
 
-  // debug
-  // msg(std::string("Length of input vector: "), RunVector_length);
-  // msg(std::string("Window size: "), windowSize);
-  // msg(std::string("Threshold for calling SNP in a Run: ") + patch::to_string(threshold));
-
   // compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  // initialize a vector with window as default value
-  std::vector<int> nWin(RunVector_length, windowSize);
+  // initialize a vector with window as default value. I need to have nWin size as
+  // the number of windows is size would be 1
+  int nWin_length = RunVector_length + windowSize -1 ;
+  std::vector<int> nWin(nWin_length, windowSize);
 
   // then fix values at both sides
   for (int i=0; i<windowSize; i++) {
     nWin[i] = i+1;
-    nWin[RunVector_length - i-1] = i+1;
+    nWin[nWin_length - i-1] = i+1;
   }
+
+  // debug
+  for (int i=0; i<20; i++) {
+    Rcout << nWin[i] << " ";
+  }
+  Rcout << "---" << " ";
+
+  for (int i=nWin_length-20; i<nWin_length; i++) {
+    Rcout << nWin[i] << " ";
+  }
+  Rcout << std::endl;
+
+  // create two sets of indices to slice the vector of windows containing or not
+  // a run (RunVector). Since they are array of positions, they should refere to
+  // O based coordinates, since in C++ array starts at 0 index
+  std::vector<int> ind1(nWin_length, 0);
+
+  // initialize with the first element of array.
+  IncGenerator g1(0);
+
+  // Fill with the result of calling g1() repeatedly.
+  // ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length))
+  // since ind1 is a vector of indexes, need to numbering after than R
+  std::generate(ind1.begin()+windowSize-1, ind1.end(), g1);
+
+  // debug
+  for (int i=0; i<25; i++) {
+    Rcout << ind1[i] << " ";
+  }
+  Rcout << "---" << " ";
+
+  for (int i=nWin_length-25; i<nWin_length; i++) {
+    Rcout << ind1[i] << " ";
+  }
+  Rcout << std::endl;
+
+  // define ind2 vector
+  std::vector<int> ind2(nWin_length, RunVector_length-1);
+
+  // initialize with the first element of array
+  IncGenerator g2(0);
+
+  // Fill with the result of calling g2() repeatedly.
+  // ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1))
+  std::generate(ind2.begin(), ind2.end()-windowSize+1, g2);
+
+  // debug
+  for (int i=0; i<25; i++) {
+    Rcout << ind2[i] << " ";
+  }
+
+  Rcout << "---" << " ";
+
+  for (int i=nWin_length-25; i<nWin_length; i++) {
+    Rcout << ind2[i] << " ";
+  }
+  Rcout << std::endl;
 
   // compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   float hWin;
@@ -366,16 +433,20 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   LogicalVector::iterator from, to;
 
   // the returned value, a logical vector with false values as default values
-  LogicalVector snpRun(RunVector_length, false);
+  LogicalVector snpRun(nWin_length, false);
 
-  for (int i=0; i < RunVector_length; i++) {
-    //get from-to index fom nWin. Get iterators
-    from = RunVector.begin() + i;
+  for (int i=0; i < nWin_length; i++) {
+    // get from-to index fom nWin. Get iterators
+    from = RunVector.begin() + ind1[i];
+
     // the to index iterator is excluded
-    to = RunVector.begin() + i + nWin[i];
+    to = RunVector.begin() + ind2[i] + 1;
 
-    //count TRUE in interval
+    // count TRUE in interval
     hWin = std::count(from, to, true);
+
+    // debug: count false
+
 
     //calc quotient
     quotient = hWin/nWin[i];
@@ -385,19 +456,24 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
       snpRun[i] = true;
     }
 
-    //debug
-    // if (i > 20 && i < 30) {
-    //   Rcout << "i: " << i << " hWin: " << hWin << " nWin[i]: "<< nWin[i] << " quotient: " << quotient;
-    //   Rcout << " snpRun[i]: " << snpRun[i] << std::endl;
-    // }
+    // debug
+    if (i==64) {
+      Rcout << "ind1: " << ind1[i] << std::endl;
+      Rcout << "ind2: " << ind2[i] << std::endl;
+      Rcout << "from: " << std::distance(RunVector.begin(),from) << std::endl;
+      Rcout << "to: " << std::distance(RunVector.begin(),to) << std::endl;
+      Rcout << "size: " << std::distance(from, to) << std::endl;
+      Rcout << "hWin: " << hWin << std::endl;
+      Rcout << "nWin[i]: " << nWin[i] << std::endl;
+      Rcout << "quotient: " << quotient << std::endl;
+      Rcout << "snpRun[i]: " << snpRun[i] << std::endl;
+    }
 
   }
 
-  //debug
-  //msg(std::string("Lenght of output vector: "), snpRun.size());
-
   return snpRun;
 }
+
 
 //' Function to return a dataframe of population (POP, ID)
 //'

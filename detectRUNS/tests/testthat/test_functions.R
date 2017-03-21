@@ -43,7 +43,7 @@ test_that("Testing snpInRun", {
   gaps <- diff(mapFile$bps)
 
   # define an internal function
-  is_run <- function(x) {
+  is_run <- function(x, i) {
     y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
 
     # calculate snpRun (R mode)
@@ -53,12 +53,13 @@ test_that("Testing snpInRun", {
     snpRunCpp <- snpInRunCpp(y$windowStatus, windowSize, threshold)
 
     # test every record
-    expect_identical(snpRun, snpRunCpp)
+    info = paste("step", i)
+    expect_identical(snpRun, snpRunCpp, info=info)
   }
 
   # using raw data for testing functions
   for (i in 1:nrow(genotype)) {
-    n_of_individuals[i] <- is_run( as.integer(genotype[i, ]) )
+    n_of_individuals[i] <- is_run( as.integer(genotype[i, ]), i )
   }
 
 })
