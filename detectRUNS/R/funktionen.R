@@ -39,7 +39,7 @@ genoConvert <- function(x) {
 #' @export
 #'
 #' @examples
-#' maxHom <- 1
+#' maxHet <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
 #' i <- 175
@@ -48,20 +48,20 @@ genoConvert <- function(x) {
 #' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 #' windowSize <- length(x)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 #' # test is true
 #' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 #'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 #' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
 #'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 #' # test is false
 #'
 homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
   nHet <- sum(x==1,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  oppositeAndMissingSNP <- array(c(-1,0,9)[match(x,c(0,1,NA))])
+  oppositeAndMissingSNP <- c(-1,0,9)[match(x,c(0,1,NA))]
   oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
   indexSNP <- seq(i,i+windowSize-1)[which(x==1 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
@@ -109,7 +109,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
   nHom <- sum(x==0,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  oppositeAndMissingSNP <- array(c(0,-1,9)[match(x,c(0,1,NA))])
+  oppositeAndMissingSNP <- c(0,-1,9)[match(x,c(0,1,NA))]
   oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
   indexSNP <- seq(i,i+windowSize-1)[which(x==0 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
