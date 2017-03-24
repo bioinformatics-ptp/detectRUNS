@@ -2,7 +2,10 @@ library(testthat)
 library(detectRUNS)
 context("Testing RUNS")
 
-# get file paths
+# TODO:
+# Data for test should be small (don't test on real data)
+
+# get file paths: reference file need to be changed or removed
 genotype_path  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
@@ -12,7 +15,7 @@ test_that("detected ROHet are identical", {
                          ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000,
                          minDensity = 1/10)
 
-  # reading rohet reference
+  # reading rohet reference: this need to be updated
   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
   reference_path <- system.file("extdata", "detected.ROHet.csv", package = "detectRUNS")
   reference_rohet <- read.csv2(reference_path, header = T, stringsAsFactors = FALSE, colClasses = colClasses)

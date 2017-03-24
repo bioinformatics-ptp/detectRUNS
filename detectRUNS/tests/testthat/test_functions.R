@@ -116,72 +116,84 @@ test_that("Testing data conversion", {
 })
 
 test_that("Testing slidingWindow", {
-  # parameters
-  windowSize <- 10
-  threshold <- 0.1
-  minSNP <- 5
-  ROHet <- TRUE
+  # setting parameters
+  windowSize <- 3
+  step <- 1
+  maxGap <- 1000
   maxOppositeGenotype <- 1
   maxMiss <- 1
-  maxGap <- 10^6
-  minLengthBps <- 1000
-  minDensity <- 1/10
 
-  # get genotype data
-  genotype <- chillingham_genotype
-  genotype_raw <- chillingham_raw
+  # setting values for RoHet
+  data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+  gaps <- rep(100, length(data)-1)
 
-  # remove unnecessary fields from the .ped file
-  genotype <- genotype[ ,-c(1:6)]
-  genotype_raw <- genotype_raw[ ,-c(1:6)]
+  # update a gap: setting value higher than threshold
+  gaps[6] <- gaps[6] + maxGap
 
-  # converting ped file into raw matrix
-  genotype <- apply(genotype, 1, pedConvertCpp)
-  genotype <- t(genotype)
+  # setting excpected values
+  windowStatus <- c(F, F, T, T, F, F, T, T, F, F, T, T, T)
+  oppositeAndMissingGenotypes <- c("0", "0", "0", "9", "9", "0", "9")
+  names(oppositeAndMissingGenotypes) <- c(1, 2, 3, 10, 11, 13, 15)
+  expected <- list(windowStatus=windowStatus,
+                   oppositeAndMissingGenotypes=oppositeAndMissingGenotypes)
 
-  # get map data
-  mapFile <- chillingham_map
+  # calling function
+  test <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
+                        ROHet=TRUE, maxOppositeGenotype, maxMiss)
 
-  # setting colnames
-  names(mapFile) <- c("Chrom","SNP","cM","bps")
+  # testing values
+  expect_equal(expected, test, info="testing ROHet")
 
-  # calculating gaps
-  gaps <- diff(mapFile$bps)
+  # setting data for RoHom
+  data <- c(1, 1, 1, 0, 0, 0, 0, 0, 0, NA, NA, 0, 1, 0, NA)
 
-  # define an internal function
-  is_run <- function(x, x_raw) {
-    # call R function
-    y <- slidingWindow(x_raw, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+  # calling function
+  test <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
+                        ROHet=FALSE, maxOppositeGenotype, maxMiss)
 
-    # call cppFunction
-    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+  # testing values
+  expect_equal(expected, test, info="testing ROHom")
 
-    # testing function
-    expect_identical(test, y)
+})
 
-    # call R function for RoHom
-    y <- slidingWindow(x_raw, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
+test_that("Testing slidingWindowCpp", {
+  # setting parameters
+  windowSize <- 3
+  step <- 1
+  maxGap <- 1000
+  maxOppositeGenotype <- 1
+  maxMiss <- 1
 
-    # call cppFunction
-    test <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap=maxGap, ROHet=FALSE, maxOppositeGenotype, maxMiss);
+  # setting values for RoHet
+  data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+  gaps <- rep(100, length(data)-1)
 
-    # testing function
-    expect_identical(test, y)
+  # update a gap: setting value higher than threshold
+  gaps[6] <- gaps[6] + maxGap
 
-    # call R function and change steps
-    y <- slidingWindow(x_raw, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+  # setting excpected values
+  windowStatus <- c(F, F, T, T, F, F, T, T, F, F, T, T, T)
+  oppositeAndMissingGenotypes <- c("0", "0", "0", "9", "9", "0", "9")
+  names(oppositeAndMissingGenotypes) <- c(1, 2, 3, 10, 11, 13, 15)
+  expected <- list(windowStatus=windowStatus,
+                   oppositeAndMissingGenotypes=oppositeAndMissingGenotypes)
 
-    # call cppFunction
-    test <- slidingWindowCpp(x, gaps, windowSize, step=5, maxGap=maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+  # calling function
+  test <- slidingWindowCpp(data, gaps, windowSize, step=step, maxGap=maxGap,
+                           ROHet=TRUE, maxOppositeGenotype, maxMiss)
 
-    # testing function
-    expect_identical(test, y)
-  }
+  # testing values
+  expect_equal(expected, test, info="testing ROHet")
 
-  # test genotype with ped file for Cpp function and raw file for R functions
-  for (i in 1:nrow(genotype)) {
-    is_run( genotype[i, ], as.integer(genotype_raw[i, ]) )
-  }
+  # setting data for RoHom
+  data <- c(1, 1, 1, 0, 0, 0, 0, 0, 0, NA, NA, 0, 1, 0, NA)
+
+  # calling function
+  test <- slidingWindowCpp(data, gaps, windowSize, step=step, maxGap=maxGap,
+                           ROHet=FALSE, maxOppositeGenotype, maxMiss)
+
+  # testing values
+  expect_equal(expected, test, info="testing ROHom")
 
 })
 
