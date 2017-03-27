@@ -32,7 +32,7 @@ test_that("Marker differ in size", {
   # subset mapfile
   mapFile <- mapFile[100, ]
 
-  # write a fake mapfile
+  # write a fake mapfile (TODO: in temporary dir?)
   fake_mapfile = "fake_mapfile.map"
   write.table(mapFile, fake_mapfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
 
