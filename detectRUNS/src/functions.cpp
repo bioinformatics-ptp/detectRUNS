@@ -370,17 +370,6 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
     nWin[nWin_length - i-1] = i+1;
   }
 
-  // debug
-  for (int i=0; i<20; i++) {
-    Rcout << nWin[i] << " ";
-  }
-  Rcout << "---" << " ";
-
-  for (int i=nWin_length-20; i<nWin_length; i++) {
-    Rcout << nWin[i] << " ";
-  }
-  Rcout << std::endl;
-
   // create two sets of indices to slice the vector of windows containing or not
   // a run (RunVector). Since they are array of positions, they should refere to
   // O based coordinates, since in C++ array starts at 0 index
@@ -394,17 +383,6 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   // since ind1 is a vector of indexes, need to numbering after than R
   std::generate(ind1.begin()+windowSize-1, ind1.end(), g1);
 
-  // debug
-  for (int i=0; i<25; i++) {
-    Rcout << ind1[i] << " ";
-  }
-  Rcout << "---" << " ";
-
-  for (int i=nWin_length-25; i<nWin_length; i++) {
-    Rcout << ind1[i] << " ";
-  }
-  Rcout << std::endl;
-
   // define ind2 vector
   std::vector<int> ind2(nWin_length, RunVector_length-1);
 
@@ -414,18 +392,6 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   // Fill with the result of calling g2() repeatedly.
   // ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1))
   std::generate(ind2.begin(), ind2.end()-windowSize+1, g2);
-
-  // debug
-  for (int i=0; i<25; i++) {
-    Rcout << ind2[i] << " ";
-  }
-
-  Rcout << "---" << " ";
-
-  for (int i=nWin_length-25; i<nWin_length; i++) {
-    Rcout << ind2[i] << " ";
-  }
-  Rcout << std::endl;
 
   // compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   float hWin;
@@ -445,28 +411,12 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
     // count TRUE in interval
     hWin = std::count(from, to, true);
 
-    // debug: count false
-
-
     //calc quotient
     quotient = hWin/nWin[i];
 
     //vector of SNP belonging to a ROH. True if yes (quotient > threshold)
     if (quotient > threshold) {
       snpRun[i] = true;
-    }
-
-    // debug
-    if (i==64) {
-      Rcout << "ind1: " << ind1[i] << std::endl;
-      Rcout << "ind2: " << ind2[i] << std::endl;
-      Rcout << "from: " << std::distance(RunVector.begin(),from) << std::endl;
-      Rcout << "to: " << std::distance(RunVector.begin(),to) << std::endl;
-      Rcout << "size: " << std::distance(from, to) << std::endl;
-      Rcout << "hWin: " << hWin << std::endl;
-      Rcout << "nWin[i]: " << nWin[i] << std::endl;
-      Rcout << "quotient: " << quotient << std::endl;
-      Rcout << "snpRun[i]: " << snpRun[i] << std::endl;
     }
 
   }
