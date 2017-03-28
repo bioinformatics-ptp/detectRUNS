@@ -241,6 +241,65 @@ test_that("Testing snpInRunCpp", {
   expect_equal(expected, test)
 })
 
+test_that("Testing createRUNdf", {
+  # setting variables
+  snpRun <- c(F, F, F, T, T, F, F, T, T, F, F, T, T, T, T)
+  minSNP <- 2
+  minLengthBps <- 100
+  minDensity <- 0.1
+  maxOppRun <- 1
+  maxMissRun <- 1
+  maxGap <- 1000
+
+  # defining slidingWindow result
+  windowStatus <- c(F, F, T, T, F, F, T, T, F, F, T, T, T)
+  oppositeAndMissingGenotypes <- c("0", "0", "0", "9", "9", "0", "9")
+  names(oppositeAndMissingGenotypes) <- c(1, 2, 3, 10, 11, 13, 15)
+  res <- list(windowStatus=windowStatus,
+              oppositeAndMissingGenotypes=oppositeAndMissingGenotypes)
+
+  # defining gaps
+  gaps <- rep(100, length(snpRun)-1)
+
+  # update a gap: setting value higher than threshold
+  gaps[6] <- gaps[6] + maxGap
+
+  # defining a fake mapfile
+  mapa <- data.frame(Chrom=rep(1, 15),
+                     SNP=seq(1, 15),
+                     cM=rep(0,15),
+                     bps=rep(1, 15))
+
+  # updating positions
+  for (i in 1:length(gaps)) {
+    mapa[i+1, "bps"] <- mapa[i, "bps"] + gaps[i]
+  }
+
+  # defining expected dataframe
+  expected <- data.frame(from=as.numeric(c(301, 1701)),
+                         to=as.numeric(c(401, 1801)),
+                         nSNP=as.integer(c(2, 2)),
+                         chrom=as.character(c(1, 1)),
+                         lengthBps=as.numeric(c(100, 100)),
+                         stringsAsFactors = FALSE)
+
+  # defining rownames as RUN number
+  row.names(expected) <- as.integer(c(2, 4))
+
+  # calling function
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes,
+                      maxOppRun,
+                      maxMissRun)
+
+  # testing values
+  expect_equal(expected, test)
+
+})
 
 test_that("Testing homoZygotTest", {
   # setting parameters
