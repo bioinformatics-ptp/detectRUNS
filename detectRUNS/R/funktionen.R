@@ -254,17 +254,26 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @examples #not yet
 #'
 
-createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10,oppositeAndMissingSNP, maxOppRun, maxMissRun) {
+createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
+                        minDensity = 1/10, oppositeAndMissingSNP, maxOppRun,
+                        maxMissRun) {
 
+  # define where RUNs change states
   cutPoints <- which(diff(sign(snpRun))!=0)
-  from <- c(1,cutPoints+1)
-  to <- c(cutPoints,length(snpRun))
+  from <- c(1, cutPoints + 1)
+  to <- c(cutPoints, length(snpRun))
 
+  # define a iterator between RUNs limits
   iLaenge <- itertools::izip(a = from,b = to)
+
+  # A RUNs is a region of TRUE snpRun: there are much SNPs as TRUE values
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
 
+  # initiate a dataframe of RUNs
   dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
-  dL <- dL[dL$nSNP>=minSNP,]
+
+  # filter RUNs by minSNP
+  dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
 
   chroms <- mapa[dL$from,"Chrom"]
@@ -275,35 +284,49 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
-
-  #filters on minimum run length and minimum SNP density
+  # filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps >= minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
   dL <- dL[dL$SNPdensity >= minDensity, ]
   dL$SNPdensity <- NULL
 
   #filters on max heterozygotes and missing in a run
-  if(!missing(maxOppRun) & missing(maxMissRun)) {
-
+  if(!missing(maxOppRun) | !missing(maxMissRun)) {
+    # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
-    W <- cbind.data.frame(W,mapa[as.numeric(row.names(W)),])
-    print("N. of opposite genotype in run")
-    dL <- adply(dL,1,function(x) {
+    W <- cbind.data.frame(W, mapa[as.numeric(row.names(W)), ])
 
-      "nOpp"=nrow(W[(W$bps>=x$von & W$bps<=x$bis) & W$oppositeAndMissingSNP==0,])
-      "nMiss"=nrow(W[(W$bps>=x$von & W$bps<=x$bis) & W$oppositeAndMissingSNP==9,])
+    # Add nOpp and nMiss columns to dataframe
+    dL <- adply(dL, 1, function(x) {
+      # calc nOpp by filtering opposite SNPs using RUN coordinates
+      nOpp <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+                       W$oppositeAndMissingSNP==0,])
+
+      # calc nMiss by filtering opposite SNPs using RUN coordinates
+      nMiss <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+                        W$oppositeAndMissingSNP==9,])
 
       return(c("nOpp"=nOpp,"nMiss"=nMiss))
     })
+
     if(!missing(maxOppRun)) {
-      dL <- dL[dL$nOpp<=maxOppRun,]
-    } else if (!missing(maxMissRun)) {
-      dL <- dL[dL$nOpp<=maxMissRun,]
+      # filter RUNs by opposite SNPs
+      dL <- dL[dL$nOpp <= maxOppRun,]
     }
+
+    if (!missing(maxMissRun)) {
+      # filter RUNs by missing SNPs
+      dL <- dL[dL$nMiss <= maxMissRun,]
+    }
+
+    # remove nOpp and nMiss columns
     dL <- dL[,-c(6,7)]
+
   }
 
-  #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
+  # fix row.names: whitout it, dataframe will have row names like unfiltered one
+  row.names(dL) <- NULL
+
   return(dL)
 }
 
