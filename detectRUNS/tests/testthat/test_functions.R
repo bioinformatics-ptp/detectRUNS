@@ -12,57 +12,6 @@ chillingham_genotype <- read.table(genotype_path, sep = " ", header = FALSE, str
 chillingham_map <- read.delim(mapfile_path, header = FALSE)
 chillingham_raw <- read.table(raw_path, sep=" ", header = TRUE)
 
-test_that("Testing snpInRun", {
-  # parameters
-  windowSize <- 10
-  threshold <- 0.1
-  minSNP <- 5
-  ROHet <- TRUE
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
-  maxGap <- 10^6
-  minLengthBps <- 1000
-  minDensity <- 1/10
-
-  # get genotype data (using raw for tests)
-  genotype <- chillingham_raw
-
-  # remove unnecessary fields from the .ped file
-  genotype <- genotype[ ,-c(1:6)]
-
-  # get map data
-  mapFile <- chillingham_map
-
-  # setting colnames
-  names(mapFile) <- c("Chrom","SNP","cM","bps")
-
-  # require "plyr"
-  n_of_individuals <- vector(length = nrow(genotype))
-
-  # calculate gaps
-  gaps <- diff(mapFile$bps)
-
-  # define an internal function
-  is_run <- function(x, i) {
-    y <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-
-    # calculate snpRun (R mode)
-    snpRun <- snpInRun(y$windowStatus, windowSize, threshold)
-
-    # calculate snpRun (cpp)
-    snpRunCpp <- snpInRunCpp(y$windowStatus, windowSize, threshold)
-
-    # test every record
-    info = paste("step", i)
-    expect_identical(snpRun, snpRunCpp, info=info)
-  }
-
-  # using raw data for testing functions
-  for (i in 1:nrow(genotype)) {
-    n_of_individuals[i] <- is_run( as.integer(genotype[i, ]), i )
-  }
-
-})
 
 test_that("Testing genoConvert", {
   # create a genotype of 0/1/2
@@ -243,62 +192,134 @@ test_that("Testing snpInRunCpp", {
 
 test_that("Testing createRUNdf", {
   # setting variables
-  snpRun <- c(F, F, F, T, T, F, F, T, T, F, F, T, T, T, T)
+  data <- c(0, 0, 1, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0,
+            1, 0, 0, 1, NA, 1, 0, 0, 1, 0, 1, NA)
   minSNP <- 2
   minLengthBps <- 100
   minDensity <- 0.1
-  maxOppRun <- 1
-  maxMissRun <- 1
   maxGap <- 1000
-
-  # defining slidingWindow result
-  windowStatus <- c(F, F, T, T, F, F, T, T, F, F, T, T, T)
-  oppositeAndMissingGenotypes <- c("0", "0", "0", "9", "9", "0", "9")
-  names(oppositeAndMissingGenotypes) <- c(1, 2, 3, 10, 11, 13, 15)
-  res <- list(windowStatus=windowStatus,
-              oppositeAndMissingGenotypes=oppositeAndMissingGenotypes)
+  windowSize <- 3
+  step <- 1
+  maxOppositeGenotype <- 1
+  maxMiss <- 1
+  threshold <- 0.5
 
   # defining gaps
-  gaps <- rep(100, length(snpRun)-1)
+  gaps <- rep(100, length(data)-1)
 
   # update a gap: setting value higher than threshold
-  gaps[6] <- gaps[6] + maxGap
+  gaps[5] <- gaps[5] + maxGap
+
+  # update gap to increase run size
+  gaps[7] <- gaps[7] + 100
+
+  # defining slidingWindow result
+  res <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
+                       ROHet=TRUE, maxOppositeGenotype, maxMiss)
+
+  # define snpInRun results
+  snpRun <- snpInRun(res$windowStatus, windowSize, threshold)
+
+  # snpRun is: c(F, F, T, T, F, F, T, T, T, F, F, T, T,
+  #              F, F, F, T, T, T, F, F, F, T, T, T)
 
   # defining a fake mapfile
-  mapa <- data.frame(Chrom=rep(1, 15),
-                     SNP=seq(1, 15),
-                     cM=rep(0,15),
-                     bps=rep(1, 15))
+  mapa <- data.frame(Chrom=rep(1, length(data)),
+                     SNP=seq(1, length(data)),
+                     cM=rep(0, length(data)),
+                     bps=rep(0, length(data)))
 
   # updating positions
   for (i in 1:length(gaps)) {
     mapa[i+1, "bps"] <- mapa[i, "bps"] + gaps[i]
   }
 
-  # defining expected dataframe
-  expected <- data.frame(from=as.numeric(c(301, 1701)),
-                         to=as.numeric(c(401, 1801)),
-                         nSNP=as.integer(c(2, 2)),
-                         chrom=as.character(c(1, 1)),
-                         lengthBps=as.numeric(c(100, 100)),
-                         stringsAsFactors = FALSE)
+  mapa[1, "bps"] <- 1
 
-  # defining rownames as RUN number
-  row.names(expected) <- as.integer(c(2, 4))
+  # defining expected dataframe with all datas
+  from=as.numeric(c(200, 1600, 2200, 2700, 3300))
+  to=as.numeric(c(300, 1900, 2300, 2900, 3500))
+  nSNP=as.integer(c(2, 3, 2, 3, 3))
+  chrom=as.character(rep(1, 5))
+  lengthBps=as.numeric(c(100, 300, 100, 200, 200))
 
-  # calling function
+  reference <- data.frame(from=from,
+                          to=to,
+                          nSNP=nSNP,
+                          chrom=chrom,
+                          lengthBps=lengthBps,
+                          stringsAsFactors = FALSE)
+
+  # calling function without filtering
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes)
+
+  # testing values
+  expect_equal(reference, test, info = "whithout filtering")
+
+  # testing for minlength
+  expected <- reference[2, ]
+  row.names(expected) <- NULL
+
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      300,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes)
+
+  # testing values
+  expect_equal(expected, test, info = "filtering by minlength")
+
+  # testing with no missing in RUNs
+  expected <- reference[1:3, ]
+  row.names(expected) <- NULL
+
   test <- createRUNdf(snpRun,
                       mapa,
                       minSNP,
                       minLengthBps,
                       minDensity,
                       res$oppositeAndMissingGenotypes,
-                      maxOppRun,
-                      maxMissRun)
+                      maxMissRun=0)
 
   # testing values
-  expect_equal(expected, test)
+  expect_equal(expected, test, info = "filtering by noMissing")
 
+  # testing with no opposite in RUNs
+  expected <- reference[c(1, 2, 4), ]
+  row.names(expected) <- NULL
+
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes,
+                      maxOppRun=0)
+
+  # testing values
+  expect_equal(expected, test, info = "filtering by noOpposite")
+
+  # testing with no opposite and no missing in RUNs
+  expected <- reference[c(1:2), ]
+  row.names(expected) <- NULL
+
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes,
+                      maxOppRun=0,
+                      maxMissRun=0)
+
+  # testing values
+  expect_equal(expected, test, info = "filtering by noOpposite and noMissing")
 })
 
 test_that("Testing homoZygotTest", {
