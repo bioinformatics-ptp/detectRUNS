@@ -259,7 +259,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
                         maxMissRun) {
 
   # define where RUNs change states
-  cutPoints <- which(diff(sign(snpRun))!=0)
+  cutPoints <- which(diff(sign(snpRun)) != 0)
   from <- c(1, cutPoints + 1)
   to <- c(cutPoints, length(snpRun))
 
