@@ -191,7 +191,9 @@ test_that("Testing snpInRunCpp", {
 })
 
 test_that("Testing createRUNdf", {
+  ####################
   # setting variables
+
   data <- c(0, 0, 1, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0,
             1, 0, 0, 1, NA, 1, 0, 0, 1, 0, 1, NA)
   minSNP <- 2
@@ -250,7 +252,17 @@ test_that("Testing createRUNdf", {
                           lengthBps=lengthBps,
                           stringsAsFactors = FALSE)
 
+  # reference with nOpp and nMiss columns
+  #   from   to nSNP chrom lengthBps nOpp nMiss
+  # 1  200  300    2     1       100    0     0
+  # 2 1600 1900    3     1       300    0     0
+  # 3 2200 2300    2     1       100    1     0
+  # 4 2700 2900    3     1       200    0     1
+  # 5 3300 3500    3     1       200    1     1
+
+  #####################################
   # calling function without filtering
+
   test <- createRUNdf(snpRun,
                       mapa,
                       minSNP,
@@ -261,7 +273,9 @@ test_that("Testing createRUNdf", {
   # testing values
   expect_equal(reference, test, info = "whithout filtering")
 
-  # testing for minlength
+  ##############################
+  # testing for minlength = 300
+
   expected <- reference[2, ]
   row.names(expected) <- NULL
 
@@ -275,7 +289,9 @@ test_that("Testing createRUNdf", {
   # testing values
   expect_equal(expected, test, info = "filtering by minlength")
 
+  ##################################
   # testing with no missing in RUNs
+
   expected <- reference[1:3, ]
   row.names(expected) <- NULL
 
@@ -290,7 +306,9 @@ test_that("Testing createRUNdf", {
   # testing values
   expect_equal(expected, test, info = "filtering by noMissing")
 
+  ###################################
   # testing with no opposite in RUNs
+
   expected <- reference[c(1, 2, 4), ]
   row.names(expected) <- NULL
 
@@ -320,6 +338,46 @@ test_that("Testing createRUNdf", {
 
   # testing values
   expect_equal(expected, test, info = "filtering by noOpposite and noMissing")
+
+  ##############################
+  # testing on different chroms
+
+  mapa[9:nrow(mapa), "Chrom"] <- 2
+
+  # defining expected dataframe with all datas
+  from=as.numeric(c(200, 1600, 1800, 2200, 2700, 3300))
+  to=as.numeric(c(300, 1600, 1900, 2300, 2900, 3500))
+  nSNP=as.integer(c(2, 1, 2, 2, 3, 3))
+  chrom=as.character(c(rep(1, 2), rep(2, 4)))
+  lengthBps=as.numeric(c(100, 0, 200, 100, 200, 200))
+
+  reference <- data.frame(from=from,
+                          to=to,
+                          nSNP=nSNP,
+                          chrom=chrom,
+                          lengthBps=lengthBps,
+                          stringsAsFactors = FALSE)
+
+  # reference with nOpp and nMiss columns
+  #   from   to nSNP chrom lengthBps nOpp nMiss
+  # 1  200  300    2     1       100    0     0
+  # 2 1600 1600    1     1         0    0     0
+  # 3 1800 1900    2     2       200    0     0
+  # 4 2200 2300    2     2       100    1     0
+  # 5 2700 2900    3     2       200    0     1
+  # 6 3300 3500    3     2       200    1     1
+
+  # calling function
+  test <- createRUNdf(snpRun,
+                      mapa,
+                      minSNP,
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes)
+
+  # testing values
+  expect_equal(reference, test, info = "testing on different chroms")
+
 })
 
 test_that("Testing homoZygotTest", {
