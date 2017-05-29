@@ -11,7 +11,6 @@ source('helper.R')
 library(detectRUNS)
 library(microbenchmark)
 library(ggplot2)
-library(bigmemory)
 library(data.table)
 
 # parameters
@@ -26,51 +25,64 @@ minLengthBps <- 1000
 minDensity <- 1/10
 
 # how many times perform test
-times <- 100
+times <- 10
 
 # how many points in X axis
 x_points <- 10
 
 # get genotype data
-genotype_path  <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
-genotype <- read.big.matrix(genotype_path, sep = " ", header = T, type = "integer")
+# genotype_path  <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+genotype <- read.table(genotype_path, sep = " ", header = FALSE, stringsAsFactors = FALSE)
 
-# load IID and breed
-colClasses <- c(
-  rep("character", 2),
-  rep("NULL", ncol(genotype)-2)
-)
+# get only ped data
+ped <- genotype[ , -c(1:6)]
 
-animals <- fread(genotype_path, sep = " ", header = T, colClasses = colClasses)
+# convert into raw data
+raw <- t(apply(ped, 1, pedConvertCpp))
+
+# clean unuseful data
+rm(list=c("genotype", "ped"))
+
+# read first two columns form genotype
+animals <- readPOPCpp(genotype_path = genotype_path)
 
 # get only one individual. Get index
-idx <- which(animals$IID=="Chill_12")
+# idx <- 1
+idx <- which(animals$ID=="Chill_12")
 
 # remove unuseful columns
-x <- genotype[idx, -c(1:6)]
+x <- raw[idx, ]
 
 # get map data
+# mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 mapfile <- fread(mapfile_path, header = F)
 
+# setting colnames
+colnames(mapfile) <- c("Chrom","SNP","cM","bps")
+
 # calculate sequence. 11 elements, then remove the first
-steps <- ceiling(seq(1, ncol(x)-2, length.out = (x_points+1) ))[-1]
+steps <- ceiling(seq(1, length(x), length.out = (x_points+1) ))[-1]
 
 # a dataframe in which i will store everything
 tests <- data.frame(fun=character(), step=integer(), time=integer(), language=character())
 
 # iterate over times steps
-for (i in steps ) {
+for (i in steps) {
+  ##############################################################################
+  # Test Diff
+
   # get a subset
-  subset_map <- mapfile$bps[1:i]
+  subset_map <- mapfile[1:i, ]
   subset_genotype <- x[1:i]
 
   # calculate gaps (only one chromosome)
-  gaps <- diff(subset_map)
+  gaps <- diff(subset_map$bps)
 
   # value diff
   test_diff <- microbenchmark(
-    diff(subset_map),
+    diff(subset_map$bps),
     unit = "ms", #microseconds
     times = times
   )
@@ -80,6 +92,9 @@ for (i in steps ) {
   test_language <- rep("R", times)
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_diff$time, language=test_language)
   tests <- rbind(tests, tmp)
+
+  ##############################################################################
+  # Test Windows
 
   # calculate sliding window
   y <- slidingWindow(subset_genotype, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap)
@@ -109,12 +124,14 @@ for (i in steps ) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
+  ##############################################################################
+  # Test snpInRun
 
   # vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
-  snpRun <- snpInRun(y,windowSize,threshold)
+  snpRun <- snpInRun(y$windowStatus,windowSize,threshold)
 
   test_snpInRun <- microbenchmark(
-    snpInRun(y,windowSize,threshold),
+    snpInRun(y$windowStatus,windowSize,threshold),
     unit = 'ms',
     times = times
   )
@@ -127,7 +144,7 @@ for (i in steps ) {
 
   # check cpp snpInRun
   test_snpInRunCpp <- microbenchmark(
-    snpInRunCpp(y,windowSize,threshold),
+    snpInRunCpp(y$windowStatus,windowSize,threshold),
     unit = 'ms',
     times = times
   )
@@ -138,11 +155,16 @@ for (i in steps ) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInRunCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
+  ##############################################################################
+  # Test createRUNdf
+
   # a data.frame with RUNS per animal
-  dRUN <- createRUNdf(snpRun, chillingham_map, minSNP, minLengthBps, minDensity)
+  dRUN <- createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
+                      y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun)
 
   test_createRUNdf <- microbenchmark(
-    createRUNdf(snpRun, chillingham_map, minSNP, minLengthBps, minDensity),
+    createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
+                y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun),
     unit = 'ms',
     times = times
   )

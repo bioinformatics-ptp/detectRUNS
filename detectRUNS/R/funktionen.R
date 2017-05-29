@@ -39,7 +39,7 @@ genoConvert <- function(x) {
 #' @export
 #'
 #' @examples
-#' maxHom <- 1
+#' maxHet <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
 #' i <- 175
@@ -48,29 +48,20 @@ genoConvert <- function(x) {
 #' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 #' windowSize <- length(x)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
+#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 #' # test is true
 #' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 #'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 #' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
 #'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
+#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 #' # test is false
 #'
-
-# OLD FUNCTION
-# homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
-#
-#   nHet <- sum(x==1,na.rm=TRUE)
-#   nMiss <- sum(is.na(x))
-#   ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
-# }
-
 homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
   nHet <- sum(x==1,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  oppositeAndMissingSNP <- array(c(-1,0,9)[match(x,c(0,1,NA))])
+  oppositeAndMissingSNP <- c(-1,0,9)[match(x,c(0,1,NA))]
   oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
   indexSNP <- seq(i,i+windowSize-1)[which(x==1 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
@@ -118,7 +109,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
   nHom <- sum(x==0,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  oppositeAndMissingSNP <- array(c(0,-1,9)[match(x,c(0,1,NA))])
+  oppositeAndMissingSNP <- c(0,-1,9)[match(x,c(0,1,NA))]
   oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
   indexSNP <- seq(i,i+windowSize-1)[which(x==0 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
@@ -215,23 +206,22 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
-  # print(paste("Length of imput vector:",RunVector_length,sep=" "))
+  # print(paste("Length of input vector:",RunVector_length,sep=" "))
   # print(paste("Window size:",windowSize,sep=" "))
   # print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
-  #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-windowSize-1)),seq(windowSize,1))
-  
+  nWin <- c(seq(1,windowSize), rep(windowSize,(RunVector_length-windowSize-1)), seq(windowSize,1))
+
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
-  iInd <- izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
+  iInd <- itertools::izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
   hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
 
-  
+
   #vector of SNP belonging to a ROH
   snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
   # print(paste(
@@ -264,17 +254,26 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @examples #not yet
 #'
 
-createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10,oppositeAndMissingSNP, maxOppRun, maxMissRun) {
-  
-  cutPoints <- which(diff(sign(snpRun))!=0)
-  from <- c(1,cutPoints+1)
-  to <- c(cutPoints,length(snpRun))
+createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
+                        minDensity = 1/10, oppositeAndMissingSNP, maxOppRun,
+                        maxMissRun) {
 
+  # define where RUNs change states
+  cutPoints <- which(diff(sign(snpRun)) != 0)
+  from <- c(1, cutPoints + 1)
+  to <- c(cutPoints, length(snpRun))
+
+  # define a iterator between RUNs limits
   iLaenge <- itertools::izip(a = from,b = to)
+
+  # A RUNs is a region of TRUE snpRun: there are much SNPs as TRUE values
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
-  
+
+  # initiate a dataframe of RUNs
   dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
-  dL <- dL[dL$nSNP>=minSNP,]
+
+  # filter RUNs by minSNP
+  dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
 
   chroms <- mapa[dL$from,"Chrom"]
@@ -285,35 +284,49 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
   dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
-  
-  #filters on minimum run length and minimum SNP density
+  # filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps >= minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
   dL <- dL[dL$SNPdensity >= minDensity, ]
   dL$SNPdensity <- NULL
 
   #filters on max heterozygotes and missing in a run
-  if(!missing(maxOppRun) & missing(maxMissRun)) {
-
+  if(!missing(maxOppRun) | !missing(maxMissRun)) {
+    # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
-    W <- cbind.data.frame(W,mapa[as.numeric(row.names(W)),])
-    print("N. of opposite genotype in run")
-    dL <- adply(dL,1,function(x) {
+    W <- cbind.data.frame(W, mapa[as.numeric(row.names(W)), ])
 
-      "nOpp"=nrow(W[(W$bps>=x$von & W$bps<=x$bis) & W$oppositeAndMissingSNP==0,])
-      "nMiss"=nrow(W[(W$bps>=x$von & W$bps<=x$bis) & W$oppositeAndMissingSNP==9,])
+    # Add nOpp and nMiss columns to dataframe
+    dL <- adply(dL, 1, function(x) {
+      # calc nOpp by filtering opposite SNPs using RUN coordinates
+      nOpp <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+                       W$oppositeAndMissingSNP==0,])
+
+      # calc nMiss by filtering opposite SNPs using RUN coordinates
+      nMiss <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+                        W$oppositeAndMissingSNP==9,])
 
       return(c("nOpp"=nOpp,"nMiss"=nMiss))
     })
+
     if(!missing(maxOppRun)) {
-      dL <- dL[dL$nOpp<=maxOppRun,]
-    } else if (!missing(maxMissRun)) {
-      dL <- dL[dL$nOpp<=maxMissRun,]
+      # filter RUNs by opposite SNPs
+      dL <- dL[dL$nOpp <= maxOppRun,]
     }
+
+    if (!missing(maxMissRun)) {
+      # filter RUNs by missing SNPs
+      dL <- dL[dL$nMiss <= maxMissRun,]
+    }
+
+    # remove nOpp and nMiss columns
     dL <- dL[,-c(6,7)]
+
   }
 
-  #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
+  # fix row.names: whitout it, dataframe will have row names like unfiltered one
+  row.names(dL) <- NULL
+
   return(dL)
 }
 
