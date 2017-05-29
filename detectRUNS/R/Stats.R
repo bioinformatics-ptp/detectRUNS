@@ -24,7 +24,7 @@ reorderDF <- function(dfx) {
   chr_order <- c((0:99),"X","Y","XY","MT")
   list_chr <- unique(dfx$CHROMOSOME)
   chr_order <- chr_order[chr_order %in% list_chr]
-  # new_list_chr <- as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
+  #order
   ordered_dfx <- dfx[match(chr_order,dfx$CHROMOSOME),]
 
   return(ordered_dfx)
@@ -59,22 +59,9 @@ find_Chromosome_length <- function(mapfile_path){
   name<-c("CHR","SNP_NAME","0","POSITION")
   colnames(mappa)<-name
   maps<-mappa[mappa$POSITION != 0, ] #delete chromosome 0
-
-  #variable
-  nchrom=unique(maps$CHR)
-
-  #trova la lunghezza massima per ogni cromosoma
-  line=1
-  LengthGenome<-matrix(0,ncol=2,nrow=length(nchrom))
-
-  for(i in nchrom){
-    #print(paste("Read Chromosome:",i,sep=' '))
-    LengthGenome[line,2]<-maps[which.max(maps$POSITION[maps$CHR==i]),4]-maps[which.min(maps$POSITION[maps$CHR==i]),4]
-    LengthGenome[line,1]<-i
-    line=line+1
-  }
-
-  LengthGenome=as.data.frame(LengthGenome, stringsAsFactors = FALSE )
+  
+  #find max value for chromosome 
+  LengthGenome=ddply(maps,.(CHR),summarize,max(POSITION))
   names<-c("CHROMOSOME","CHR_LENGTH")
   colnames(LengthGenome)<-names
 
