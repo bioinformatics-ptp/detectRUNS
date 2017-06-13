@@ -254,11 +254,76 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 }
 
 
+//' Function to calculate oppositeAndMissingGenotypes array
+//'
+//' This is an helper function, this will be called by another function
+//'
+//' @param data vector of 0/1/2 genotypes
+//' @param ROHet TRUE in ROHet evaluation, FALSE for ROHom
+//'
+//' @return character array; names will be index in which opposite and missing
+//' snps are found in data array
+//'
+//' @examples
+//' data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+//' oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
+  // Initialize oppositeAndMissingGenotypes
+  StringVector oppositeAndMissingGenotypes;
+
+  // Initialize vector for names
+  std::vector< std::string > names;
+
+  // declare values
+  std::string missing = "9";
+  std::string opposite = "0";
+
+  // iter in data vector
+  for (int i=0; i<data.size(); i++) {
+    if (data[i] == NA_INTEGER) {
+      // is missing
+      oppositeAndMissingGenotypes.push_back(missing);
+      // R index are 1 based
+      names.push_back(patch::to_string(i+1));
+      continue;
+    }
+
+    if (ROHet == true){
+      if (data[i] == 0) {
+        // is homozygote
+        oppositeAndMissingGenotypes.push_back(opposite);
+        names.push_back(patch::to_string(i+1));
+      }
+    } else {
+      // ROHom condition
+      if (data[i] == 1) {
+        // is heterozygote
+        oppositeAndMissingGenotypes.push_back(opposite);
+        names.push_back(patch::to_string(i+1));
+      }
+    }
+
+  }
+
+  // Finally assign names to StringVector
+  oppositeAndMissingGenotypes.attr("names") = names;
+
+  // return results
+  return oppositeAndMissingGenotypes;
+}
+
+
 //' Function to slide a window over a vector (individual's genotypes)
 //'
 //' This is a core function. The functions to detect RUNS are slidden over the genome
 //'
-//' @param data vector of pair of genotypes (01, AA, AG)
+//' @param data vector of 0/1/2 genotypes
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param windowSize size of window (n. of SNP)
 //' @param step by which (how many SNP) is the window slidden

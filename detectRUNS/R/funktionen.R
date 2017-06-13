@@ -165,6 +165,10 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
     for(i in 1:length(spots)){
       ret <- heteroZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap,i,windowSize)
       result[i] <- ret$windowStatus
+      # this will append the returned value of heteroZygotTest to existsting
+      # oppositeAndMissingGenotypes array. Since windows slide with sovraposition,
+      # we append new values to oppositeAndMissingGenotypes. We may calculate
+      # this array once.
       oppositeAndMissingGenotypes <- c(oppositeAndMissingGenotypes,ret$oppositeAndMissingSNP[!(names(ret$oppositeAndMissingSNP) %in% names(oppositeAndMissingGenotypes))])
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
