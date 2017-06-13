@@ -341,8 +341,9 @@ StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
 //' @export
 //'
 // [[Rcpp::export]]
-LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
-                               int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
+List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
+                      int step, int maxGap, bool ROHet=true,
+                      int maxOppositeGenotype=1, int maxMiss=1) {
 
   // get data lenght
   int data_length = data.size();
@@ -351,7 +352,10 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   int spots_lenght = (data_length - windowSize) / step +1;
 
   // initialize results
-  LogicalVector results(spots_lenght, false);
+  LogicalVector windowStatus(spots_lenght, false);
+
+  // calculate opposite and missing snps
+  StringVector oppositeAndMissingGenotypes = findOppositeAndMissing(data, ROHet);
 
   // declare iterators
   IntegerVector::const_iterator from, to;
@@ -384,21 +388,23 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
     // eval RoHet or RoHom
     if (ROHet == true) {
       // calculate result
-      results[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
 
     } else {
       // calculate result
-      results[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
     }
 
   }
 
   // check this affermation (could be N of SNPs - window +1)
-  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), results.size());
+  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), windowStatus.size());
 
-  return results;
+  // define a list of results and return it
+  return List::create(Named("windowStatus")=windowStatus,
+                      Named("oppositeAndMissingGenotypes")=oppositeAndMissingGenotypes);
 }
 
 
