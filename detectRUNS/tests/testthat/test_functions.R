@@ -105,6 +105,26 @@ test_that("Testing slidingWindow", {
 
 })
 
+test_that("Testing findOppositeAndMissing", {
+  # define values
+  data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+
+  # testing ROHet
+  reference <- c("0", "0", "0", "9", "9", "0", "9")
+  names(reference) <- c("1", "2", "3", "10", "11", "13", "15")
+
+  test <- findOppositeAndMissing(data, ROHet=TRUE)
+  expect_equal(reference, test, info="testing ROHet")
+
+  # testing ROHom
+  reference <- c("0", "0", "0", "0", "0", "0", "9", "9", "0", "0", "9")
+  names(reference) <- c("4", "5", "6", "7", "8", "9", "10", "11", "12", "14", "15")
+
+  test <- findOppositeAndMissing(data, ROHet=FALSE)
+  expect_equal(reference, test, info="testing ROHom")
+
+})
+
 test_that("Testing slidingWindowCpp", {
   # setting parameters
   windowSize <- 3
