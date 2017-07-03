@@ -316,7 +316,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
   }
 
   # filters on max heterozygotes and missing in a run
-  if(!missing(maxOppRun) | !missing(maxMissRun)) {
+  if(!is.null(maxOppRun) | !is.null(maxMissRun)) {
     # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
     W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
@@ -334,12 +334,12 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
       return(c("nOpp"=nOpp,"nMiss"=nMiss))
     })
 
-    if(!missing(maxOppRun)) {
+    if(!is.null(maxOppRun)) {
       # filter RUNs by opposite SNPs
       dL <- dL[dL$nOpp <= maxOppRun,]
     }
 
-    if (!missing(maxMissRun)) {
+    if (!is.null(maxMissRun)) {
       # filter RUNs by missing SNPs
       dL <- dL[dL$nMiss <= maxMissRun,]
     }
