@@ -6,8 +6,9 @@
 \usage{
 RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
-  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10, maxOppRun,
-  maxMissRun, method = c("slidingWindow", "consecutiveRuns"))
+  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
+  maxOppRun = NULL, maxMissRun = NULL, method = c("slidingWindow",
+  "consecutiveRuns"))
 }
 \arguments{
 \item{genotype_path}{genotype (.ped) file location}
