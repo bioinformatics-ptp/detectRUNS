@@ -246,17 +246,17 @@ test_that("Testing createRUNdf", {
   #              F, F, F, T, T, T, F, F, F, T, T, T)
 
   # defining a fake mapfile
-  mapa <- data.frame(Chrom=rep(1, length(data)),
+  mapFile <- data.frame(Chrom=rep(1, length(data)),
                      SNP=seq(1, length(data)),
                      cM=rep(0, length(data)),
                      bps=rep(0, length(data)))
 
   # updating positions
   for (i in 1:length(gaps)) {
-    mapa[i+1, "bps"] <- mapa[i, "bps"] + gaps[i]
+    mapFile[i+1, "bps"] <- mapFile[i, "bps"] + gaps[i]
   }
 
-  mapa[1, "bps"] <- 1
+  mapFile[1, "bps"] <- 1
 
   # defining expected dataframe with all datas
   from=as.numeric(c(200, 1600, 2200, 2700, 3300))
@@ -284,7 +284,7 @@ test_that("Testing createRUNdf", {
   # calling function without filtering
 
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       minLengthBps,
                       minDensity,
@@ -300,7 +300,7 @@ test_that("Testing createRUNdf", {
   row.names(expected) <- NULL
 
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       300,
                       minDensity,
@@ -316,7 +316,7 @@ test_that("Testing createRUNdf", {
   row.names(expected) <- NULL
 
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       minLengthBps,
                       minDensity,
@@ -333,7 +333,7 @@ test_that("Testing createRUNdf", {
   row.names(expected) <- NULL
 
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       minLengthBps,
                       minDensity,
@@ -343,12 +343,14 @@ test_that("Testing createRUNdf", {
   # testing values
   expect_equal(expected, test, info = "filtering by noOpposite")
 
+  #################################################
   # testing with no opposite and no missing in RUNs
+
   expected <- reference[c(1:2), ]
   row.names(expected) <- NULL
 
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       minLengthBps,
                       minDensity,
@@ -359,14 +361,32 @@ test_that("Testing createRUNdf", {
   # testing values
   expect_equal(expected, test, info = "filtering by noOpposite and noMissing")
 
+  ###################################
+  # testing with no opposite in RUNs and no missing and with minSNP
+
+  expected <- reference[c(0), ]
+  row.names(expected) <- NULL
+
+  test <- createRUNdf(snpRun,
+                      mapFile,
+                      10, # minSNP
+                      minLengthBps,
+                      minDensity,
+                      res$oppositeAndMissingGenotypes,
+                      maxOppRun=0,
+                      maxMissRun=0)
+
+  # testing values
+  expect_equal(expected, test, info = "filtering by noOpposite and noMissing and minSNP = 10")
+
   ##############################
   # testing on different chroms
 
-  mapa[9:nrow(mapa), "Chrom"] <- 2
-  mapa[9:nrow(mapa), "bps"] <- mapa[9:nrow(mapa), "bps"] - 1800
+  mapFile[9:nrow(mapFile), "Chrom"] <- 2
+  mapFile[9:nrow(mapFile), "bps"] <- mapFile[9:nrow(mapFile), "bps"] - 1800
 
   # re calculate gaps
-  gaps <- diff(mapa$bps)
+  gaps <- diff(mapFile$bps)
 
   # defining expected dataframe with all datas (there is a min length > 100)
   from=as.numeric(c(200, 400, 900, 1500))
@@ -391,7 +411,7 @@ test_that("Testing createRUNdf", {
 
   # calling function
   test <- createRUNdf(snpRun,
-                      mapa,
+                      mapFile,
                       minSNP,
                       minLengthBps,
                       minDensity,
