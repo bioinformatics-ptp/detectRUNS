@@ -6,7 +6,8 @@
 Requires a map file (other filename to read or R object)}
 \usage{
 createRUNdf(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
-  minDensity = 1/10, oppositeAndMissingSNP, maxOppRun, maxMissRun)
+  minDensity = 1/10, oppositeAndMissingSNP, maxOppRun = NULL,
+  maxMissRun = NULL)
 }
 \arguments{
 \item{snpRun}{vector of TRUE/FALSE (is the SNP in a RUN?)}

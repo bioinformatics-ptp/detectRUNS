@@ -259,8 +259,8 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 
 createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
-                        minDensity = 1/10, oppositeAndMissingSNP, maxOppRun,
-                        maxMissRun) {
+                        minDensity = 1/10, oppositeAndMissingSNP, maxOppRun=NULL,
+                        maxMissRun=NULL) {
 
   # define where RUNs change states
   cutPoints <- which(diff(sign(snpRun)) != 0)
