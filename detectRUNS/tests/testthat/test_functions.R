@@ -363,13 +363,17 @@ test_that("Testing createRUNdf", {
   # testing on different chroms
 
   mapa[9:nrow(mapa), "Chrom"] <- 2
+  mapa[9:nrow(mapa), "bps"] <- mapa[9:nrow(mapa), "bps"] - 1800
 
-  # defining expected dataframe with all datas
-  from=as.numeric(c(200, 1600, 1800, 2200, 2700, 3300))
-  to=as.numeric(c(300, 1600, 1900, 2300, 2900, 3500))
-  nSNP=as.integer(c(2, 1, 2, 2, 3, 3))
-  chrom=as.character(c(rep(1, 2), rep(2, 4)))
-  lengthBps=as.numeric(c(100, 0, 200, 100, 200, 200))
+  # re calculate gaps
+  gaps <- diff(mapa$bps)
+
+  # defining expected dataframe with all datas (there is a min length > 100)
+  from=as.numeric(c(200, 400, 900, 1500))
+  to=as.numeric(c(300, 500, 1100, 1700))
+  nSNP=as.integer(c(2, 2, 3, 3))
+  chrom=as.character(c(rep(1, 1), rep(2, 3)))
+  lengthBps=as.numeric(c(100, 100, 200, 200))
 
   reference <- data.frame(from=from,
                           to=to,
@@ -379,13 +383,11 @@ test_that("Testing createRUNdf", {
                           stringsAsFactors = FALSE)
 
   # reference with nOpp and nMiss columns
-  #   from   to nSNP chrom lengthBps nOpp nMiss
-  # 1  200  300    2     1       100    0     0
-  # 2 1600 1600    1     1         0    0     0
-  # 3 1800 1900    2     2       200    0     0
-  # 4 2200 2300    2     2       100    1     0
-  # 5 2700 2900    3     2       200    0     1
-  # 6 3300 3500    3     2       200    1     1
+  # from   to nSNP chrom lengthBps
+  # 1  200  300    2     1       100
+  # 2  400  500    2     2       100
+  # 3  900 1100    3     2       200
+  # 4 1500 1700    3     2       200
 
   # calling function
   test <- createRUNdf(snpRun,
@@ -481,54 +483,37 @@ test_that("Testing homoZygotTestCpp", {
   maxMiss <- 1
   maxGap <- 10^6
   i <- 175
+
+  # homo array
   x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
             9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-  windowSize <- length(x)
-
-  # defining expected value
-  oppositeAndMissingSNP <- c(0)
-  names(oppositeAndMissingSNP) <- c(181)
-  expected <- list("windowStatus"=TRUE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
 
   # calling function
-  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test a homozygot window")
+  expect_true(test, info = "test a homozygot window")
 
   # insert two missing values (> naxMIss)
   x[1:2] <- c(NA, NA)
 
-  # defining expected value
-  oppositeAndMissingSNP <- c(9, 9, 0)
-  names(oppositeAndMissingSNP) <- c(175, 176, 181)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test with missing values")
+  expect_false(test, info = "test with missing values")
 
   # revert, and change maxGap
   x[1:2] <- c(0, 0)
   gaps[10] <- maxGap + gaps[10]
 
-  # defining expected value
-  oppositeAndMissingSNP <- c(0)
-  names(oppositeAndMissingSNP) <- c(181)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test with big gap")
+  expect_false(test, info = "test with big gap")
 
   # test with a hetero array
   x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -536,17 +521,11 @@ test_that("Testing homoZygotTestCpp", {
   gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
             615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
 
-  # defining expected value
-  oppositeAndMissingSNP <- rep(0, 19)
-  names(oppositeAndMissingSNP) <- seq(i+1, i+19)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test with heterozygot window")
+  expect_false(test, info = "test with heterozygot window")
 
 })
 
@@ -631,72 +610,47 @@ test_that("Testing heteroZygotTestCpp", {
   maxMiss <- 1
   maxGap <- 10^6
   i <- 150
+
+  # homo array
   x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
          1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
   gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
             4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 
-  windowSize <- length(x)
-
-  # defining expected value
-  oppositeAndMissingSNP <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-  names(oppositeAndMissingSNP) <- c(150, 151, 152, 153, 154, 155, 156, 157,
-                                    164, 165, 167, 168, 169)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test a homozygot window")
+  expect_false(test, info = "test a homozygot window")
 
   # test a hetero array
   x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
          1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 
-  # defining expected value
-  oppositeAndMissingSNP <- c(0)
-  names(oppositeAndMissingSNP) <- c(150)
-  expected <- list("windowStatus"=TRUE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test a heterozygot window")
+  expect_true(test, info = "test a heterozygot window")
 
   # insert two missing values (> naxMIss)
   x[1:2] <- c(NA, NA)
 
-  # defining expected value
-  oppositeAndMissingSNP <- c(9, 9)
-  names(oppositeAndMissingSNP) <- c(150, 151)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test with missing values")
+  expect_false(test, info = "test with missing values")
 
   # revert, and change maxGap
   x[1:2] <- c(0, 1)
   gaps[10] <- maxGap + gaps[10]
 
-  # defining expected value
-  oppositeAndMissingSNP <- c(0)
-  names(oppositeAndMissingSNP) <- c(150)
-  expected <- list("windowStatus"=FALSE,
-                   "oppositeAndMissingSNP"=oppositeAndMissingSNP)
-
   # calling function
-  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap, i, windowSize)
+  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
 
   # check for identity
-  expect_identical(test, expected, info = "test with big gap")
+  expect_false(test, info = "test with big gap")
 })
 
 test_that("Testing loading pop from ped", {

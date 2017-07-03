@@ -55,7 +55,7 @@
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
 #' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
-#' minDensity = 1/10, method='slidingWindow')
+#' minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
 #'
 
 # TODO add output file parameter
