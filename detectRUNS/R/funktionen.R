@@ -240,7 +240,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
-#' @param mapa Plink-like map file (the R data.frame from RUNS.run)
+#' @param mapFile Plink-like map file (the R data.frame from RUNS.run)
 #' @param minSNP minimun n. of SNP to call a RUN
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
@@ -258,7 +258,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @examples #not yet
 #'
 
-createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
+createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                         minDensity = 1/10, oppositeAndMissingSNP, maxOppRun,
                         maxMissRun) {
 
@@ -267,22 +267,38 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
   from <- c(1, cutPoints + 1)
   to <- c(cutPoints, length(snpRun))
 
-  # define a iterator between RUNs limits
+  # define an iterator between RUNs limits
   iLaenge <- itertools::izip(a = from,b = to)
 
   # A RUNs is a region of TRUE snpRun: there are much SNPs as TRUE values
   lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
 
-  # initiate a dataframe of RUNs
-  dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
+  # get n of rows
+  n_rows <- length(lengte)
+
+  # initialize a dataframe of RUNs
+  dL <- data.frame("from"=from,
+                   "to"=to,
+                   "nSNP"=lengte,
+                   "chrom"=character(n_rows),
+                   "lengthBps"=numeric(n_rows), stringsAsFactors = F)
 
   # filter RUNs by minSNP
   dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
 
-  chroms <- mapa[dL$from,"Chrom"]
-  dL$from <- mapa[dL$from,"bps"]
-  dL$to <- mapa[dL$to,"bps"]
+  # return if all rows are filtered
+  if (nrow(dL) == 0) {
+    return(dL)
+  }
+
+  chroms <- mapFile[dL$from, "Chrom"]
+
+  # debug
+  # print(chroms)
+
+  dL$from <- mapFile[dL$from, "bps"]
+  dL$to <- mapFile[dL$to,"bps"]
 
   # setting other values
   dL$chrom <- as.character(chroms)
@@ -294,21 +310,26 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
   dL <- dL[dL$SNPdensity >= minDensity, ]
   dL$SNPdensity <- NULL
 
-  #filters on max heterozygotes and missing in a run
+  # return if all rows are filtered
+  if (nrow(dL) == 0) {
+    return(dL)
+  }
+
+  # filters on max heterozygotes and missing in a run
   if(!missing(maxOppRun) | !missing(maxMissRun)) {
     # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
-    W <- cbind.data.frame(W, mapa[as.numeric(row.names(W)), ])
+    W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
 
     # Add nOpp and nMiss columns to dataframe
-    dL <- adply(dL, 1, function(x) {
+    dL <- plyr::adply(dL, 1, function(x) {
       # calc nOpp by filtering opposite SNPs using RUN coordinates
       nOpp <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
-                       W$oppositeAndMissingSNP==0,])
+                       W$oppositeAndMissingSNP==0, ])
 
       # calc nMiss by filtering opposite SNPs using RUN coordinates
       nMiss <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
-                        W$oppositeAndMissingSNP==9,])
+                        W$oppositeAndMissingSNP==9, ])
 
       return(c("nOpp"=nOpp,"nMiss"=nMiss))
     })
@@ -333,6 +354,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000,
 
   return(dL)
 }
+
 
 #' Function to write out RUNS per individual animal
 #'

@@ -92,16 +92,16 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
 
   # define an internal function to call other functions
-  find_run <- function(x, animal) {
+  find_run <- function(genotype, animal) {
     # get individual and group
     ind <- as.character(animal$IID)
     group <- as.character(animal$FID)
 
     # use sliding windows
-    # y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    res <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    # y <- slidingWindowCpp(genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
+    res <- slidingWindow(genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
     #snpRun <- snpInRunCpp(res$windowStatus,windowSize,threshold)
-    snpRun <- snpInRun(res$windowStatus,windowSize,threshold)
+    snpRun <- snpInRun(res$windowStatus, windowSize, threshold)
     # TODO: check arguments names
     dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity,res$oppositeAndMissingGenotypes,maxOppRun,maxMissRun)
 
@@ -115,7 +115,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     if(nrow(dRUN) > 0) {
       message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
     } else {
-      message(paste("No RUNs found for animal",ind))
+      message(paste("No RUNs found for animal", ind))
     }
 
     #return RUNs to caller
