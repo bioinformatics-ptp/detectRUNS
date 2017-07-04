@@ -580,7 +580,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
 
   #initialize dataframe of results
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
-                    "from"=integer(0),"to"=integer(0),"lengthBps"=numeric(0))
+                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
 
   ##########################################################################################
   #PAOLO (c++)
@@ -591,8 +591,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       param$runH <- param$runH+1 ; lastPos=mapFile$bps[i-1] ; param$lengte <- (lastPos-startPos)
       if (param$runH >= minSNP & param$lengte >= minLengthBps) {
         lastPos=mapFile$bps[i]
-        res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                               "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
       }
     }
 
@@ -600,8 +601,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
     currentChrom <- mapFile$Chrom[i]
     if (currentChrom!=startChrom ) {
       if(param$runH >= minSNP & param$lengte >= minLengthBps) {
-        res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                               "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
       }
       startChrom <- currentChrom
       param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
@@ -613,8 +615,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
     #check if current gap is larger than max allowed gap
     if (gap>=maxGap ) {
       if(param$runH >= minSNP & param$lengte >= minLengthBps) {
-        res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=currentChrom,"nSNP"=param$runH,
-                                               "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
       }
       param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
     }
@@ -640,8 +643,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       if (param$nOpposite <= maxOppositeGenotype){
         param$runH <- param$runH+1
         if (param$runH >= minSNP & param$lengte >= minLengthBps & i==length(indGeno)) {
-          res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                                 "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
         }
         next
       }
@@ -649,8 +653,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
         lastPos=mapFile$bps[i-1]
         param$lengte <- (lastPos-startPos)
         if (param$runH >= minSNP & param$lengte >= minLengthBps) {
-          res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                                 "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
         }
         param <- defaultParam ;
         next
@@ -662,8 +667,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
       if (param$nMiss <= maxMiss){
         param$runH <- param$runH+1
         if (param$runH >= minSNP & param$lengte >= minLengthBps & i==length(indGeno)) {
-          res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                                 "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
         }
         next
       }
@@ -671,8 +677,9 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, 
         lastPos=mapFile$bps[i-1]
         param$lengte <- (lastPos-startPos)
         if (param$runH >= minSNP & param$lengte >= minLengthBps) {
-          res <- rbind.data.frame(res,data.frame("group"=group,"id"=ind,"chrom"=startChrom,"nSNP"=param$runH,
-                                                 "from"=startPos,"to"=lastPos, "lengthBps"=param$lengte))
+          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
+                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
+                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
         }
         param <- defaultParam ;
         next
