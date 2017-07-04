@@ -466,6 +466,7 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
   return(M)
 }
 
+
 #' Function to detect runs using sliding window approach
 #'
 #' This is a core function not intended to be exported
@@ -559,134 +560,175 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
 #' @examples
 #'
 
-consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3, maxOppositeGenotype=1,
-                            maxMiss=1, minLengthBps=1000, maxGap=10^6) {
+consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
+                            maxOppositeGenotype=1, maxMiss=1, minLengthBps=1000,
+                            maxGap=10^6) {
 
-  #runs of heterozygosity or of homozygosity?
+  # runs of heterozygosity or of homozygosity?
   typ <- ifelse(ROHet,1,0)
 
-  #dati anagrafici
+  # animal data lile IID or FID
   ind <- as.character(individual$IID)
   group <- as.character(individual$FID)
 
-  #initialize variables
-  startChrom <- min(mapFile$Chrom) # first chromosome in ordered mapFile
+  # initialize variables. First chromosome in ordered mapFile
+  lastChrom <- mapFile$Chrom[1]
+  lastPos <- mapFile$bps[1]
 
-  lastPos=mapFile$bps[1]
-  startPos=mapFile$bps[1]
+  # a function to initialize runData from a position
+  initializeRun <- function(chrom, start) {
+    return(list("nOpposite"=0, "nMiss"=0, "runH"=0, "lengte"=0,
+                "start"=start, chrom=chrom, end=NULL))
+  }
 
-  defaultParam <- list("nOpposite"=0,"nMiss"=0,"runH"=0,"lengte"=0)
-  param <- defaultParam
+  # a function to update RUNs data
+  updateRUNS <- function(res, runData) {
+    new_res <- data.frame("group"=group, "id"=ind, "chrom"=as.character(runData$chrom),
+                          "nSNP"=runData$runH, "from"=runData$start,"to"=runData$end,
+                          "lengthBps"=runData$lengte, stringsAsFactors = FALSE)
+    return(rbind(res, new_res))
+  }
 
-  #initialize dataframe of results
+
+  # a flag to determine if I'm in a RUN or not
+  flag_run <- FALSE
+  runData <- NULL
+
+  # initialize dataframe of results. Defining data types accordingly slinding window
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
                     "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
 
   ##########################################################################################
   #PAOLO (c++)
   for (i in seq_along(indGeno)) {
-
-    #check for last SNP
-    if (i==length(indGeno) & indGeno[i]==typ & !is.na(indGeno[i]) ){
-      param$runH <- param$runH+1 ; lastPos=mapFile$bps[i-1] ; param$lengte <- (lastPos-startPos)
-      if (param$runH >= minSNP & param$lengte >= minLengthBps) {
-        lastPos=mapFile$bps[i]
-        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
-      }
-    }
-
-    #Check for Chromosome
+    # Check for Chromosome
     currentChrom <- mapFile$Chrom[i]
-    if (currentChrom!=startChrom ) {
-      if(param$runH >= minSNP & param$lengte >= minLengthBps) {
-        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
+
+    # get current position
+    currentPos <- mapFile$bps[i]
+
+    # test if chromosome is changed
+    if (currentChrom != lastChrom ) {
+      # if I have run, write to file
+      if(flag_run == TRUE & runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+        res <- updateRUNS(res, runData)
       }
-      startChrom <- currentChrom
-      param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
+
+      # update chrom and positions
+      lastChrom <- currentChrom
+      lastPos <- currentPos
+
+      # unset RUN flag. New runs with new chromosomes!!!
+      flag_run <- FALSE
+      runData <- NULL
     }
 
-    #calculate gap between consecutive SNP
-    gap <- (mapFile$bps[i] - lastPos)
+    # calculate gap between consecutive SNP (in the same chrom)
+    gap <- (currentPos - lastPos)
 
-    #check if current gap is larger than max allowed gap
-    if (gap>=maxGap ) {
-      if(param$runH >= minSNP & param$lengte >= minLengthBps) {
-        res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                    "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                    "lengthBps"=param$lengte, stringsAsFactors = FALSE))
+    # check if current gap is larger than max allowed gap. No matter current SNP
+    if (flag_run == TRUE & gap >= maxGap) {
+      if(runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+        res <- updateRUNS(res, runData)
       }
-      param <- defaultParam ; lastPos=mapFile$bps[i] ; startPos=mapFile$bps[i]
+
+      # unset RUN flag
+      flag_run <- FALSE
+      runData <- NULL
     }
 
-    #All variable 0 if it's a first
-    if (param$runH == 0){
-      param <- defaultParam ; lastPos=mapFile$bps[i] ;  startPos=mapFile$bps[i]
-      if (indGeno[i] == typ & !is.na(indGeno[i])){
-        param$runH <- param$runH+1
-        startPos=mapFile$bps[i]
-        next
-      }else{next}
-    }
-
-    #Start for ==
+    # Start for ==. Is a new RUN or not? ensure that indGeno[i] is a number
     if (indGeno[i] == typ & !is.na(indGeno[i])){
-      param$runH <- param$runH+1 ; lastPos=mapFile$bps[i] ; param$lengte <- (lastPos-startPos)
-      next
-    }
-    #start if !=
-    else if (indGeno[i]==abs(1-typ) & !is.na(indGeno[i])){
-      param$nOpposite <- param$nOpposite + 1
-      if (param$nOpposite <= maxOppositeGenotype){
-        param$runH <- param$runH+1
-        if (param$runH >= minSNP & param$lengte >= minLengthBps & i==length(indGeno)) {
-          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
-        }
-        next
+      # initialize run if not yet initialized, or just written after a big GAP
+      if (flag_run == FALSE) {
+        # runData is a list of attributes for the current RUN
+        runData <- initializeRun(currentChrom, currentPos)
+        flag_run <- TRUE
       }
-      else if (param$nOpposite > maxOppositeGenotype ){
-        lastPos=mapFile$bps[i-1]
-        param$lengte <- (lastPos-startPos)
-        if (param$runH >= minSNP & param$lengte >= minLengthBps) {
-          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
-        }
-        param <- defaultParam ;
-        next
-      }
-    }
-    #start if 'NA'
-    else if (is.na(indGeno[i])){
-      param$nMiss <- param$nMiss + 1
-      if (param$nMiss <= maxMiss){
-        param$runH <- param$runH+1
-        if (param$runH >= minSNP & param$lengte >= minLengthBps & i==length(indGeno)) {
-          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
-        }
-        next
-      }
-      else if (param$nMiss > maxMiss ){
-        lastPos=mapFile$bps[i-1]
-        param$lengte <- (lastPos-startPos)
-        if (param$runH >= minSNP & param$lengte >= minLengthBps) {
-          res <- rbind(res,data.frame("group"=group, "id"=ind, "chrom"=as.character(startChrom),
-                                      "nSNP"=param$runH, "from"=startPos,"to"=lastPos,
-                                      "lengthBps"=param$lengte, stringsAsFactors = FALSE))
-        }
-        param <- defaultParam ;
-        next
-      }
-    }
-  }
 
+      # update runData values
+      runData$runH <- runData$runH+1
+      runData$end <- currentPos
+      runData$lengte <- (runData$end - runData$start)
+
+    } # condition: the genotype I want
+
+    # start if !=
+    else if (indGeno[i] != typ & !is.na(indGeno[i])){
+      # if not in a run, don't do anything
+      if (flag_run == FALSE) {
+        next
+      }
+
+      # update nOpposite genotypes (in a run)
+      runData$nOpposite <- runData$nOpposite + 1
+
+      # check if maxOppositeGenotype is reached
+      if (runData$nOpposite <= maxOppositeGenotype){
+        # update runData values. This opposite genotype is a part of the RUN
+        runData$runH <- runData$runH+1
+        runData$end <- currentPos
+        runData$lengte <- (runData$end - runData$start)
+
+      } else {
+        if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+          res <- updateRUNS(res, runData)
+        }
+
+        # unset RUN flag
+        flag_run <- FALSE
+        runData <- NULL
+
+      } # condition nOpposite greather than maxOppositeGenotype
+
+    } # condition: opposite genotype
+
+    # start if 'NA'
+    else if (is.na(indGeno[i])) {
+      # if not in a run, don't do anything
+      if (flag_run == FALSE) {
+        next
+      }
+
+      # update missing values
+      runData$nMiss <- runData$nMiss + 1
+
+      # check if maxMiss is reached
+      if (runData$nMiss <= maxMiss){
+        # update runData values. This missing genotype is a part of the RUN
+        runData$runH <- runData$runH+1
+        runData$end <- currentPos
+        runData$lengte <- (runData$end - runData$start)
+
+      }
+      else {
+        if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+          res <- updateRUNS(res, runData)
+        }
+
+        # unset RUN flag
+        flag_run <- FALSE
+        runData <- NULL
+
+      } # condition: nMissing greather than permitted
+
+    } # condition: missing genotype
+
+    # update positions
+    lastPos <- currentPos
+
+  } # cicle: for i in genotypes
+
+  # last snp if it is in a run
+  if (flag_run == TRUE ) {
+    if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+      res <- updateRUNS(res, runData)
+    }
+
+    # unset RUN flag
+    flag_run <- FALSE
+    runData <- NULL
+  }
 
   # debug
   if(nrow(res) > 0) {
