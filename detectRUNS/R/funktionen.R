@@ -466,6 +466,61 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
   return(M)
 }
 
+#' Function to detect runs using sliding window approach
+#'
+#' This is a core function not intended to be exported
+#'
+#' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+#' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+#' @param mapFile Plink map file (for SNP position)
+#' @param gaps distance between SNPs
+#' @param parameters list of parameters
+#'
+#' @details
+#' This method uses slidingg windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+#' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+#' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+#' NOTE: this methos is intented to not be exported
+#'
+#' @return A data frame of runs per individual sample
+#' @export
+#'
+#' @examples
+#'
+
+slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters) {
+  # get individual and group
+  ind <- as.character(individual$IID)
+  group <- as.character(individual$FID)
+
+  # use sliding windows
+  res <- slidingWindowCpp(indGeno, gaps, parameters$windowSize, step=1,
+                          parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
+                          parameters$maxMiss);
+
+  snpRun <- snpInRunCpp(res$windowStatus, parameters$windowSize, parameters$threshold)
+
+  # TODO: check arguments names
+  dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
+                      parameters$minDensity, res$oppositeAndMissingGenotypes,
+                      parameters$maxOppRun, parameters$maxMissRun)
+
+  # manipulate dRUN to order columns
+  dRUN$id <- rep(ind, nrow(dRUN))
+  dRUN$group <- rep(group, nrow(dRUN))
+  dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
+
+  # debug
+  if(nrow(dRUN) > 0) {
+    message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
+  } else {
+    message(paste("No RUNs found for animal", ind))
+  }
+
+  #return RUNs to caller
+  return(dRUN)
+}
+
 
 #' Function to detect consecutive runs in a vector (individual's genotypes)
 #'
