@@ -6,8 +6,9 @@
 \usage{
 RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
-  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10, maxOppRun,
-  maxMissRun, method = c("slidingWindow", "consecutiveRuns"))
+  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
+  maxOppRun = NULL, maxMissRun = NULL, method = c("slidingWindow",
+  "consecutiveRuns"))
 }
 \arguments{
 \item{genotype_path}{genotype (.ped) file location}
@@ -68,7 +69,7 @@ genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "dete
 mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
 ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
-minDensity = 1/10, method='slidingWindow')
-
+minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
+# TODO: add example for consecutiveRuns
 }
 

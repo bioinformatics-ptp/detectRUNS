@@ -8,7 +8,7 @@ slidingWindowCpp(data, gaps, windowSize, step, maxGap, ROHet = TRUE,
   maxOppositeGenotype = 1L, maxMiss = 1L)
 }
 \arguments{
-\item{data}{vector of pair of genotypes (01, AA, AG)}
+\item{data}{vector of 0/1/2 genotypes}
 
 \item{gaps}{vector of differences between consecutive positions (gaps) in bps}
 

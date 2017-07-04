@@ -13,16 +13,20 @@ library(microbenchmark)
 library(ggplot2)
 library(data.table)
 
-# parameters
-windowSize <- 20
-threshold <- 0.1
-minSNP <- 5
-ROHet <- TRUE
-maxOppositeGenotype <- 1
-maxMiss <- 1
-maxGap <- 10^6
-minLengthBps <- 1000
-minDensity <- 1/10
+# define a parameters list
+parameters <- list(
+  windowSize=20,
+  threshold=0.1,
+  minSNP=5,
+  ROHet=TRUE,
+  maxOppositeGenotype=1,
+  maxMiss=1,
+  maxGap=10^6,
+  minLengthBps=1000,
+  minDensity=1/10,
+  maxOppRun=NULL,
+  maxMissRun=NULL
+)
 
 # how many times perform test
 times <- 10
@@ -51,7 +55,13 @@ animals <- readPOPCpp(genotype_path = genotype_path)
 # idx <- 1
 idx <- which(animals$ID=="Chill_12")
 
-# remove unuseful columns
+# get an animal
+animal <- animals[idx, ]
+
+# remap animal correctly
+animal <- list(FID=animal$POP, IID=animal$ID)
+
+# remove unuseful rows
 x <- raw[idx, ]
 
 # get map data
@@ -70,9 +80,6 @@ tests <- data.frame(fun=character(), step=integer(), time=integer(), language=ch
 
 # iterate over times steps
 for (i in steps) {
-  ##############################################################################
-  # Test Diff
-
   # get a subset
   subset_map <- mapfile[1:i, ]
   subset_genotype <- x[1:i]
@@ -80,27 +87,16 @@ for (i in steps) {
   # calculate gaps (only one chromosome)
   gaps <- diff(subset_map$bps)
 
-  # value diff
-  test_diff <- microbenchmark(
-    diff(subset_map$bps),
-    unit = "ms", #microseconds
-    times = times
-  )
-
-  test_fun <- rep("diff", times)
-  test_step <- rep(i, times)
-  test_language <- rep("R", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_diff$time, language=test_language)
-  tests <- rbind(tests, tmp)
-
   ##############################################################################
   # Test Windows
 
   # calculate sliding window
-  y <- slidingWindow(subset_genotype, gaps, windowSize, step=1, ROHet=ROHet, maxOppositeGenotype, maxMiss, maxGap)
+  y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+                     parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss)
 
   test_sliding <- microbenchmark(
-    slidingWindow(subset_genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss),
+    slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+                  parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
   )
@@ -113,7 +109,8 @@ for (i in steps) {
 
   # check cpp slidingWindow
   test_slidingCpp <- microbenchmark(
-    slidingWindowCpp(subset_genotype, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss),
+    slidingWindowCpp(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+                     parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
   )
@@ -128,10 +125,10 @@ for (i in steps) {
   # Test snpInRun
 
   # vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
-  snpRun <- snpInRun(y$windowStatus,windowSize,threshold)
+  snpRun <- snpInRun(y$windowStatus, parameters$windowSize, parameters$threshold)
 
   test_snpInRun <- microbenchmark(
-    snpInRun(y$windowStatus,windowSize,threshold),
+    snpInRun(y$windowStatus, parameters$windowSize, parameters$threshold),
     unit = 'ms',
     times = times
   )
@@ -144,7 +141,7 @@ for (i in steps) {
 
   # check cpp snpInRun
   test_snpInRunCpp <- microbenchmark(
-    snpInRunCpp(y$windowStatus,windowSize,threshold),
+    snpInRunCpp(y$windowStatus, parameters$windowSize, parameters$threshold),
     unit = 'ms',
     times = times
   )
@@ -156,24 +153,65 @@ for (i in steps) {
   tests <- rbind(tests, tmp)
 
   ##############################################################################
-  # Test createRUNdf
+  # Test slidingRuns
 
-  # a data.frame with RUNS per animal
-  dRUN <- createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
-                      y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun)
-
-  test_createRUNdf <- microbenchmark(
-    createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
-                y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun),
+  test_slidingRuns <- microbenchmark(
+    slidingRuns(subset_genotype, animal, subset_map, gaps, parameters, cpp=FALSE),
     unit = 'ms',
     times = times
   )
 
-  test_fun <- rep("createRUNdf", times)
-  test_step <- rep(i, times)
+  test_fun <- rep("slidingRuns", times)
+  test_step = rep(i, times)
   test_language <- rep("R", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_createRUNdf$time, language=test_language)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
   tests <- rbind(tests, tmp)
+
+  # check cpp slidingRuns
+  test_slidingRunsCpp <- microbenchmark(
+    slidingRuns(subset_genotype, animal, subset_map, gaps, parameters, cpp=TRUE),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("slidingRuns", times)
+  test_step <- rep(i, times)
+  test_language <- rep("Cpp", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
+  ##############################################################################
+  # Test consecutiveRuns
+
+  test_consecutiveRuns <- microbenchmark(
+    consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
+                    parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
+                    parameters$maxGap),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("consecutiveRuns", times)
+  test_step = rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
+  # # check cpp consecutiveRuns
+  # test_consecutiveRuns <- microbenchmark(
+  #   consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
+  #                   parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
+  #                   parameters$maxGap, cpp=TRUE),
+  #   unit = 'ms',
+  #   times = times
+  # )
+  #
+  # test_fun <- rep("consecutiveRuns", times)
+  # test_step <- rep(i, times)
+  # test_language <- rep("Cpp", times)
+  # tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
+  # tests <- rbind(tests, tmp)
+
 }
 
 # write runs and return TRUE/FALSE if RUNS are written out or not
