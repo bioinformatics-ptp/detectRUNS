@@ -180,7 +180,37 @@ for (i in steps) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
-  # TODO: test RUNS.run consecutiverruns with C and R functions
+  ##############################################################################
+  # Test consecutiveRuns
+
+  test_consecutiveRuns <- microbenchmark(
+    consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
+                    parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
+                    parameters$maxGap),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("consecutiveRuns", times)
+  test_step = rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
+  # # check cpp consecutiveRuns
+  # test_consecutiveRuns <- microbenchmark(
+  #   consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
+  #                   parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
+  #                   parameters$maxGap, cpp=TRUE),
+  #   unit = 'ms',
+  #   times = times
+  # )
+  #
+  # test_fun <- rep("consecutiveRuns", times)
+  # test_step <- rep(i, times)
+  # test_language <- rep("Cpp", times)
+  # tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
+  # tests <- rbind(tests, tmp)
 
 }
 
