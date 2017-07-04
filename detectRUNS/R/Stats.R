@@ -394,12 +394,18 @@ runs_summary <- function(runs,mapFile,Class=2, snpInRuns=FALSE,genotype_path){
   summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
 
   #RESULTS!!!!!
-  summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
-  names(summary_ROH_count_chr)[3] <- "nRuns"
-  summary_ROH_count_chr <- reorderDF(dcast(summary_ROH_count_chr,CHROMOSOME ~ GROUP ,value.var = "nRuns"))
-  summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
-  summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
+  # summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
+  # names(summary_ROH_count_chr)[3] <- "nRuns"
+  # summary_ROH_count_chr <- reorderDF(dcast(summary_ROH_count_chr,CHROMOSOME ~ GROUP ,value.var = "nRuns"))
+  # summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
+  # summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
 
+  summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
+  summary_ROH_count_chr = as.data.frame( daply(runs,.(CHROMOSOME,GROUP),nrow))
+  summary_ROH_percentage_chr= as.data.frame(t(as.data.frame( t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr,na.rm=TRUE))))
+  summary_ROH_percentage_chr$CHROMOSOME=row.names(summary_ROH_percentage_chr)
+
+  
   result_summary <- list(summary_ROH_count_chr=summary_ROH_count_chr,
                           summary_ROH_percentage_chr=summary_ROH_percentage_chr,
                           summary_ROH_count=summary_ROH_count,
