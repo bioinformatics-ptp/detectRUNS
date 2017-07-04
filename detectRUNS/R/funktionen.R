@@ -475,6 +475,7 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @param mapFile Plink map file (for SNP position)
 #' @param gaps distance between SNPs
 #' @param parameters list of parameters
+#' @param cpp use cpp functions or not (DEBUG)
 #'
 #' @details
 #' This method uses slidingg windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
@@ -488,17 +489,26 @@ snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
 #' @examples
 #'
 
-slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters) {
+slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE) {
   # get individual and group
   ind <- as.character(individual$IID)
   group <- as.character(individual$FID)
 
-  # use sliding windows
-  res <- slidingWindowCpp(indGeno, gaps, parameters$windowSize, step=1,
-                          parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
-                          parameters$maxMiss);
+  # use sliding windows (check cpp)
+  if (cpp == TRUE) {
+    res <- slidingWindowCpp(indGeno, gaps, parameters$windowSize, step=1,
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
+                            parameters$maxMiss);
 
-  snpRun <- snpInRunCpp(res$windowStatus, parameters$windowSize, parameters$threshold)
+    snpRun <- snpInRunCpp(res$windowStatus, parameters$windowSize, parameters$threshold)
+  } else {
+    res <- slidingWindow(indGeno, gaps, parameters$windowSize, step=1,
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
+                            parameters$maxMiss);
+
+    snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
+  }
+
 
   # TODO: check arguments names
   dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
