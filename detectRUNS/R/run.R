@@ -55,14 +55,14 @@
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
 #' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
-#' minDensity = 1/10, method='slidingWindow')
-#'
+#' minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
+#' # TODO: add example for consecutiveRuns
 
 # TODO add output file parameter
 RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
                      minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
                      maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
-                     maxOppRun, maxMissRun,
+                     maxOppRun = NULL, maxMissRun = NULL,
                      method=c('slidingWindow','consecutiveRuns')) {
 
   # debug
@@ -91,43 +91,17 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   # setting colnames
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  # define an internal function to call other functions
-  find_run <- function(x, animal) {
-    # get individual and group
-    ind <- as.character(animal$IID)
-    group <- as.character(animal$FID)
-
-    # use sliding windows
-    # y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    res <- slidingWindow(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    #snpRun <- snpInRunCpp(res$windowStatus,windowSize,threshold)
-    snpRun <- snpInRun(res$windowStatus,windowSize,threshold)
-    # TODO: check arguments names
-    dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity,res$oppositeAndMissingGenotypes,maxOppRun,maxMissRun)
-
-
-    # manipulate dRUN to order columns
-    dRUN$id <- rep(ind, nrow(dRUN))
-    dRUN$group <- rep(group, nrow(dRUN))
-    dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
-
-    # debug
-    if(nrow(dRUN) > 0) {
-      message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
-    } else {
-      message(paste("No RUNs found for animal",ind))
-    }
-
-    #return RUNs to caller
-    return(dRUN)
-  }
-
   method <- match.arg(method)
 
   message(paste("You are using the method:", method))
 
-  if(method=='slidingWindow') {
+  # collect all parameters in a variable
+  parameters <- list(windowSize=windowSize, threshold=threshold, minSNP=minSNP,
+                     ROHet=ROHet, maxOppositeGenotype=maxOppositeGenotype,
+                     maxMiss=maxMiss, maxGap=maxGap, minLengthBps=minLengthBps,
+                     minDensity=minDensity, maxOppRun=maxOppRun, maxMissRun=maxMissRun)
 
+  if(method=='slidingWindow') {
     # calculate gaps
     gaps <- diff(mapFile$bps)
 
@@ -135,7 +109,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     message(paste("Threshold for calling SNP in a Run:", threshold))
   }
 
-
+  # initialize data.frame of results
   RUNs <- data.frame(group=character(), id=character(), chrom=character(), nSNP=integer(),
                      from=integer(), to=integer(), lengthBps=integer())
 
@@ -157,10 +131,9 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
 
     # find run for this genotype
     if(method=='slidingWindow') {
+      a_run <- slidingRuns(genotype, animal, mapFile, gaps, parameters)
 
-      a_run <- find_run(genotype, animal)
     } else {
-
       a_run <- consecutiveRuns(genotype, animal, mapFile=mapFile, ROHet=ROHet, minSNP=minSNP,
                                maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
                                minLengthBps=minLengthBps, maxGap = maxGap)

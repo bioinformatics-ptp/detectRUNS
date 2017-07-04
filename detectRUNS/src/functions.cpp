@@ -254,11 +254,76 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 }
 
 
+//' Function to calculate oppositeAndMissingGenotypes array
+//'
+//' This is an helper function, this will be called by another function
+//'
+//' @param data vector of 0/1/2 genotypes
+//' @param ROHet TRUE in ROHet evaluation, FALSE for ROHom
+//'
+//' @return character array; names will be index in which opposite and missing
+//' snps are found in data array
+//'
+//' @examples
+//' data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+//' oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
+  // Initialize oppositeAndMissingGenotypes
+  StringVector oppositeAndMissingGenotypes;
+
+  // Initialize vector for names
+  std::vector< std::string > names;
+
+  // declare values
+  std::string missing = "9";
+  std::string opposite = "0";
+
+  // iter in data vector
+  for (int i=0; i<data.size(); i++) {
+    if (data[i] == NA_INTEGER) {
+      // is missing
+      oppositeAndMissingGenotypes.push_back(missing);
+      // R index are 1 based
+      names.push_back(patch::to_string(i+1));
+      continue;
+    }
+
+    if (ROHet == true){
+      if (data[i] == 0) {
+        // is homozygote
+        oppositeAndMissingGenotypes.push_back(opposite);
+        names.push_back(patch::to_string(i+1));
+      }
+    } else {
+      // ROHom condition
+      if (data[i] == 1) {
+        // is heterozygote
+        oppositeAndMissingGenotypes.push_back(opposite);
+        names.push_back(patch::to_string(i+1));
+      }
+    }
+
+  }
+
+  // Finally assign names to StringVector
+  oppositeAndMissingGenotypes.attr("names") = names;
+
+  // return results
+  return oppositeAndMissingGenotypes;
+}
+
+
 //' Function to slide a window over a vector (individual's genotypes)
 //'
 //' This is a core function. The functions to detect RUNS are slidden over the genome
 //'
-//' @param data vector of pair of genotypes (01, AA, AG)
+//' @param data vector of 0/1/2 genotypes
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param windowSize size of window (n. of SNP)
 //' @param step by which (how many SNP) is the window slidden
@@ -276,8 +341,9 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //' @export
 //'
 // [[Rcpp::export]]
-LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
-                               int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
+List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
+                      int step, int maxGap, bool ROHet=true,
+                      int maxOppositeGenotype=1, int maxMiss=1) {
 
   // get data lenght
   int data_length = data.size();
@@ -286,7 +352,10 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   int spots_lenght = (data_length - windowSize) / step +1;
 
   // initialize results
-  LogicalVector results(spots_lenght, false);
+  LogicalVector windowStatus(spots_lenght, false);
+
+  // calculate opposite and missing snps
+  StringVector oppositeAndMissingGenotypes = findOppositeAndMissing(data, ROHet);
 
   // declare iterators
   IntegerVector::const_iterator from, to;
@@ -319,21 +388,23 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
     // eval RoHet or RoHom
     if (ROHet == true) {
       // calculate result
-      results[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
 
     } else {
       // calculate result
-      results[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
     }
 
   }
 
   // check this affermation (could be N of SNPs - window +1)
-  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), results.size());
+  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), windowStatus.size());
 
-  return results;
+  // define a list of results and return it
+  return List::create(Named("windowStatus")=windowStatus,
+                      Named("oppositeAndMissingGenotypes")=oppositeAndMissingGenotypes);
 }
 
 
