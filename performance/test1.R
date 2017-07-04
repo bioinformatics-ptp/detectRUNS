@@ -70,28 +70,6 @@ tests <- data.frame(fun=character(), step=integer(), time=integer(), language=ch
 
 # iterate over times steps
 for (i in steps) {
-  ##############################################################################
-  # Test Diff
-
-  # get a subset
-  subset_map <- mapfile[1:i, ]
-  subset_genotype <- x[1:i]
-
-  # calculate gaps (only one chromosome)
-  gaps <- diff(subset_map$bps)
-
-  # value diff
-  test_diff <- microbenchmark(
-    diff(subset_map$bps),
-    unit = "ms", #microseconds
-    times = times
-  )
-
-  test_fun <- rep("diff", times)
-  test_step <- rep(i, times)
-  test_language <- rep("R", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_diff$time, language=test_language)
-  tests <- rbind(tests, tmp)
 
   ##############################################################################
   # Test Windows
@@ -155,25 +133,9 @@ for (i in steps) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInRunCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
-  ##############################################################################
-  # Test createRUNdf
+  # TODO: test RUNS.run slidingWIndows with C and R functions
 
-  # a data.frame with RUNS per animal
-  dRUN <- createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
-                      y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun)
 
-  test_createRUNdf <- microbenchmark(
-    createRUNdf(snpRun, subset_map, minSNP,minLengthBps, minDensity,
-                y$oppositeAndMissingGenotypes, maxOppRun, maxMissRun),
-    unit = 'ms',
-    times = times
-  )
-
-  test_fun <- rep("createRUNdf", times)
-  test_step <- rep(i, times)
-  test_language <- rep("R", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_createRUNdf$time, language=test_language)
-  tests <- rbind(tests, tmp)
 }
 
 # write runs and return TRUE/FALSE if RUNS are written out or not
