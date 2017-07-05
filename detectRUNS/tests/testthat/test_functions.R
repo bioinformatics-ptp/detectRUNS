@@ -698,3 +698,133 @@ test_that("Testing loading pop from ped", {
   expect_equal(test_pops, reference_pops)
 
 })
+
+test_that("Testing consecutiveRuns", {
+  # setting parameters
+  maxGap <- 1000
+  maxOppositeGenotype <- 1
+  maxMiss <- 1
+  minLengthBps <- 100
+  ROHet <- TRUE
+  minSNP <- 1
+
+  # setting values for RoHet
+  indGeno <- c(0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA, 0, 1, 1)
+  ind <- list(FID="foo", IID="bar")
+  gaps <- rep(100, length(indGeno)-1)
+
+  # update a gap: setting value higher than threshold
+  gaps[4] <- gaps[4] + maxGap
+
+  # defining a fake mapfile
+  mapFile <- data.frame(Chrom=rep(1, length(indGeno)),
+                        SNP=seq(1, length(indGeno)),
+                        cM=rep(0, length(indGeno)),
+                        bps=rep(0, length(indGeno)))
+
+  # updating positions
+  for (i in 1:length(gaps)) {
+    mapFile[i+1, "bps"] <- mapFile[i, "bps"] + gaps[i]
+  }
+
+  mapFile[1, "bps"] <- 1
+
+  # defining expected dataframe with all datas
+  from <- as.numeric(c(100, 1400, 1900, 2400))
+  to <- as.numeric(c(300, 1700, 2200, 2500))
+  nSNP <- as.integer(c(3, 4, 4, 2))
+  chrom <- as.character(rep(1, 4))
+  lengthBps <- as.numeric(c(200, 300, 300, 100))
+  group <- as.character(rep(ind$FID), 4)
+  id <- as.character(rep(ind$IID), 4)
+
+  reference <- data.frame(group=group,
+                          id=id,
+                          chrom=chrom,
+                          nSNP=nSNP,
+                          from=from,
+                          to=to,
+                          lengthBps=lengthBps,
+                          stringsAsFactors = FALSE)
+
+  # reference is
+  #   group  id chrom nSNP from   to lengthBps
+  # 1   foo bar     1    3  100  300       200
+  # 2   foo bar     1    4 1400 1700       300
+  # 3   foo bar     1    4 1900 2200       300
+  # 4   foo bar     1    2 2400 2500       100
+
+  # calling consecutiveRuns
+  test <- consecutiveRuns(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
+                          maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                          minLengthBps=minLengthBps,maxGap=maxGap)
+
+  # testing functions
+  expect_equal(test, reference)
+
+})
+
+test_that("Testing consecutiveRunsCpp", {
+  # setting parameters
+  maxGap <- 1000
+  maxOppositeGenotype <- 1
+  maxMiss <- 1
+  minLengthBps <- 100
+  ROHet <- TRUE
+  minSNP <- 1
+
+  # setting values for RoHet
+  indGeno <- c(0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA, 0, 1, 1)
+  ind <- list(FID="foo", IID="bar")
+  gaps <- rep(100, length(indGeno)-1)
+
+  # update a gap: setting value higher than threshold
+  gaps[4] <- gaps[4] + maxGap
+
+  # defining a fake mapfile
+  mapFile <- data.frame(Chrom=rep(1, length(indGeno)),
+                        SNP=seq(1, length(indGeno)),
+                        cM=rep(0, length(indGeno)),
+                        bps=rep(0, length(indGeno)))
+
+  # updating positions
+  for (i in 1:length(gaps)) {
+    mapFile[i+1, "bps"] <- mapFile[i, "bps"] + gaps[i]
+  }
+
+  mapFile[1, "bps"] <- 1
+
+  # defining expected dataframe with all datas
+  from <- as.numeric(c(100, 1400, 1900, 2400))
+  to <- as.numeric(c(300, 1700, 2200, 2500))
+  nSNP <- as.integer(c(3, 4, 4, 2))
+  chrom <- as.character(rep(1, 4))
+  lengthBps <- as.numeric(c(200, 300, 300, 100))
+  group <- as.character(rep(ind$FID), 4)
+  id <- as.character(rep(ind$IID), 4)
+
+  reference <- data.frame(group=group,
+                          id=id,
+                          chrom=chrom,
+                          nSNP=nSNP,
+                          from=from,
+                          to=to,
+                          lengthBps=lengthBps,
+                          stringsAsFactors = FALSE)
+
+  # reference is
+  #   group  id chrom nSNP from   to lengthBps
+  # 1   foo bar     1    3  100  300       200
+  # 2   foo bar     1    4 1400 1700       300
+  # 3   foo bar     1    4 1900 2200       300
+  # 4   foo bar     1    2 2400 2500       100
+
+  # calling consecutiveRuns
+  test <- consecutiveRunsCpp(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
+                             maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                             minLengthBps=minLengthBps,maxGap=maxGap)
+
+  # testing functions
+  expect_equal(test, reference)
+
+})

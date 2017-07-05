@@ -546,3 +546,55 @@ DataFrame readPOPCpp(std::string genotype_path) {
 
   return NDF;
 }
+
+
+//' Function to detect consecutive runs in a vector (individual's genotypes)
+//'
+//' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+//' (see Marras et al. 2015)
+//'
+//' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+//' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+//' @param mapFile Plink map file (for SNP position)
+//' @param ROHet shall we detect ROHet or ROHom?
+//' @param minSNP minimum number of SNP in a run
+//' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+//' @param maxMiss max. n. of missing SNP
+//' @param minLengthBps min length of a run in bps
+//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//'
+//' @details
+//' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+//' No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+//' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+//' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+//'
+//' @return A data frame of runs per individual sample
+//' @export
+//'
+//' @examples
+//'
+// [[Rcpp::export]]
+DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,
+                             bool ROHet=true, int minSNP=3, int maxOppositeGenotype=1,
+                             int maxMiss=1, int minLengthBps=1000, int maxGap=10^6) {
+
+  // the columns of data.frame Defining data types accordingly slinding window
+  CharacterVector group;
+  CharacterVector id;
+  CharacterVector chrom;
+  IntegerVector nSNP;
+  IntegerVector from;
+  IntegerVector to;
+  IntegerVector lengthBps;
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("group")=group, Named("id")=id, Named("chrom")=chrom, Named("nSNP")=nSNP,
+    Named("from")=from, Named("to")=to, Named("lengthBps")=lengthBps,
+    _["stringsAsFactors"] = false);
+
+  // returning all runs for this individual genotype
+  return(res);
+
+}
