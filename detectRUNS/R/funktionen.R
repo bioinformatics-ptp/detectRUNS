@@ -610,7 +610,10 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     # test if chromosome is changed
     if (currentChrom != lastChrom ) {
       # if I have run, write to file
-      if(flag_run == TRUE & runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+      # message(paste("Chromosome change", currentChrom, lastChrom))
+
+      if(flag_run == TRUE && runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+        # message("Update RUN: chromosome changed")
         res <- updateRUNS(res, runData)
       }
 
@@ -627,8 +630,10 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     gap <- (currentPos - lastPos)
 
     # check if current gap is larger than max allowed gap. No matter current SNP
-    if (flag_run == TRUE & gap >= maxGap) {
-      if(runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+    if (flag_run == TRUE && gap >= maxGap) {
+      # message("Gap condition")
+
+      if(runData$runH >= minSNP && runData$lengte >= minLengthBps) {
         res <- updateRUNS(res, runData)
       }
 
@@ -638,9 +643,10 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     }
 
     # Start for ==. Is a new RUN or not? ensure that indGeno[i] is a number
-    if (indGeno[i] == typ & !is.na(indGeno[i])){
+    if (indGeno[i] == typ && !is.na(indGeno[i])){
       # initialize run if not yet initialized, or just written after a big GAP
       if (flag_run == FALSE) {
+        # message("Run initialized")
         # runData is a list of attributes for the current RUN
         runData <- initializeRun(currentChrom, currentPos)
         flag_run <- TRUE
@@ -654,7 +660,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     } # condition: the genotype I want
 
     # start if !=
-    else if (indGeno[i] != typ & !is.na(indGeno[i])){
+    else if (indGeno[i] != typ && !is.na(indGeno[i])){
       # if not in a run, don't do anything
       if (flag_run == FALSE) {
         next
@@ -671,7 +677,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
         runData$lengte <- (runData$end - runData$start)
 
       } else {
-        if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+        # message("max opposite reached")
+        if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
           res <- updateRUNS(res, runData)
         }
 
@@ -702,7 +709,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 
       }
       else {
-        if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+        # message("max missing reached")
+        if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
           res <- updateRUNS(res, runData)
         }
 
@@ -721,7 +729,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 
   # last snp if it is in a run
   if (flag_run == TRUE ) {
-    if (runData$runH >= minSNP & runData$lengte >= minLengthBps) {
+    # message("last SNP")
+    if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
       res <- updateRUNS(res, runData)
     }
 
