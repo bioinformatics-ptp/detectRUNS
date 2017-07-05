@@ -717,7 +717,7 @@ test_that("Testing consecutiveRuns", {
   gaps[4] <- gaps[4] + maxGap
 
   # defining a fake mapfile
-  mapFile <- data.frame(Chrom=rep(1, length(indGeno)),
+  mapFile <- data.frame(Chrom=c(rep(1, 9), rep(2, 7)),
                         SNP=seq(1, length(indGeno)),
                         cM=rep(0, length(indGeno)),
                         bps=rep(0, length(indGeno)))
@@ -733,7 +733,7 @@ test_that("Testing consecutiveRuns", {
   from <- as.numeric(c(100, 1400, 1900, 2400))
   to <- as.numeric(c(300, 1700, 2200, 2500))
   nSNP <- as.integer(c(3, 4, 4, 2))
-  chrom <- as.character(rep(1, 4))
+  chrom <- as.character(c(rep(1, 2), rep(2, 2)))
   lengthBps <- as.numeric(c(200, 300, 300, 100))
   group <- as.character(rep(ind$FID), 4)
   id <- as.character(rep(ind$IID), 4)
@@ -782,7 +782,7 @@ test_that("Testing consecutiveRunsCpp", {
   gaps[4] <- gaps[4] + maxGap
 
   # defining a fake mapfile
-  mapFile <- data.frame(Chrom=rep(1, length(indGeno)),
+  mapFile <- data.frame(Chrom=c(rep(1, 9), rep(2, 7)),
                         SNP=seq(1, length(indGeno)),
                         cM=rep(0, length(indGeno)),
                         bps=rep(0, length(indGeno)))
@@ -798,7 +798,7 @@ test_that("Testing consecutiveRunsCpp", {
   from <- as.numeric(c(100, 1400, 1900, 2400))
   to <- as.numeric(c(300, 1700, 2200, 2500))
   nSNP <- as.integer(c(3, 4, 4, 2))
-  chrom <- as.character(rep(1, 4))
+  chrom <- as.character(c(rep(1, 2), rep(2, 2)))
   lengthBps <- as.numeric(c(200, 300, 300, 100))
   group <- as.character(rep(ind$FID), 4)
   id <- as.character(rep(ind$IID), 4)
