@@ -704,11 +704,74 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       }
 
       // update runData values
-      runData.runH = runData.runH+1;
+      runData.runH++;
       runData.end = currentPos;
       runData.lengte = (runData.end - runData.start);
 
     } // condition: the genotype I want
+
+    // start if !=
+    else if (indGeno[i] != typ && indGeno[i] != NA_INTEGER){
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update nOpposite genotypes (in a run)
+      runData.nOpposite++;
+
+      // check if maxOppositeGenotype is reached
+      if (runData.nOpposite <= maxOppositeGenotype) {
+      // update runData values. This opposite genotype is a part of the RUN
+        runData.runH++;
+        runData.end = currentPos;
+        runData.lengte = (runData.end - runData.start);
+
+      } else {
+        // debug
+        Rcout << "max opposite reached" << std::endl;
+
+        if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
+          updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition nOpposite greather than maxOppositeGenotype
+
+    } // condition: opposite genotype
+
+    // start if 'NA'
+    else if (indGeno[i] == NA_INTEGER) {
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update missing values
+      runData.nMiss++;
+
+      // check if maxMiss is reached
+      if (runData.nMiss <= maxMiss){
+        // update runData values. This missing genotype is a part of the RUN
+        runData.runH++;
+        runData.end = currentPos;
+        runData.lengte = (runData.end - runData.start);
+      } else {
+        // debug
+        Rcout << "max missing reached" << std::endl;
+
+        if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
+          updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition: nMissing greather than permitted
+
+    } // condition: missing genotype
 
   // update positions
   lastPos = currentPos;
