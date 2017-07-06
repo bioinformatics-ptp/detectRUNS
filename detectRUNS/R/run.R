@@ -10,8 +10,8 @@
 #' max n. of opposite genotypes etc.) are specified here.
 #' Input data are in the ped/map Plink format
 #'
-#' @param genotype_path genotype (.ped) file location
-#' @param mapfile_path map file (.map) file location
+#' @param genotypeFile genotype (.ped) file location
+#' @param mapFile map file (.map) file location
 #' @param windowSize the size of sliding window (only for the slidingWindow method)
 #' @param threshold the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
 #' (only for the slidingWindow method)
@@ -51,15 +51,15 @@
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 20, threshold = 0.1, minSNP = 5,
 #' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
 #' minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
 #' # TODO: add example for consecutiveRuns
 
 # TODO add output file parameter
-RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
+RUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
                      minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
                      maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
                      maxOppRun = NULL, maxMissRun = NULL,
@@ -75,17 +75,17 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   }
 
   # if genotype is file, open file
-  if(file.exists(genotype_path)){
-    conn  <- file(genotype_path, open = "r")
+  if(file.exists(genotypeFile)){
+    conn  <- file(genotypeFile, open = "r")
   } else {
-    stop(paste("file", genotype_path, "doesn't exists"))
+    stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
-  if(file.exists(mapfile_path)){
+  if(file.exists(mapFile)){
     # using data.table to read data
-    mapFile <- data.table::fread(mapfile_path, header = F)
+    mapFile <- data.table::fread(mapFile, header = F)
   } else {
-    stop(paste("file", mapfile_path, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exists"))
   }
 
   # setting colnames

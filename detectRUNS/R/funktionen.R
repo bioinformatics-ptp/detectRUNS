@@ -417,7 +417,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #'
 #' @examples #not yet
 #'
-snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
+snpInsideROH <- function(runs, mapChrom, genotype_path) {
 
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
