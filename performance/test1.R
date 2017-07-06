@@ -197,36 +197,22 @@ for (i in steps) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
   tests <- rbind(tests, tmp)
 
-  # # check cpp consecutiveRuns
-  # test_consecutiveRuns <- microbenchmark(
-  #   consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
-  #                   parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
-  #                   parameters$maxGap, cpp=TRUE),
-  #   unit = 'ms',
-  #   times = times
-  # )
-  #
-  # test_fun <- rep("consecutiveRuns", times)
-  # test_step <- rep(i, times)
-  # test_language <- rep("Cpp", times)
-  # tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
-  # tests <- rbind(tests, tmp)
+  # check cpp consecutiveRuns
+  test_consecutiveRuns <- microbenchmark(
+    consecutiveRunsCpp(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
+                       parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
+                       parameters$maxGap),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("consecutiveRuns", times)
+  test_step <- rep(i, times)
+  test_language <- rep("Cpp", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
+  tests <- rbind(tests, tmp)
 
 }
-
-# write runs and return TRUE/FALSE if RUNS are written out or not
-# this will save always in the same output file
-# is_run <- writeRUN(as.character(x$IID),dRUN,ROHet,as.character(x$FID))
-
-# call the whole function
-# test_RUN <- microbenchmark(
-#   RUNS.run(chillingham_genotype, chillingham_map, windowSize = 20, threshold = 0.1, minSNP = 5,
-#           ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000,
-#           minDensity = 1/10
-#   ),
-#   unit = 'ms',
-#   times = 10
-# )
 
 # as described by http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
 testsc <- summarySE(tests, measurevar="time", groupvars=c("fun","step", "language"))

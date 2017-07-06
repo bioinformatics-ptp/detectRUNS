@@ -546,3 +546,263 @@ DataFrame readPOPCpp(std::string genotype_path) {
 
   return NDF;
 }
+
+
+// helper RunData structure for consecutiveRunsCpp
+struct RunData {
+  int nOpposite;
+  int nMiss;
+  int runH;
+  int lengte;
+  std::string chrom;
+  int start;
+  int end;
+};
+
+
+// helper initializeRun function for consecutiveRunsCpp
+RunData initializeRun(std::string chrom, int start) {
+  RunData run_data;
+
+  // initialize values
+  run_data.chrom = chrom;
+  run_data.start = start;
+  run_data.end = start;
+  run_data.nOpposite = 0;
+  run_data.nMiss = 0;
+  run_data.runH = 0;
+  run_data.lengte = 0;
+
+  return run_data;
+}
+
+// helper function to update RUNs data for consecutiveRunsCpp
+void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVector *group,
+                CharacterVector *id, CharacterVector *chrom, IntegerVector *nSNP,
+                IntegerVector *from, IntegerVector *to, IntegerVector *lengthBps) {
+
+  // update arrays for current RUN
+  group->push_back(fid);
+  id->push_back(iid);
+  chrom->push_back(run_data.chrom);
+  nSNP->push_back(run_data.runH);
+  from->push_back(run_data.start);
+  to->push_back(run_data.end);
+  lengthBps->push_back(run_data.lengte);
+
+}
+
+//' Function to detect consecutive runs in a vector (individual's genotypes)
+//'
+//' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+//' (see Marras et al. 2015)
+//'
+//' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+//' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+//' @param mapFile Plink map file (for SNP position)
+//' @param ROHet shall we detect ROHet or ROHom?
+//' @param minSNP minimum number of SNP in a run
+//' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+//' @param maxMiss max. n. of missing SNP
+//' @param minLengthBps min length of a run in bps
+//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//'
+//' @details
+//' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+//' No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+//' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+//' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+//'
+//' @return A data frame of runs per individual sample
+//' @export
+//'
+//' @examples
+//'
+// [[Rcpp::export]]
+DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,
+                             bool ROHet=true, int minSNP=3, int maxOppositeGenotype=1,
+                             int maxMiss=1, int minLengthBps=1000, int maxGap=10^6) {
+
+  // Bool to int conversion: ifelse(ROHet,1,0)
+  int typ = ROHet;
+
+  // animal data lile IID or FID
+  std::string iid = individual["IID"];
+  std::string fid = individual["FID"];
+
+  // initialize variables. First chromosome in ordered mapFile
+  CharacterVector Chrom = mapFile["Chrom"];
+  IntegerVector bps = mapFile["bps"];
+
+  std::string lastChrom = as<std::string>(Chrom[0]);
+  int lastPos = bps[0];
+  std::string currentChrom;
+  int currentPos;
+  int gap;
+
+  // a flag to determine if I'm in a RUN or not
+  bool flag_run = false;
+  RunData run_data;
+
+  // the columns of data.frame Defining data types accordingly slinding window
+  CharacterVector group;
+  CharacterVector id;
+  CharacterVector chrom;
+  IntegerVector nSNP;
+  IntegerVector from;
+  IntegerVector to;
+  IntegerVector lengthBps;
+
+  for (int i = 0; i < indGeno.size(); i++) {
+    // Check for Chromosome
+    currentChrom = Chrom[i];
+
+    // get current position
+    currentPos = bps[i];
+
+    // test if chromosome is changed
+    if (currentChrom != lastChrom ) {
+      // if I have run, write to file
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+        // debug
+        // Rcout << "Update RUN: chromosome changed" << std::endl;
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+      }
+
+      // update chrom and positions
+      lastChrom = currentChrom;
+      lastPos = currentPos;
+
+      // unset RUN flag. New runs with new chromosomes!!!
+      flag_run = false;
+    }
+
+    // calculate gap between consecutive SNP (in the same chrom)
+    gap = currentPos - lastPos;
+
+    // check if current gap is larger than max allowed gap. No matter current SNP
+    if (gap >= maxGap) {
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+        // debug
+        // Rcout << "Update RUN: gap size exceeded" << std::endl;
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+      }
+
+      // unset RUN flag
+      flag_run = false;
+      }
+
+    // Start for ==. Is a new RUN or not? ensure that indGeno[i] is a number
+    if (indGeno[i] == typ && indGeno[i] != NA_INTEGER){
+      // initialize run if not yet initialized, or just written after a big GAP
+      if (flag_run == false) {
+        //debug
+        // Rcout << "Creating new RUN at i = " << i << std::endl;
+        // run_data is a struct of attributes for the current RUN
+        run_data = initializeRun(currentChrom, currentPos);
+        flag_run = true;
+      }
+
+      // update run_data values
+      run_data.runH++;
+      run_data.end = currentPos;
+      run_data.lengte = (run_data.end - run_data.start);
+
+    } // condition: the genotype I want
+
+    // start if !=
+    else if (indGeno[i] != typ && indGeno[i] != NA_INTEGER){
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update nOpposite genotypes (in a run)
+      run_data.nOpposite++;
+
+      // check if maxOppositeGenotype is reached
+      if (run_data.nOpposite <= maxOppositeGenotype) {
+      // update run_data values. This opposite genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
+
+      } else {
+        // debug
+        // Rcout << "max opposite reached" << std::endl;
+
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition nOpposite greather than maxOppositeGenotype
+
+    } // condition: opposite genotype
+
+    // start if 'NA'
+    else if (indGeno[i] == NA_INTEGER) {
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update missing values
+      run_data.nMiss++;
+
+      // check if maxMiss is reached
+      if (run_data.nMiss <= maxMiss){
+        // update run_data values. This missing genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
+      } else {
+        // debug
+        // Rcout << "max missing reached" << std::endl;
+
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition: nMissing greather than permitted
+
+    } // condition: missing genotype
+
+  // update positions
+  lastPos = currentPos;
+
+  } // cicle: for i in genotypes
+
+  // last snp if it is in a run
+  if (flag_run == true ) {
+    if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+      // Rcout << "Last RUN finished with last SNP" << std::endl;
+      updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+    }
+
+    // unset RUN flag
+    flag_run = false;
+  }
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("group")=group, Named("id")=id, Named("chrom")=chrom, Named("nSNP")=nSNP,
+    Named("from")=from, Named("to")=to, Named("lengthBps")=lengthBps,
+    _["stringsAsFactors"] = false);
+
+  // debug
+  if(res.nrows() > 0) {
+    Rcout << "N. of RUNS for individual " << iid << " is: " << res.nrows() << std::endl;
+  } else {
+    Rcout << "No RUNs found for animal " << iid << std::endl;
+  }
+
+  // returning all runs for this individual genotype
+  return(res);
+
+}
