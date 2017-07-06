@@ -567,7 +567,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
   # runs of heterozygosity or of homozygosity?
   typ <- ifelse(ROHet,1,0)
 
-  # animal data lile IID or FID
+  # animal data like IID or FID
   ind <- as.character(individual$IID)
   group <- as.character(individual$FID)
 

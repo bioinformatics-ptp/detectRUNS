@@ -548,8 +548,8 @@ DataFrame readPOPCpp(std::string genotype_path) {
 }
 
 
-// helper rundata structure for consecutiveRunsCpp
-struct rundata {
+// helper RunData structure for consecutiveRunsCpp
+struct RunData {
   int nOpposite;
   int nMiss;
   int runH;
@@ -561,34 +561,34 @@ struct rundata {
 
 
 // helper initializeRun function for consecutiveRunsCpp
-rundata initializeRun(std::string chrom, int start) {
-  rundata runData;
+RunData initializeRun(std::string chrom, int start) {
+  RunData run_data;
 
   // initialize values
-  runData.chrom = chrom;
-  runData.start = start;
-  runData.end = start;
-  runData.nOpposite = 0;
-  runData.nMiss = 0;
-  runData.runH = 0;
-  runData.lengte = 0;
+  run_data.chrom = chrom;
+  run_data.start = start;
+  run_data.end = start;
+  run_data.nOpposite = 0;
+  run_data.nMiss = 0;
+  run_data.runH = 0;
+  run_data.lengte = 0;
 
-  return runData;
+  return run_data;
 }
 
 // helper function to update RUNs data for consecutiveRunsCpp
-void updateRUNs(rundata runData, std::string iid, std::string fid, CharacterVector *group,
+void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVector *group,
                 CharacterVector *id, CharacterVector *chrom, IntegerVector *nSNP,
                 IntegerVector *from, IntegerVector *to, IntegerVector *lengthBps) {
 
   // update arrays for current RUN
   group->push_back(fid);
   id->push_back(iid);
-  chrom->push_back(runData.chrom);
-  nSNP->push_back(runData.runH);
-  from->push_back(runData.start);
-  to->push_back(runData.end);
-  lengthBps->push_back(runData.lengte);
+  chrom->push_back(run_data.chrom);
+  nSNP->push_back(run_data.runH);
+  from->push_back(run_data.start);
+  to->push_back(run_data.end);
+  lengthBps->push_back(run_data.lengte);
 
 }
 
@@ -642,7 +642,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 
   // a flag to determine if I'm in a RUN or not
   bool flag_run = false;
-  rundata runData;
+  RunData run_data;
 
   // the columns of data.frame Defining data types accordingly slinding window
   CharacterVector group;
@@ -663,10 +663,10 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
     // test if chromosome is changed
     if (currentChrom != lastChrom ) {
       // if I have run, write to file
-      if(flag_run == true && runData.runH >= minSNP && runData.lengte >= minLengthBps) {
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
         // debug
         // Rcout << "Update RUN: chromosome changed" << std::endl;
-        updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
       }
 
       // update chrom and positions
@@ -682,10 +682,10 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 
     // check if current gap is larger than max allowed gap. No matter current SNP
     if (gap >= maxGap) {
-      if(flag_run == true && runData.runH >= minSNP && runData.lengte >= minLengthBps) {
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
         // debug
         // Rcout << "Update RUN: gap size exceeded" << std::endl;
-        updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
       }
 
       // unset RUN flag
@@ -698,15 +698,15 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       if (flag_run == false) {
         //debug
         // Rcout << "Creating new RUN at i = " << i << std::endl;
-        // runData is a struct of attributes for the current RUN
-        runData = initializeRun(currentChrom, currentPos);
+        // run_data is a struct of attributes for the current RUN
+        run_data = initializeRun(currentChrom, currentPos);
         flag_run = true;
       }
 
-      // update runData values
-      runData.runH++;
-      runData.end = currentPos;
-      runData.lengte = (runData.end - runData.start);
+      // update run_data values
+      run_data.runH++;
+      run_data.end = currentPos;
+      run_data.lengte = (run_data.end - run_data.start);
 
     } // condition: the genotype I want
 
@@ -718,21 +718,21 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       }
 
       // update nOpposite genotypes (in a run)
-      runData.nOpposite++;
+      run_data.nOpposite++;
 
       // check if maxOppositeGenotype is reached
-      if (runData.nOpposite <= maxOppositeGenotype) {
-      // update runData values. This opposite genotype is a part of the RUN
-        runData.runH++;
-        runData.end = currentPos;
-        runData.lengte = (runData.end - runData.start);
+      if (run_data.nOpposite <= maxOppositeGenotype) {
+      // update run_data values. This opposite genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
 
       } else {
         // debug
         // Rcout << "max opposite reached" << std::endl;
 
-        if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
-          updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
         }
 
         // unset RUN flag
@@ -750,20 +750,20 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       }
 
       // update missing values
-      runData.nMiss++;
+      run_data.nMiss++;
 
       // check if maxMiss is reached
-      if (runData.nMiss <= maxMiss){
-        // update runData values. This missing genotype is a part of the RUN
-        runData.runH++;
-        runData.end = currentPos;
-        runData.lengte = (runData.end - runData.start);
+      if (run_data.nMiss <= maxMiss){
+        // update run_data values. This missing genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
       } else {
         // debug
         // Rcout << "max missing reached" << std::endl;
 
-        if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
-          updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
         }
 
         // unset RUN flag
@@ -780,9 +780,9 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 
   // last snp if it is in a run
   if (flag_run == true ) {
-    if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
+    if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
       // Rcout << "Last RUN finished with last SNP" << std::endl;
-      updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+      updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
     }
 
     // unset RUN flag
