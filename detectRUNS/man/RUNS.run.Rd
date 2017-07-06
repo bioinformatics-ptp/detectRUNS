@@ -4,16 +4,16 @@
 \alias{RUNS.run}
 \title{Main function to detect RUNS (ROHom/ROHet)}
 \usage{
-RUNS.run(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
+RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
   minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
   maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
   maxOppRun = NULL, maxMissRun = NULL, method = c("slidingWindow",
   "consecutiveRuns"))
 }
 \arguments{
-\item{genotype_path}{genotype (.ped) file location}
+\item{genotypeFile}{genotype (.ped) file location}
 
-\item{mapfile_path}{map file (.map) file location}
+\item{mapFile}{map file (.map) file location}
 
 \item{windowSize}{the size of sliding window (only for the slidingWindow method)}
 
@@ -65,9 +65,9 @@ of the results (see plot and statistic functions in this manual, and/or refer to
 }
 \examples{
 # getting map and ped paths
-genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
+genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+runs <- RUNS.run(genotypeFile, mapFile, windowSize = 20, threshold = 0.1, minSNP = 5,
 ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
 minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
 # TODO: add example for consecutiveRuns

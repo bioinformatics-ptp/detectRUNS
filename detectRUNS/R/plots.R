@@ -26,11 +26,11 @@
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
 #' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
 #' minLengthBps = 1000, minDensity = 1/10)
 #'
@@ -38,7 +38,7 @@
 #' plotRuns(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
+plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
   # suppress notes
   IND <- NULL
   LENGTH <- NULL
@@ -131,11 +131,11 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
 #' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
 #' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
 #' minLengthBps = 1000, minDensity = 1/10)
 #'
@@ -143,7 +143,7 @@ plotRuns <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NUL
 #' plotStackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
+plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
@@ -234,7 +234,7 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' Proportions on the y-axis, bps on the x-axis
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param genotype_path genotype (.ped) file location
+#' @param genotypeFile genotype (.ped) file location
 #' @param mapfile_path map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
@@ -247,29 +247,29 @@ plotStackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
 #' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
 #' minLengthBps = 1000, minDensity = 1/10)
 #'
 #' # plot runs per animal (interactive)
-#' plotSnpsInRuns(runs, genotype_path, mapfile_path,
+#' plotSnpsInRuns(runs, genotypeFile, mapfile_path,
 #' savePlots=FALSE, title_prefix="ROHom")
 #'
 
 
-plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix=NULL) {
+plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  if(file.exists(mapfile_path)){
+  if(file.exists(mapFile)){
     # using data.table to read data
-    mappa <- data.table::fread(mapfile_path, header = F)
+    mappa <- data.table::fread(mapFile, header = F)
   } else {
-    stop(paste("file", mapfile_path, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exists"))
   }
 
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
@@ -288,7 +288,7 @@ plotSnpsInRuns <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
     mapKrom <- mappa[mappa$CHR==chrom,]
     print(paste("N.of SNP is",nrow(mapKrom)))
 
-    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
+    snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -349,8 +349,8 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' Proportions on the y-axis, bps on the x-axis
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param genotype_path genotype (.ped) file location
-#' @param mapfile_path map file (.map) file location
+#' @param genotypeFile genotype (.ped) file location
+#' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #' @param main_titel title in plot
@@ -364,30 +364,30 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1,
+#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 20, threshold = 0.1,
 #' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
 #' minLengthBps = 1000, minDensity = 1/10, method='slidingWindow')
 #'
 #' # plot runs per animal (interactive)
-#' manhattan_Runs(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
+#' manhattan_Runs(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
 #'
 
 
-manhattan_Runs <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
+plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #read map file
-  if(file.exists(mapfile_path)){
+  if(file.exists(mapFile)){
     # using data.table to read data
-    mappa <- data.table::fread(mapfile_path, header = F)
+    mappa <- data.table::fread(mapFile, header = F)
   } else {
-    stop(paste("file", mapfile_path, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exists"))
   }
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
@@ -411,7 +411,7 @@ manhattan_Runs <- function(runs, genotype_path, mapfile_path, savePlots=FALSE, t
   for (chrom in sort(unique(runs$CHROMOSOME))) {
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
     mapKrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snp_inside_ROH(runsChrom,mapKrom, genotype_path)
+    snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
