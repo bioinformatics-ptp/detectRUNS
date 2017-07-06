@@ -665,7 +665,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // if I have run, write to file
       if(flag_run == true && runData.runH >= minSNP && runData.lengte >= minLengthBps) {
         // debug
-        Rcout << "Update RUN: chromosome changed" << std::endl;
+        // Rcout << "Update RUN: chromosome changed" << std::endl;
         updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
       }
 
@@ -684,7 +684,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
     if (gap >= maxGap) {
       if(flag_run == true && runData.runH >= minSNP && runData.lengte >= minLengthBps) {
         // debug
-        Rcout << "Update RUN: gap size exceeded" << std::endl;
+        // Rcout << "Update RUN: gap size exceeded" << std::endl;
         updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
       }
 
@@ -697,7 +697,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // initialize run if not yet initialized, or just written after a big GAP
       if (flag_run == false) {
         //debug
-        Rcout << "Creating new RUN at i = " << i << std::endl;
+        // Rcout << "Creating new RUN at i = " << i << std::endl;
         // runData is a struct of attributes for the current RUN
         runData = initializeRun(currentChrom, currentPos);
         flag_run = true;
@@ -729,7 +729,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 
       } else {
         // debug
-        Rcout << "max opposite reached" << std::endl;
+        // Rcout << "max opposite reached" << std::endl;
 
         if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
           updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
@@ -760,7 +760,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
         runData.lengte = (runData.end - runData.start);
       } else {
         // debug
-        Rcout << "max missing reached" << std::endl;
+        // Rcout << "max missing reached" << std::endl;
 
         if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
           updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
@@ -781,7 +781,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
   // last snp if it is in a run
   if (flag_run == true ) {
     if (runData.runH >= minSNP && runData.lengte >= minLengthBps) {
-      Rcout << "Last RUN finished with last SNP" << std::endl;
+      // Rcout << "Last RUN finished with last SNP" << std::endl;
       updateRUNs(runData, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
     }
 
