@@ -134,9 +134,9 @@ RUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
       a_run <- slidingRuns(genotype, animal, mapFile, gaps, parameters)
 
     } else {
-      a_run <- consecutiveRuns(genotype, animal, mapFile=mapFile, ROHet=ROHet, minSNP=minSNP,
-                               maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
-                               minLengthBps=minLengthBps, maxGap = maxGap)
+      a_run <- consecutiveRunsCpp(genotype, animal, mapFile=mapFile, ROHet=ROHet, minSNP=minSNP,
+                                  maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                                  minLengthBps=minLengthBps, maxGap = maxGap)
     }
 
     # bind this run (if has rows) to others RUNs (if any)
