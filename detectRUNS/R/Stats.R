@@ -17,7 +17,7 @@
 #' @export
 #'
 #' @examples
-#'
+#' 
 
 reorderDF <- function(dfx) {
 
@@ -43,6 +43,9 @@ reorderDF <- function(dfx) {
 #' @export
 #'
 #' @examples
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#' 
+#' chromosomeLength(mapfile_path)
 #'
 
 chromosomeLength <- function(mapFile){
@@ -75,118 +78,12 @@ chromosomeLength <- function(mapFile){
 }
 
 
-
-#' Plot N. of ROH by sum/mean
-#'
-#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
-#' Proportions on the y-axis, bps on the x-axis
-#'
-#' @param file_runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param path_map map file (.map) file location
-#' @param method
-#'
-#' @return plot of n. of ROH by sum/mean
-#' @export
-#'
-#' @importFrom grDevices dev.off pdf
-#'
-#' @import utils
-#'
-#' @examples
-#'
-#'
-
-plot_SumMeanRuns <- function(file_runs,mapFile,method=c('sum','mean')){
-
-  #check method
-  method <- match.arg(method)
-  message(paste("You are using the method:", method))
-
-  #Calcolo della lunghezza del genoma e max value nei cromosomi
-  LengthGenome=chromosomeLength(mapFile)
-
-  names(file_runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
-  #start calculation by method
-  if (method=="sum") {
-    print("Faccio la somma")
-    sum_ROH_genome <- ddply(file_runs,.(IND),summarize,sum=sum(LENGTH)/1000000)
-    method="Sum"
-  } else {
-    print("Faccio la media")
-    sum_ROH_genome <- ddply(file_runs,.(IND),summarize,sum=mean(LENGTH)/1000000)
-    method="Mean"
-  }
-
-  #sum of ROH for Sample
-  count_ROH_genome <- count(file_runs,"IND")
-  sum_ROH_genome=merge(sum_ROH_genome,count_ROH_genome,by='IND')
-  sum_ROH_genome=merge(sum_ROH_genome,unique(file_runs[,c("IND","GROUP")]),by='IND')
-  head(sum_ROH_genome)
-
-  #RESULTS!!!!!
-  p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=GROUP)) + geom_point()
-  p <- p + xlab(paste(method," of ROH in Mbps" , sep='')) + ylab ("Number of ROH for Individual")
-  p
-
-}
-
-
-#' Violin plot sum/mean ROH
-#'
-#' Function to plot violin plot
-#'
-#' @param file_runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param method
-#'
-#' @return Violin plot of n. of ROH by sum/mean
-#' @export
-#'
-#' @importFrom grDevices dev.off pdf
-#'
-#' @import utils
-#'
-#' @examples
-#'
-#'
-
-plot_ViolinRuns <- function(file_runs, method=c("sum","mean")){
-  print("inizio a fare i conti")
-
-  names(file_runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
-
-  #check method
-  method <- match.arg(method)
-  message(paste("You are using the method:", method))
-
-  #start calculation by method
-  if (method=="sum") {
-    #use ddply
-    mean_roh=ddply(file_runs,.(IND,GROUP),summarize,sum=sum(LENGTH/1000000))
-    method="Sum"
-  }else{
-    mean_roh=ddply(file_runs,.(IND,GROUP),summarize,sum=mean(LENGTH/1000000))
-    method="Mean"
-  }
-
-  #Violinplot
-  p <- ggplot(data=mean_roh, aes(x=GROUP, y=sum, colour=GROUP))
-  p <- p + geom_violin (aes(fill=GROUP)) + geom_boxplot(width=0.1)
-  p <- p + ylab(paste(method," of ROH in Mbps" , sep=''))
-  p
-
-  return(p)
-
-}
-
-
 #' Function to calculated Froh genome-wide or chromosome-wide
 #' Froh = (sum of all ROH for individual) / (Genome length covered by SNP)
 #'
 #'
 #' @param mapFile Plink map file (for SNP position)
-#' @param file_runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param genome_wide vector of TRUE/FALSE (Analisys genome-wide)
 #'
 #' @details
@@ -198,27 +95,37 @@ plot_ViolinRuns <- function(file_runs, method=c("sum","mean")){
 #' @export
 #'
 #' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' Froh_inbreeding(runs, mapfile_path)
+#' Froh_inbreeding(runs, mapfile_path, genome_wide=FALSE)
+#' 
 
-
-Froh_inbreeding <- function(file_runs,mapFile,genome_wide=TRUE){
+Froh_inbreeding <- function(runsFile,mapFile,genome_wide=TRUE){
 
   LengthGenome=chromosomeLength(mapFile = mapFile)
 
-  names(file_runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
+  names(runsFile) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  info_breed=unique(runsFile[c('GROUP','IND')])
+  
   #sum of ROH for Sample
   if (genome_wide) {
     print("calcolo Froh su tutto il genoma")
 
     #RESULTS!!!!!
-    Froh <- ddply(file_runs,.(IND),summarize,sum=sum(LENGTH))
+    Froh <- ddply(runsFile,.(IND),summarize,sum=sum(LENGTH))
     Froh$Froh_genome =  Froh$sum/sum(LengthGenome$CHR_LENGTH)
 
   } else {
     print("calcolo Froh cromosoma by cromosoma")
 
-    Froh_temp <- ddply(file_runs,.(IND,CHROMOSOME),summarize,sum=sum(LENGTH))
+    Froh_temp <- ddply(runsFile,.(IND,CHROMOSOME),summarize,sum=sum(LENGTH))
     Froh_temp=merge(Froh_temp,LengthGenome,by='CHROMOSOME')
     Froh_temp$Froh =  Froh_temp$sum/Froh_temp$CHR_LENGTH
 
@@ -234,17 +141,17 @@ Froh_inbreeding <- function(file_runs,mapFile,genome_wide=TRUE){
     colnames(Froh) <- c('IND',new_list_chr1)
   }
 
+  Froh=merge(info_breed,Froh,by="IND",all=TRUE)
+  
   return(Froh)
 }
-
-
 
 
 #' Function to calculated Froh using a ROH-class
 #'
 #'
 #' @param mapFile Plink map file (for SNP position)
-#' @param file_runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
 #'
 #' @details
@@ -254,11 +161,18 @@ Froh_inbreeding <- function(file_runs,mapFile,genome_wide=TRUE){
 #' @export
 #'
 #' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' Froh_inbreedingClass(runs, mapfile_path, Class=2)
+#' 
 
-
-Froh_inbreedingClass <- function(file_runs,mapFile,Class=2){
+Froh_inbreedingClass <- function(runsFile,mapFile,Class=2){
 
   step_value=Class
   range_mb=c(0,0,0,0,0,99999)
@@ -278,25 +192,25 @@ Froh_inbreedingClass <- function(file_runs,mapFile,Class=2){
 
   print(paste("Class created:"  ,name_CLASS[0:5],sep=' '))
 
-  names(file_runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  file_runs$MB <- file_runs$LENGTH/1000000
-  file_runs$CLASS=cut(as.numeric(file_runs$MB),range_mb)
-  levels(file_runs$CLASS) = name_CLASS
-  file_runs$CLASS=factor(file_runs$CLASS)
-  table(file_runs$CLASS)
+  names(runsFile) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  runsFile$MB <- runsFile$LENGTH/1000000
+  runsFile$CLASS=cut(as.numeric(runsFile$MB),range_mb)
+  levels(runsFile$CLASS) = name_CLASS
+  runsFile$CLASS=factor(runsFile$CLASS)
+  table(runsFile$CLASS)
 
   LengthGenome=chromosomeLength(mapFile)
 
   #sum of ROH for Sample
   print("calcolo Froh per Classe")
 
-  Froh_Class=unique(file_runs[c('GROUP','IND')])
+  Froh_Class=unique(runsFile[c('GROUP','IND')])
   for (i in range_mb[1:5]){
     print(paste("Class used: >",i,sep=''))
 
-    head(file_runs)
+    head(runsFile)
 
-    subset_roh <- file_runs[file_runs$MB >= i,]
+    subset_roh <- runsFile[runsFile$MB >= i,]
 
     #if subset is empty (no runs for that class) skip/continue
     if(nrow(subset_roh)<1) next
@@ -316,15 +230,15 @@ Froh_inbreedingClass <- function(file_runs,mapFile,Class=2){
 }
 
 
-
 #' Summary for Runs file
 #' Report a list data frame for all analisys
 #'
-#'
+#' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
-#'
+#' @param snpInRuns function to create a dataframe for SNP inside Runs
+#' 
 #' @details
 #' Report a list data frame for all analisys
 #'
@@ -332,28 +246,36 @@ Froh_inbreedingClass <- function(file_runs,mapFile,Class=2){
 #' @export
 #'
 #' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' summaryRuns(runs, mapfile_path, genotypeFile, Class=2, snpInRuns=FALSE)
+#' 
 
-summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
+summaryRuns <- function(runsFile,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
   print("inizio a controllare i file")
   print(paste("classe usata:",Class))
 
   n_class=Class
 
-  result_Froh_genome_wide=Froh_inbreeding(file_runs = runs,
+  result_Froh_genome_wide=Froh_inbreeding(runsFile = runsFile,
                                           mapFile = mapFile,
                                           genome_wide = TRUE)
-  result_Froh_chromosome_wide=Froh_inbreeding(file_runs = runs,
+  result_Froh_chromosome_wide=Froh_inbreeding(runsFile = runsFile,
                                               mapFile = mapFile,
                                               genome_wide = FALSE)
 
-  result_Froh_chromosome_class=Froh_inbreedingClass(file_runs = runs,
+  result_Froh_chromosome_class=Froh_inbreedingClass(runsFile = runsFile,
                                                      mapFile = mapFile,
                                                      Class = n_class)
 
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  runs$MB=runs$LENGTH/1000000
+  names(runsFile) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  runsFile$MB=runsFile$LENGTH/1000000
   #step_value=2
 
   range_mb=c(0,0,0,0,0,99999)
@@ -372,36 +294,36 @@ summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
                paste(">",range_mb[6],sep=''))
 
   print(paste("Class created:"  ,name_CLASS[0:5],sep=' '))
-  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
-  levels(runs$CLASS) = name_CLASS
-  runs$CLASS=factor(runs$CLASS)
+  runsFile$CLASS=cut(as.numeric(runsFile$MB),range_mb)
+  levels(runsFile$CLASS) = name_CLASS
+  runsFile$CLASS=factor(runsFile$CLASS)
 
   #RESULTS!!!!!
-  summary_ROH_mean1 = ddply(runs,.(GROUP,CLASS),summarize,sum=mean(MB))
+  summary_ROH_mean1 = ddply(runsFile,.(GROUP,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ GROUP ,value.var = "sum")
   levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
   summary_ROH_mean_class
 
   #RESULTS!!!!!
-  summary_ROH_mean_chr1 = ddply(runs,.(GROUP,CHROMOSOME),summarize,sum=mean(MB))
+  summary_ROH_mean_chr1 = ddply(runsFile,.(GROUP,CHROMOSOME),summarize,sum=mean(MB))
   summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,CHROMOSOME ~ GROUP ,value.var = "sum"))
   # summary_ROH_mean_chr
 
   #RESULTS!!!!!
-  summary_ROH_count = ddply(runs,.(CLASS,GROUP),nrow)
+  summary_ROH_count = ddply(runsFile,.(CLASS,GROUP),nrow)
   names(summary_ROH_count)[3] <- "nRuns"
   summary_ROH_percentage <- summary_ROH_count[,c(1,2)]
   summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
 
   #RESULTS!!!!!
-  # summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
+  # summary_ROH_count_chr =  ddply(runsFile,.(CHROMOSOME,GROUP),nrow)
   # names(summary_ROH_count_chr)[3] <- "nRuns"
   # summary_ROH_count_chr <- reorderDF(dcast(summary_ROH_count_chr,CHROMOSOME ~ GROUP ,value.var = "nRuns"))
   # summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
   # summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
 
-  summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
-  summary_ROH_count_chr = as.data.frame( daply(runs,.(CHROMOSOME,GROUP),nrow))
+  summary_ROH_count_chr =  ddply(runsFile,.(CHROMOSOME,GROUP),nrow)
+  summary_ROH_count_chr = as.data.frame( daply(runsFile,.(CHROMOSOME,GROUP),nrow))
   summary_ROH_percentage_chr= as.data.frame(t(as.data.frame( t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr,na.rm=TRUE))))
   summary_ROH_percentage_chr$CHROMOSOME=row.names(summary_ROH_percentage_chr)
 
@@ -419,7 +341,7 @@ summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
   if (snpInRuns){
 
     print("Calcolo degli SNP dentro le ROH")
-    names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+    names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
     #read map file
     if(file.exists(mapFile)){
       # using data.table to read data
@@ -441,15 +363,15 @@ summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
                                stringsAsFactors=FALSE)
 
     # create progress bar
-    total <- length(unique(runs$CHROMOSOME))
+    total <- length(unique(runsFile$CHROMOSOME))
     print(paste('Chromosome founds: ',total)) #FILIPPO
     n=0
     pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-    for (chrom in sort(unique(runs$CHROMOSOME))) {
-      runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    for (chrom in sort(unique(runsFile$CHROMOSOME))) {
+      runsChrom <- runsFile[runsFile$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
+      snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
       all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
       n=n+1
       setTxtProgressBar(pb, n)
@@ -466,15 +388,14 @@ summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
 }
 
 
-
-
 #' Summary table  for Runs file
 #' Report a list data frame for all analisys
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
-#' @param mapfile_path Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param mapFile Plink map file (for SNP position)
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param threshold value 0 to 1 (default 0.7)
+#' @param SnpInRuns dataframe for SNP inside Runs
 #'
 #' @details
 #' Table
@@ -483,10 +404,18 @@ summaryRuns <- function(runs,mapFile,genotypeFile,Class=2, snpInRuns=FALSE){
 #' @export
 #'
 #' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' tableRuns(runsFile= runs, genotypeFile= genotypeFile, mapFile= mapfile_path, threshold = 0.5)
+#' 
 
-tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold = 0.5) {
+tableRuns <- function(runsFile=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold = 0.5) {
 
   #set a threshold
   threshold_used=threshold*100
@@ -503,11 +432,11 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
   mappa$x <- NULL
 
 
-  if(!is.null(runs) & is.null(SnpInRuns)){
+  if(!is.null(runsFile) & is.null(SnpInRuns)){
     print('I found only Runs data frame. GOOD!')
 
     #change colnames in runs file
-    names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+    names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
     #Start calculation % SNP in ROH
     print("Calculation % SNP in ROH") #FILIPPO
@@ -520,16 +449,16 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
                                stringsAsFactors=FALSE)
 
     # create progress bar
-    total <- length(unique(runs$CHROMOSOME))
+    total <- length(unique(runsFile$CHROMOSOME))
     print(paste('Chromosome founds: ',total)) #FILIPPO
     n=0
     pb <- txtProgressBar(min = 0, max = total, style = 3)
 
     #SNP in ROH
-    for (chrom in sort(unique(runs$CHROMOSOME))) {
-      runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    for (chrom in sort(unique(runsFile$CHROMOSOME))) {
+      runsChrom <- runsFile[runsFile$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
+      snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
       all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
       n=n+1
       setTxtProgressBar(pb, n)
@@ -538,7 +467,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
     print("Calculation % SNP in ROH finish") #FILIPPO
 
   }
-  else if (is.null(runs) & !is.null(SnpInRuns)) {
+  else if (is.null(runsFile) & !is.null(SnpInRuns)) {
     print('I found only SNPinRuns data frame. GOOD!')
     all_SNPinROH=SnpInRuns
 
@@ -606,5 +535,4 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
   rownames(final_table) <- seq(1,length(row.names(final_table)))
   return(final_table)
 }
-
 
