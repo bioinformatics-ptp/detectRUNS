@@ -17,11 +17,13 @@
 #' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
 #' geno01 <- genoConvert(geno012)
 #'
+
 genoConvert <- function(x) {
   new <- c(0,1,0,NA)
   old <- c(0,1,2,NA)
   return(new[match(x,old)])
 }
+
 
 #' Function to check whether a window is (loosely) homozygous or not
 #'
@@ -57,6 +59,7 @@ genoConvert <- function(x) {
 #' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
 #' # test is false
 #'
+
 homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
   nHet <- sum(x==1,na.rm=TRUE)
@@ -105,6 +108,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
 #' # test is true
 #'
+
 heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
   nHom <- sum(x==0,na.rm=TRUE)
@@ -117,6 +121,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
   windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
   return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
+
 
 #' Function to slide a window over a vector (individual's genotypes)
 #'
@@ -149,6 +154,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' # test is false
 #' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 #'        1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
+#'        
 
 slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
@@ -192,6 +198,7 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
 
 }
 
+
 #' Function to return a vector of T/F for whether a SNP is or not in a RUN
 #'
 #' This is a core function. The function to determine whether a SNP is or not in a RUN.
@@ -206,6 +213,7 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
 #'
 #' @examples #not yet
 #'
+
 snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
@@ -234,6 +242,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   return(snpRun)
 }
+
 
 #' Function to create a dataframe of RUNS per individual animal
 #' Requires a map file (other filename to read or R object)
@@ -371,6 +380,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 #'
 #' @examples #not yet
 #'
+
 writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
@@ -406,7 +416,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param mapChrom R map object with SNP per chromosome
 #' @param genotype_path genotype (.ped) file location
 #'
@@ -416,8 +426,18 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' @import utils
 #'
 #' @examples #not yet
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-snpInsideROH <- function(runs, mapChrom, genotype_path) {
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' snpInsideRuns(runs, mapfile_path, genotypeFile)
+#' 
+
+snpInsideRuns <- function(runsFile, mapChrom, genotype_path) {
 
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotype_path)){
@@ -437,10 +457,10 @@ snpInsideROH <- function(runs, mapChrom, genotype_path) {
                    stringsAsFactors=FALSE
   )
 
-  for (ras in unique(runs$POPULATION)) {
+  for (ras in unique(runsFile$POPULATION)) {
 
     #print(paste("Population is:", ras))
-    runsBreed <- runs[runs$POPULATION==ras,]
+    runsBreed <- runsFile[runsFile$POPULATION==ras,]
     nBreed <- nrow(pops[pops$POP==as.character(ras),])
     #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 

@@ -12,7 +12,7 @@
 #' Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
 #' IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' obtained from RUNS.run
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
@@ -26,19 +26,18 @@
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
-#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
-#' minLengthBps = 1000, minDensity = 1/10)
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
 #' # plot runs per animal (interactive)
-#' plotRuns(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
+#' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
+plot_Runs <- function(runsFile, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
   # suppress notes
   IND <- NULL
   LENGTH <- NULL
@@ -48,16 +47,16 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
   POPULATION <- NULL
 
   # then names runs
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   chr_order <-c((0:99),"X","Y","XY","MT")
-  list_chr=unique(runs$CHROMOSOME)
+  list_chr=unique(runsFile$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
   for (chrom in new_list_chr) {
 
     #subset by chromosome
-    krom <- subset(runs,CHROMOSOME==chrom)
+    krom <- subset(runsFile,CHROMOSOME==chrom)
 
     #rearrange subset
     teilsatz <- krom[,c(5,6,2,1)]
@@ -119,7 +118,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
 #' Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs)
 #' Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
@@ -131,26 +130,25 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
-#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
-#' minLengthBps = 1000, minDensity = 1/10)
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
 #' # plot runs per animal (interactive)
-#' plotStackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
+#' plot_StackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
+plot_StackedRuns <- function(runsFile, savePlots=FALSE, title_prefix=NULL) {
 
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #select a POPULATION
-  for (rasse in unique(runs$POPULATION)){
+  for (rasse in unique(runsFile$POPULATION)){
     print(paste('Current population: ',rasse))
-    teilsatz <- subset(runs,runs$POPULATION==rasse)
+    teilsatz <- subset(runsFile,runsFile$POPULATION==rasse)
 
     chr_order <-c((0:99),"X","Y","XY","MT")
     list_chr=unique(teilsatz$CHROMOSOME)
@@ -228,14 +226,15 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
 }
 
+
 #' Plot N. of times SNP is in runs
 #'
 #' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
 #' Proportions on the y-axis, bps on the x-axis
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param genotypeFile genotype (.ped) file location
-#' @param mapfile_path map file (.map) file location
+#' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
@@ -247,23 +246,21 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 20, threshold = 0.1,
-#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
-#' minLengthBps = 1000, minDensity = 1/10)
-#'
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
 #' # plot runs per animal (interactive)
-#' plotSnpsInRuns(runs, genotypeFile, mapfile_path,
+#' plot_SnpsInRuns(runs, genotypeFile, mapfile_path,
 #' savePlots=FALSE, title_prefix="ROHom")
 #'
 
+plot_SnpsInRuns <- function(runsFile, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
 
-plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
-
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   if(file.exists(mapFile)){
     # using data.table to read data
@@ -276,19 +273,19 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
   mappa$x <- NULL
 
   chr_order <-c((0:99),"X","Y","XY","MT")
-  list_chr=unique(runs$CHROMOSOME)
+  list_chr=unique(runsFile$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
   for (chrom in new_list_chr) {
 
     print(paste("Chromosome is: ",chrom))
-    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    runsChrom <- runsFile[runsFile$CHROMOSOME==chrom,]
     print(paste("N. of runs:",nrow(runsChrom)))
 
     mapKrom <- mappa[mappa$CHR==chrom,]
     print(paste("N.of SNP is",nrow(mapKrom)))
 
-    snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
+    snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -312,6 +309,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
 
 }
 
+
 #' READ ROH OUTPUT FILE FROM PLINK
 #' Function to read in the output file from ROH analysis with Plink
 #' Relevant columns are selected, converted and renamed
@@ -323,7 +321,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
 #'
 #' @examples #not yet
 #'
-#'
+#' 
 
 readFromPlink <- function(plinkFile="plink.hom") {
 
@@ -340,15 +338,12 @@ readFromPlink <- function(plinkFile="plink.hom") {
 }
 
 
-
-
-
 #' Plot N. of times SNP is in runs - MANHATTAN PLOT
 #'
 #' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
 #' Proportions on the y-axis, bps on the x-axis
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param genotypeFile genotype (.ped) file location
 #' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
@@ -364,23 +359,21 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 20, threshold = 0.1,
-#' minSNP = 5, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
-#' minLengthBps = 1000, minDensity = 1/10, method='slidingWindow')
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
 #' # plot runs per animal (interactive)
-#' manhattan_Runs(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
+#' plot_manhattanRuns(runs, genotypeFile, mapfile_path, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-
-plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
+plot_manhattanRuns <- function(runsFile, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
 
   #change colnames in runs file
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  names(runsFile) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   #read map file
   if(file.exists(mapFile)){
@@ -403,15 +396,15 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
                              stringsAsFactors=FALSE)
 
   # create progress bar
-  total <- length(unique(runs$CHROMOSOME))
+  total <- length(unique(runsFile$CHROMOSOME))
   print(paste('Chromosome founds: ',total)) #FILIPPO
   n=0
   pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-  for (chrom in sort(unique(runs$CHROMOSOME))) {
-    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+  for (chrom in sort(unique(runsFile$CHROMOSOME))) {
+    runsChrom <- runsFile[runsFile$CHROMOSOME==chrom,]
     mapKrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snpInsideROH(runsChrom,mapKrom, genotypeFile)
+    snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
@@ -501,4 +494,182 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
     }
   }
 
+}
+
+
+#' Plot N. of ROH by sum/mean
+#'
+#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
+#' Proportions on the y-axis, bps on the x-axis
+#'
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param mapFile map file (.map) file location
+#' @param method "sum" or "mean" for single individual
+#'
+#' @return plot of n. of ROH by sum/mean
+#' @export
+#'
+#' @importFrom grDevices dev.off pdf
+#'
+#' @import utils
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#'
+#' plot_SumMeanRuns(runs, mapfile_path, method='sum')
+#' plot_SumMeanRuns(runs, mapfile_path, method='mean')
+#' 
+
+plot_SumMeanRuns <- function(runsFile,mapFile,method=c('sum','mean')){
+  
+  #check method
+  method <- match.arg(method)
+  message(paste("You are using the method:", method))
+  
+  #Calcolo della lunghezza del genoma e max value nei cromosomi
+  LengthGenome=chromosomeLength(mapFile)
+  
+  names(runsFile) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  
+  #start calculation by method
+  if (method=="sum") {
+    print("Faccio la somma")
+    sum_ROH_genome <- ddply(runsFile,.(IND),summarize,sum=sum(LENGTH)/1000000)
+    method="Sum"
+  } else {
+    print("Faccio la media")
+    sum_ROH_genome <- ddply(runsFile,.(IND),summarize,sum=mean(LENGTH)/1000000)
+    method="Mean"
+  }
+  
+  #sum of ROH for Sample
+  count_ROH_genome <- count(runsFile,"IND")
+  sum_ROH_genome=merge(sum_ROH_genome,count_ROH_genome,by='IND')
+  sum_ROH_genome=merge(sum_ROH_genome,unique(runsFile[,c("IND","GROUP")]),by='IND')
+  head(sum_ROH_genome)
+  
+  #RESULTS!!!!!
+  p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=GROUP)) + geom_point()
+  p <- p + xlab(paste(method," of ROH in Mbps" , sep='')) + ylab ("Number of ROH for Individual")
+  p
+  
+}
+
+
+#' Violin plot sum/mean ROH
+#'
+#' Function to plot violin plot
+#'
+#' @param runsFile a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param method "sum" or "mean" for single individual
+#'
+#' @return Violin plot of n. of ROH by sum/mean
+#' @export
+#'
+#' @importFrom grDevices dev.off pdf
+#'
+#' @import utils
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' plot_ViolinRuns(runs, method="sum")
+#' plot_ViolinRuns(runs, method="mean") 
+#' 
+
+plot_ViolinRuns <- function(runsFile, method=c("sum","mean")){
+  print("inizio a fare i conti")
+  
+  names(runsFile) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  
+  
+  #check method
+  method <- match.arg(method)
+  message(paste("You are using the method:", method))
+  
+  #start calculation by method
+  if (method=="sum") {
+    #use ddply
+    mean_roh=ddply(runsFile,.(IND,GROUP),summarize,sum=sum(LENGTH/1000000))
+    method="Sum"
+  }else{
+    mean_roh=ddply(runsFile,.(IND,GROUP),summarize,sum=mean(LENGTH/1000000))
+    method="Mean"
+  }
+  
+  #Violinplot
+  p <- ggplot(data=mean_roh, aes(x=GROUP, y=sum, colour=GROUP))
+  p <- p + geom_violin (aes(fill=GROUP)) + geom_boxplot(width=0.1)
+  p <- p + ylab(paste(method," of ROH in Mbps" , sep=''))
+  p
+  
+  return(p)
+  
+}
+
+
+#' Plot Inbreeding by Chromosome
+#' 
+#' The function report a plot with the level fo Froh by chromosome by population
+#' It's possible choose the long plot or polar plot. 
+#'
+#' @param mapFile Plink map file (for SNP position)
+#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param polar dataframe for SNP inside Runs
+#'
+#' @return plot Inbreeding by chromosome
+#' @export
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' 
+#' plot_InbreedingChr(runsFile = runs, mapFile = mapfile_path, polar=TRUE)
+#'
+
+plot_InbreedingChr<- function(runsFile, mapFile , polar=FALSE){
+  
+  Chromosome_Inbreeding=Froh_inbreeding(runsFile = runsFile, 
+                                        mapFile = mapFile, 
+                                        genome_wide = FALSE)
+  
+  #transform data in long format using reshape2
+  long_DF=melt(Chromosome_Inbreeding,id.vars = c("IND", "GROUP"))
+  compact_DF=dcast(long_DF, GROUP ~variable ,fun.aggregate = mean, na.rm = TRUE)
+  
+  #creating list chromosome
+  name_val=colnames(compact_DF)
+  list_chr=gsub("Chr_","",name_val[2:length(name_val)])
+  
+  #final data frame
+  final_DF=melt(compact_DF, id.vars = c("GROUP"))
+  
+  #ggplot 
+  p <- ggplot(data=final_DF, aes(x=variable, y=value, colour=GROUP)) 
+  p <- p + geom_line(aes(group=GROUP))+ geom_point()
+  p <- p + scale_x_discrete(labels=list_chr)  #+coord_polar()
+  p <- p + xlab("Inbreeding by Chromosome") + ylab("Froh")
+  p 
+  
+  if  (polar) {
+    p <- p + coord_polar()}
+  
+  return(p)  
 }
