@@ -152,21 +152,15 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //' @return TRUE/FALSE (whether a window is homozygous or NOT)
 //'
 //' @examples
-//' maxHom <- 1
+//' maxHet <- 1
 //' maxMiss <- 1
 //' maxGap <- 10^6
-//' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+//' x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
 //'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 //' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 //'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is true
-//' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-//' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-//'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is false
+//' test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
+//' # test is TRUE
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
@@ -213,18 +207,12 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //' maxHom <- 1
 //' maxMiss <- 1
 //' maxGap <- 10^6
-//' x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+//' x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
 //'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
 //' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
 //'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 //' test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is false
-//' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-//' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-//'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-//' test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is true
+//' # test is FALSE
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
@@ -615,8 +603,6 @@ void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVec
 //'
 //' @return A data frame of runs per individual sample
 //' @export
-//'
-//' @examples
 //'
 // [[Rcpp::export]]
 DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,

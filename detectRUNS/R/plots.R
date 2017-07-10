@@ -248,7 +248,6 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' # getting map and ped paths
 #' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
 #' # calculating runs of Homozygosity
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
@@ -256,7 +255,6 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' # plot runs per animal (interactive)
 #' plot_SnpsInRuns(runs, genotypeFile, mapFile,
 #' savePlots=FALSE, title_prefix="ROHom")
-#'
 
 plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
 
