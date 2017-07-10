@@ -145,6 +145,11 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
+  # avoid warnings in testing
+  CHROMOSOME <- NULL
+  START <- NULL
+  END <- NULL
+
   #select a POPULATION
   for (rasse in unique(runs$POPULATION)){
     print(paste('Current population: ',rasse))
@@ -274,6 +279,12 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
   list_chr=unique(runs$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
+  # avoid warnings in testing
+  CHR <- NULL
+  POSITION <- NULL
+  PERCENTAGE <- NULL
+  BREED <- NULL
+
   for (chrom in new_list_chr) {
 
     print(paste("Chromosome is: ",chrom))
@@ -372,6 +383,11 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+
+  # avoid warnings
+  BP <- NULL
+  P <- NULL
+  CHR <- NULL
 
   #read map file
   if(file.exists(mapFile)){
@@ -526,22 +542,28 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
 plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 
-  #check method
+  # check method
   method <- match.arg(method)
   message(paste("You are using the method:", method))
 
-  #Calcolo della lunghezza del genoma e max value nei cromosomi
+  # checking cromsome lengths
   LengthGenome=chromosomeLength(mapFile)
 
   names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
+  # avoid warnings
+  IND <- NULL
+  LENGTH <- NULL
+  freq <- NULL
+  GROUP <- NULL
+
   #start calculation by method
   if (method=="sum") {
-    print("Faccio la somma")
+    message("Using sum")
     sum_ROH_genome <- ddply(runs,.(IND),summarize,sum=sum(LENGTH)/1000000)
     method="Sum"
   } else {
-    print("Faccio la media")
+    message("Using mean")
     sum_ROH_genome <- ddply(runs,.(IND),summarize,sum=mean(LENGTH)/1000000)
     method="Mean"
   }
@@ -588,10 +610,13 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #'
 
 plot_ViolinRuns <- function(runs, method=c("sum","mean")){
-  print("inizio a fare i conti")
 
   names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
+  # avoid warnings
+  IND <- NULL
+  GROUP <- NULL
+  LENGTH <- NULL
 
   #check method
   method <- match.arg(method)
@@ -647,6 +672,11 @@ plot_InbreedingChr<- function(runs, mapFile , polar=FALSE){
   Chromosome_Inbreeding=Froh_inbreeding(runs = runs,
                                         mapFile = mapFile,
                                         genome_wide = FALSE)
+
+  # avoid warnings
+  variable <- NULL
+  value <- NULL
+  GROUP <- NULL
 
   #transform data in long format using reshape2
   long_DF=melt(Chromosome_Inbreeding,id.vars = c("IND", "GROUP"))
