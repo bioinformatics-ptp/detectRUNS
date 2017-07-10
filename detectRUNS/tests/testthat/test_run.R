@@ -6,12 +6,12 @@ context("Testing RUNS")
 # Data for test should be small (don't test on real data)
 
 # get file paths: reference file need to be changed or removed
-genotype_path  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+genotypeFile  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 
 test_that("detected ROHet are identical", {
   # testing slinding windows
-  test_sliding <- RUNS.run(genotype_path, mapfile_path, windowSize=20, threshold=0.1, minSNP=5,
+  test_sliding <- RUNS.run(genotypeFile, mapFile, windowSize=20, threshold=0.1, minSNP=5,
                          ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1,  minLengthBps=1000,
                          minDensity=1/10, maxOppRun=NULL, maxMissRun=NULL, method='slidingWindow')
 
@@ -24,7 +24,7 @@ test_that("detected ROHet are identical", {
   expect_equal(test_sliding, reference_rohet, info = "testing sliding window approach")
 
   # testing slinding windows
-  test_consecutive <- RUNS.run(genotype_path, mapfile_path, windowSize=20, threshold=0.1, minSNP=5,
+  test_consecutive <- RUNS.run(genotypeFile, mapFile, windowSize=20, threshold=0.1, minSNP=5,
                          ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1,  minLengthBps=1000,
                          minDensity=1/10, maxOppRun=NULL, maxMissRun=NULL, method='consecutiveRuns')
 
@@ -39,7 +39,7 @@ test_that("detected ROHet are identical", {
 
 test_that("Marker differ in size", {
   # read mapFile
-  mapFile <- read.delim(mapfile_path, header = F)
+  mapFile <- read.delim(mapFile, header = F)
   names(mapFile) <- c("Chrom","SNP","cM","bps")
 
   # subset mapfile
@@ -50,7 +50,7 @@ test_that("Marker differ in size", {
   write.table(mapFile, fake_mapfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
 
   # test function
-  expect_error(RUNS.run(genotype_path, fake_mapfile), "Number of markers differ")
+  expect_error(RUNS.run(genotypeFile, fake_mapfile), "Number of markers differ")
 
   # clean up
   file.remove(fake_mapfile)
@@ -58,6 +58,6 @@ test_that("Marker differ in size", {
 
 test_that("No file path throws error", {
   # test for errors
-  expect_error(RUNS.run("fake_genotype", mapfile_path), "doesn't exists")
-  expect_error(RUNS.run(genotype_path, "fake_map"), "doesn't exists")
+  expect_error(RUNS.run("fake_genotype", mapFile), "doesn't exists")
+  expect_error(RUNS.run(genotypeFile, "fake_map"), "doesn't exists")
 })

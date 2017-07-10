@@ -501,25 +501,25 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
 //' This is a core function. Read PED file and returns a data.frame with the first two
 //' columns
 //'
-//' @param genotype_path genotype (.ped) file location
+//' @param genotypeFile genotype (.ped) file location
 //'
 //' @return a dataframe of POP, ID
 //'
 //' @examples
-//' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-//' pops <- readPOPCpp(genotype_path)
+//' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+//' pops <- readPOPCpp(genotypeFile)
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
 //'
 // [[Rcpp::export]]
-DataFrame readPOPCpp(std::string genotype_path) {
+DataFrame readPOPCpp(std::string genotypeFile) {
   // the columns of data.frame
   CharacterVector POP;
   CharacterVector ID;
 
-  // open genotype_path
-  std::ifstream ifile(genotype_path.c_str());
+  // open genotypeFile
+  std::ifstream ifile(genotypeFile.c_str());
 
   // we read the full line here
   std::string line;

@@ -35,9 +35,9 @@ times <- 10
 x_points <- 10
 
 # get genotype data
-# genotype_path  <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-genotype <- read.table(genotype_path, sep = " ", header = FALSE, stringsAsFactors = FALSE)
+# genotypeFile  <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+genotype <- read.table(genotypeFile, sep = " ", header = FALSE, stringsAsFactors = FALSE)
 
 # get only ped data
 ped <- genotype[ , -c(1:6)]
@@ -49,7 +49,7 @@ raw <- t(apply(ped, 1, pedConvertCpp))
 rm(list=c("genotype", "ped"))
 
 # read first two columns form genotype
-animals <- readPOPCpp(genotype_path = genotype_path)
+animals <- readPOPCpp(genotypeFile = genotypeFile)
 
 # get only one individual. Get index
 # idx <- 1
@@ -65,9 +65,9 @@ animal <- list(FID=animal$POP, IID=animal$ID)
 x <- raw[idx, ]
 
 # get map data
-# mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-mapfile <- fread(mapfile_path, header = F)
+# mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+mapfile <- fread(mapFile, header = F)
 
 # setting colnames
 colnames(mapfile) <- c("Chrom","SNP","cM","bps")

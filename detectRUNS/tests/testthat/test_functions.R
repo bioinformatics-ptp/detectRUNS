@@ -3,13 +3,13 @@ library(detectRUNS)
 context("Testing functions")
 
 # get file paths
-genotype_path  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+genotypeFile  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
 raw_path <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
 
 # importing data once
-chillingham_genotype <- read.table(genotype_path, sep = " ", header = FALSE, stringsAsFactors = FALSE)
-chillingham_map <- read.delim(mapfile_path, header = FALSE)
+chillingham_genotype <- read.table(genotypeFile, sep = " ", header = FALSE, stringsAsFactors = FALSE)
+chillingham_map <- read.delim(mapFile, header = FALSE)
 chillingham_raw <- read.table(raw_path, sep=" ", header = TRUE)
 
 
@@ -675,7 +675,7 @@ test_that("Testing heteroZygotTestCpp", {
 
 test_that("Testing loading pop from ped", {
   # read data. I need to know only number of columns
-  conn  <- file(genotype_path, open = "r")
+  conn  <- file(genotypeFile, open = "r")
   oneLine <- readLines(conn, n = 1, warn = FALSE)
   genotype.sample <- (strsplit(oneLine, " "))
   genotype.sample <- as.character(genotype.sample[[1]])
@@ -688,11 +688,11 @@ test_that("Testing loading pop from ped", {
   )
 
   # loading reference_pops
-  reference_pops <- read.table(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
+  reference_pops <- read.table(genotypeFile, sep = " ", header = FALSE, colClasses = colClasses)
   names(reference_pops) <- c("POP","ID")
 
   # load pops with a Cpp function
-  test_pops <- readPOPCpp(genotype_path)
+  test_pops <- readPOPCpp(genotypeFile)
 
   # testing
   expect_equal(test_pops, reference_pops)
