@@ -60,6 +60,10 @@ chromosomeLength <- function(mapFile){
   colnames(mappa)<-name
   maps<-mappa[mappa$POSITION != 0, ] #delete chromosome 0
 
+  # defining NULL variables to avoid warning messages
+  CHR <- NULL
+  POSITION <- NULL
+
   # find max value for chromosome
   LengthGenome=ddply(maps,.(CHR),summarize,max(POSITION))
   names<-c("CHROMOSOME","CHR_LENGTH")
@@ -109,6 +113,11 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 
   names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
   info_breed=unique(runs[c('GROUP','IND')])
+
+  # Suppress warnings
+  IND <- NULL
+  LENGTH <- NULL
+  CHROMOSOME <- NULL
 
   #sum of ROH for Sample
   if (genome_wide) {
@@ -199,6 +208,10 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
   # sum of ROH for Sample
   message("calculating Froh by Class")
 
+  # Suppress warnings
+  IND <- NULL
+  LENGTH <- NULL
+
   Froh_Class=unique(runs[c('GROUP','IND')])
   for (i in range_mb[1:5]){
     print(paste("Class used: >",i,sep=''))
@@ -255,6 +268,12 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   message("Checking files...")
   message(paste("Using class:",Class))
+
+  # Avoid warnings
+  GROUP <- NULL
+  CLASS <- NULL
+  MB <- NULL
+  CHROMOSOME <- NULL
 
   n_class=Class
 
