@@ -51,13 +51,13 @@ genoConvert <- function(x) {
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 #' windowSize <- length(x)
 #' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
-#' # test is true
-#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
-#' # test is false
+#' # test
+#' # $windowStatus
+#' # [1] TRUE
+#' #
+#' # $oppositeAndMissingSNP
+#' # 178 181
+#' #   9   0
 #'
 
 homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
@@ -100,14 +100,13 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 #' windowSize <- length(x)
 #' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
-#' # test is false
-#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#'        1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
-#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
-#' # test is true
-#'
+#' # test
+#' # $windowStatus
+#' # [1] FALSE
+#' #
+#' # $oppositeAndMissingSNP
+#' # 150 151 152 153 154 155 156 157 164 165 167 168 169
+#' #   0   0   9   0   9   0   0   0   0   0   0   0   0
 
 heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
@@ -139,7 +138,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
+#' @examples
 #' windowSize <- 5
 #' step= 1
 #' maxOppositeGenotype <- 1
@@ -151,9 +150,14 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
 #'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 #' test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
-#' # test is false
-#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#'        1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
+#' # test is
+#' # $windowStatus
+#' # [1] FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+#' # FALSE FALSE  TRUE  TRUE
+#'
+#' # $oppositeAndMissingGenotypes
+#' #   3   5   9  10  11  12  13  14  17
+#' # "9" "9" "0" "0" "0" "0" "0" "0" "0"
 #'
 
 slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
@@ -430,11 +434,20 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
+#' # defining mapChrom
+#' mappa <- data.table::fread(mapFile, header = FALSE)
+#' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+#' mappa$x <- NULL
+#' mapChrom <- mappa[mappa$CHR=="24",]
+#'
 #' # calculating runs of Homozygosity
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
-#' snpInsideRuns(runs, mapFile, genotypeFile)
+#' # fix column names
+#' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+#'
+#' snpInsideRuns(runs, mapChrom, genotypeFile)
 #'
 
 snpInsideRuns <- function(runs, mapChrom, genotypeFile) {
@@ -507,8 +520,6 @@ snpInsideRuns <- function(runs, mapChrom, genotypeFile) {
 #' @return A data frame of runs per individual sample
 #' @export
 #'
-#' @examples
-#'
 
 slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE) {
   # get individual and group
@@ -576,8 +587,6 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
 #'
 #' @return A data frame of runs per individual sample
 #' @export
-#'
-#' @examples
 #'
 
 consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,

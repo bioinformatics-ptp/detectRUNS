@@ -40,7 +40,4 @@ No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and
 max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
 Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
 }
-\examples{
-
-}
 

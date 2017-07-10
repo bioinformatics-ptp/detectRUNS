@@ -31,7 +31,6 @@ vector of TRUE/FALSE (whether a window is homozygous or NOT)
 This is a core function. The functions to detect RUNS are slidden over the genome
 }
 \examples{
-#not yet
 windowSize <- 5
 step= 1
 maxOppositeGenotype <- 1
@@ -43,9 +42,14 @@ x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
 gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
-# test is false
-x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-       1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
+# test is
+# $windowStatus
+# [1] FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+# FALSE FALSE  TRUE  TRUE
+
+# $oppositeAndMissingGenotypes
+#   3   5   9  10  11  12  13  14  17
+# "9" "9" "0" "0" "0" "0" "0" "0" "0"
 
 }
 

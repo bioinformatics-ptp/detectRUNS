@@ -38,13 +38,13 @@ gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 windowSize <- length(x)
 test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
-# test is true
-x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-       1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-          615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
-# test is false
+# test
+# $windowStatus
+# [1] TRUE
+#
+# $oppositeAndMissingSNP
+# 178 181
+#   9   0
 
 }
 

@@ -16,8 +16,6 @@
 #' @return A reordered data frame by chromosome
 #' @export
 #'
-#' @examples
-#'
 
 reorderDF <- function(dfx) {
 
