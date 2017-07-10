@@ -4,10 +4,10 @@
 \alias{readPOPCpp}
 \title{Function to return a dataframe of population (POP, ID)}
 \usage{
-readPOPCpp(genotype_path)
+readPOPCpp(genotypeFile)
 }
 \arguments{
-\item{genotype_path}{genotype (.ped) file location}
+\item{genotypeFile}{genotype (.ped) file location}
 }
 \value{
 a dataframe of POP, ID
@@ -17,7 +17,7 @@ This is a core function. Read PED file and returns a data.frame with the first t
 columns
 }
 \examples{
-genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-pops <- readPOPCpp(genotype_path)
+genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+pops <- readPOPCpp(genotypeFile)
 }
 

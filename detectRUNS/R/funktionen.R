@@ -154,7 +154,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' # test is false
 #' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 #'        1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
-#'        
+#'
 
 slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
@@ -416,36 +416,36 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runsFile R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param mapChrom R map object with SNP per chromosome
-#' @param genotype_path genotype (.ped) file location
+#' @param genotypeFile genotype (.ped) file location
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #' @export
 #'
 #' @import utils
 #'
-#' @examples #not yet
+#' @examples
 #' # getting map and ped paths
 #' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- RUNS.run(genotypeFile, mapfile_path, windowSize = 15, threshold = 0.1,  minSNP = 15,  
+#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-#' 
-#' snpInsideRuns(runs, mapfile_path, genotypeFile)
-#' 
+#'
+#' snpInsideRuns(runs, mapFile, genotypeFile)
+#'
 
-snpInsideRuns <- function(runsFile, mapChrom, genotype_path) {
+snpInsideRuns <- function(runs, mapChrom, genotypeFile) {
 
   # if genotype is file, read with read.big.matrix
-  if(file.exists(genotype_path)){
+  if(file.exists(genotypeFile)){
     # read first two columns of PED with a CPP function
-    pops <- readPOPCpp(genotype_path)
+    pops <- readPOPCpp(genotypeFile)
 
   } else {
-    stop(paste("file", genotype_path, "doesn't exists"))
+    stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
   M <- data.frame("SNP_NAME"=character(),
@@ -457,10 +457,10 @@ snpInsideRuns <- function(runsFile, mapChrom, genotype_path) {
                    stringsAsFactors=FALSE
   )
 
-  for (ras in unique(runsFile$POPULATION)) {
+  for (ras in unique(runs$POPULATION)) {
 
     #print(paste("Population is:", ras))
-    runsBreed <- runsFile[runsFile$POPULATION==ras,]
+    runsBreed <- runs[runs$POPULATION==ras,]
     nBreed <- nrow(pops[pops$POP==as.character(ras),])
     #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 

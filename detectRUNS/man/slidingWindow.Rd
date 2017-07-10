@@ -46,6 +46,6 @@ test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenot
 # test is false
 x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
        1, 1, 1, 1, 1, 1, NA, 1, 1, 1)
-       
+
 }
 
