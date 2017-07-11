@@ -51,14 +51,22 @@
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  maxGap=10^6, minLengthBps = 1000,
-#' minDensity = 1/10, maxOppRun=1, maxMissRun=1, method='slidingWindow')
-#' # TODO: add example for consecutiveRuns
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#' # calculating runs with sliding window approach
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
+#' minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1, maxGap=10^6,
+#' minLengthBps = 100000,  minDensity = 1/10000, method='slidingWindow')
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
+#'
 
-# TODO add output file parameter
 RUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
                      minSNP = 3, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
                      maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,

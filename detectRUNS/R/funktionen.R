@@ -442,8 +442,16 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' mapChrom <- mappa[mappa$CHR==chrom, ]
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' # fix column names and define runsChrom
 #' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")

@@ -30,8 +30,16 @@
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
 #' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
@@ -134,8 +142,16 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
 #' plot_StackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
@@ -253,13 +269,20 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' # getting map and ped paths
 #' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
 #' # calculating runs of Homozygosity
+#' # skipping runs calculation
+#' \dontrun{
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE, colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
-#' plot_SnpsInRuns(runs, genotypeFile, mapFile,
-#' savePlots=FALSE, title_prefix="ROHom")
+#' plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
 
 plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
 
@@ -291,10 +314,10 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
     print(paste("N. of runs:",nrow(runsChrom)))
 
-    mapKrom <- mappa[mappa$CHR==chrom,]
-    print(paste("N.of SNP is",nrow(mapKrom)))
+    mapChrom <- mappa[mappa$CHR==chrom,]
+    print(paste("N.of SNP is",nrow(mapChrom)))
 
-    snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
+    snpInRuns <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -372,8 +395,16 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
 #' plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
@@ -417,8 +448,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
   for (chrom in sort(unique(runs$CHROMOSOME))) {
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
-    mapKrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
+    mapChrom <- mappa[mappa$CHR==chrom,]
+    snpInRuns <- snpInsideRuns(runsChrom,mapChrom, genotypeFile)
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
@@ -533,8 +564,16 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' plot_SumMeanRuns(runs, mapFile, method='sum')
 #' plot_SumMeanRuns(runs, mapFile, method='mean')
@@ -602,8 +641,16 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' plot_ViolinRuns(runs, method="sum")
 #' plot_ViolinRuns(runs, method="mean")
@@ -661,8 +708,16 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' plot_InbreedingChr(runs = runs, mapFile = mapFile, polar=TRUE)
 #'

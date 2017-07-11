@@ -100,8 +100,16 @@ chromosomeLength <- function(mapFile){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' Froh_inbreeding(runs, mapFile)
 #' Froh_inbreeding(runs, mapFile, genome_wide=FALSE)
@@ -170,8 +178,16 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' Froh_inbreedingClass(runs, mapFile, Class=2)
 #'
@@ -259,8 +275,16 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' summaryRuns(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE)
 #'
@@ -423,8 +447,16 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 #' tableRuns(runs=runs, genotypeFile= genotypeFile, mapFile= mapFile, threshold = 0.5)
 #'
