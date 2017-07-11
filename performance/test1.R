@@ -198,7 +198,7 @@ for (i in steps) {
   tests <- rbind(tests, tmp)
 
   # check cpp consecutiveRuns
-  test_consecutiveRuns <- microbenchmark(
+  test_consecutiveRunsCpp <- microbenchmark(
     consecutiveRunsCpp(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
                        parameters$maxOppositeGenotype, parameters$maxMiss, parameters$minLengthBps,
                        parameters$maxGap),
@@ -209,9 +209,53 @@ for (i in steps) {
   test_fun <- rep("consecutiveRuns", times)
   test_step <- rep(i, times)
   test_language <- rep("Cpp", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRunsCpp$time, language=test_language)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_consecutiveRunsCpp$time, language=test_language)
   tests <- rbind(tests, tmp)
 
+  ##############################################################################
+  # Test snpInsideRuns
+
+  # get temporary variables
+  mappa <- subset_map
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  chrom <- "1"
+  mapChrom <- mappa[mappa$CHR==chrom, ]
+
+  # calculating runs of Homozygosity
+  runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+                   ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+
+  # fix column names
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+
+  # get runs only for one chromosome
+  runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+
+  test_snpInsideRuns <- microbenchmark(
+    snpInsideRuns(runsChrom, mapChrom, genotypeFile),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("snpInsideRuns", times)
+  test_step = rep(i, times)
+  test_language <- rep("R", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
+  tests <- rbind(tests, tmp)
+
+  # # check cpp snpInsideRuns
+  # test_snpInsideRunsCpp <- microbenchmark(
+  #   snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile),
+  #   unit = 'ms',
+  #   times = times
+  # )
+  #
+  # test_fun <- rep("snpInsideRuns", times)
+  # test_step <- rep(i, times)
+  # test_language <- rep("Cpp", times)
+  # tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRunsCpp$time, language=test_language)
+  # tests <- rbind(tests, tmp)
 }
 
 # as described by http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/

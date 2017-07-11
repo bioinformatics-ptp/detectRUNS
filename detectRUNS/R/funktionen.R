@@ -420,7 +420,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsChrom R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
 #' @param mapChrom R map object with SNP per chromosome
 #' @param genotypeFile genotype (.ped) file location
 #'
@@ -438,19 +438,21 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' mappa <- data.table::fread(mapFile, header = FALSE)
 #' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
 #' mappa$x <- NULL
-#' mapChrom <- mappa[mappa$CHR=="24",]
+#' chrom <- "24"
+#' mapChrom <- mappa[mappa$CHR==chrom, ]
 #'
 #' # calculating runs of Homozygosity
 #' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
-#' # fix column names
+#' # fix column names and define runsChrom
 #' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+#' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
 #'
-#' snpInsideRuns(runs, mapChrom, genotypeFile)
+#' snpInsideRuns(runsChrom, mapChrom, genotypeFile)
 #'
 
-snpInsideRuns <- function(runs, mapChrom, genotypeFile) {
+snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 
   # if genotype is file, read with read.big.matrix
   if(file.exists(genotypeFile)){
