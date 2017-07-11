@@ -472,10 +472,10 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
                    stringsAsFactors=FALSE
   )
 
-  for (ras in unique(runs$POPULATION)) {
+  for (ras in unique(runsChrom$POPULATION)) {
 
     #print(paste("Population is:", ras))
-    runsBreed <- runs[runs$POPULATION==ras,]
+    runsBreed <- runsChrom[runsChrom$POPULATION==ras,]
     nBreed <- nrow(pops[pops$POP==as.character(ras),])
     #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 
