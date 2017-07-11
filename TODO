@@ -4,7 +4,6 @@
 * Calculate by chromosome (cut mapfile by chrom, then subset genotype)
 
 * remove all subsetChillingham.* files
-  - remove all subsetChillingham.* occurence in test e documentation
   - remove files from repository (bfg?)
   - replace with Kijas2016_Sheep_subset
 
@@ -12,16 +11,6 @@
   - Malformed Description field: should contain one or more complete sentences
     (ex. http://r.789695.n4.nabble.com/what-constitutes-a-complete-sentence-td4709358.html -
     subject verb object)
-  - no visible binding for global variable <name>:
-    http://stackoverflow.com/questions/8096313/no-visible-binding-for-global-variable-note-in-r-cmd-check
-  - Dropping empty section \examples
-
-* Fix warnings:
-  - Undocumented arguments in documentation object
-  - Argument items with no description in Rd object
-
-* Fix errors:
-  - Running examples in ‘detectRUNS-Ex.R’ failed
 
 * Cpp support
 
@@ -29,17 +18,3 @@
   - tests?
 
 * Deal with compressed data?
-
-* Those functions take a lot of time
-  plot_SnpsInRuns      23.092  0.096  23.209
-  plot_manhattanRuns   22.224  0.024  22.260
-  tableRuns            22.068  0.036  22.142
-  plot_Runs            21.452  0.012  21.501
-  plot_StackedRuns     21.204  0.016  21.216
-  plot_InbreedingChr   20.604  0.008  20.718
-  Froh_inbreeding      20.344  0.024  20.433
-  summaryRuns          20.136  0.020  20.292
-  Froh_inbreedingClass 20.112  0.032  20.195
-  plot_ViolinRuns      19.928  0.012  19.926
-  plot_SumMeanRuns     19.756  0.016  19.762
-  snpInsideRuns        19.724  0.016  19.726

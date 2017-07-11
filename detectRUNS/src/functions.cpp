@@ -494,7 +494,7 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
 //' @return a dataframe of POP, ID
 //'
 //' @examples
-//' genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 //' pops <- readPOPCpp(genotypeFile)
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp

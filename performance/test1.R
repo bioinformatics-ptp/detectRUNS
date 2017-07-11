@@ -35,8 +35,7 @@ times <- 10
 x_points <- 10
 
 # get genotype data
-# genotypeFile  <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-genotypeFile <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
+genotypeFile  <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 genotype <- read.table(genotypeFile, sep = " ", header = FALSE, stringsAsFactors = FALSE)
 
 # get only ped data
@@ -53,7 +52,7 @@ animals <- readPOPCpp(genotypeFile = genotypeFile)
 
 # get only one individual. Get index
 # idx <- 1
-idx <- which(animals$ID=="Chill_12")
+idx <- which(animals$ID=="H70")
 
 # get an animal
 animal <- animals[idx, ]
@@ -65,8 +64,7 @@ animal <- list(FID=animal$POP, IID=animal$ID)
 x <- raw[idx, ]
 
 # get map data
-# mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
+mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 mapfile <- fread(mapFile, header = F)
 
 # setting colnames
@@ -219,7 +217,7 @@ for (i in steps) {
   mappa <- subset_map
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
-  chrom <- "1"
+  chrom <- "2"
   mapChrom <- mappa[mappa$CHR==chrom, ]
 
   # calculating runs of Homozygosity
