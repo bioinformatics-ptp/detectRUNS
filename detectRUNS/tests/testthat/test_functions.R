@@ -3,15 +3,9 @@ library(detectRUNS)
 context("Testing functions")
 
 # get file paths
-genotypeFile  <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-mapFile <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-raw_path <- system.file("extdata", "subsetChillingham.raw", package = "detectRUNS")
-
-# importing data once
-chillingham_genotype <- read.table(genotypeFile, sep = " ", header = FALSE, stringsAsFactors = FALSE)
-chillingham_map <- read.delim(mapFile, header = FALSE)
-chillingham_raw <- read.table(raw_path, sep=" ", header = TRUE)
-
+genotypeFile  <- "test.ped"
+mapFile <- "test.map"
+rawFile <- "test.raw"
 
 test_that("Testing genoConvert", {
   # create a genotype of 0/1/2
@@ -54,10 +48,16 @@ test_that("Testing pedConvert with a missing value in a pair", {
 })
 
 test_that("Testing data conversion", {
-  ped <- chillingham_genotype[ , -c(1:6)]
-  raw <-  chillingham_raw[ , -c(1:6)]
+  # read genotype
+  genotype <- read.table(genotypeFile, sep = " ", header = FALSE,
+                         stringsAsFactors = FALSE, colClasses = "character")
+  genotype <- genotype[ , -c(1:6)]
 
-  t1 <- apply(ped, 1, pedConvertCpp)
+  # read raw data
+  raw <- read.table(rawFile, sep=" ", header = TRUE)
+  raw <-  raw[ , -c(1:6)]
+
+  t1 <- apply(genotype, 1, pedConvertCpp)
   t2 <- apply(raw, 1, genoConvertCpp)
 
   # testing conversion
@@ -751,8 +751,8 @@ test_that("Testing consecutiveRuns", {
   #   group  id chrom nSNP from   to lengthBps
   # 1   foo bar     1    3  100  300       200
   # 2   foo bar     1    4 1400 1700       300
-  # 3   foo bar     1    4 1900 2200       300
-  # 4   foo bar     1    2 2400 2500       100
+  # 3   foo bar     2    4 1900 2200       300
+  # 4   foo bar     2    2 2400 2500       100
 
   # calling consecutiveRuns
   test <- consecutiveRuns(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
@@ -816,8 +816,8 @@ test_that("Testing consecutiveRunsCpp", {
   #   group  id chrom nSNP from   to lengthBps
   # 1   foo bar     1    3  100  300       200
   # 2   foo bar     1    4 1400 1700       300
-  # 3   foo bar     1    4 1900 2200       300
-  # 4   foo bar     1    2 2400 2500       100
+  # 3   foo bar     2    4 1900 2200       300
+  # 4   foo bar     2    2 2400 2500       100
 
   # calling consecutiveRuns
   test <- consecutiveRunsCpp(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
