@@ -8,9 +8,9 @@ mapFile <- "test.map"
 
 test_that("detected ROHet are identical", {
   # testing slinding windows
-  test_sliding <- RUNS.run(genotypeFile, mapFile, windowSize=15, threshold=0.1, minSNP=15,
+  test_sliding <- slidingRUNS.run(genotypeFile, mapFile, windowSize=15, threshold=0.1, minSNP=15,
                          ROHet=FALSE, maxOppositeGenotype=1, maxMiss=1,  minLengthBps=100000,
-                         minDensity=1/10000, maxOppRun=NULL, maxMissRun=NULL, method='slidingWindow')
+                         minDensity=1/10000, maxOppRun=NULL, maxMissRun=NULL)
 
   # reading rohet reference: this need to be updated
   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
@@ -20,9 +20,9 @@ test_that("detected ROHet are identical", {
   expect_equal(test_sliding, reference_rohet, info = "testing sliding window approach")
 
   # testing slinding windows
-  test_consecutive <- RUNS.run(genotypeFile, mapFile, windowSize=15, threshold=0.1, minSNP=15,
-                         ROHet=FALSE, maxOppositeGenotype=1, maxMiss=1,  minLengthBps=100000,
-                         minDensity=1/10000, maxOppRun=NULL, maxMissRun=NULL, method='consecutiveRuns')
+  test_consecutive <- consecutiveRUNS.run(genotypeFile, mapFile, minSNP=15,
+                          ROHet=FALSE,  minLengthBps=100000,
+                          maxOppRun=0, maxMissRun=0)
 
   # reading rohet reference: this need to be updated
   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
@@ -45,7 +45,7 @@ test_that("Marker differ in size", {
   write.table(mapFile, fake_mapfile, quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
 
   # test function
-  expect_error(RUNS.run(genotypeFile, fake_mapfile), "Number of markers differ")
+  expect_error(slidingRUNS.run(genotypeFile, fake_mapfile), "Number of markers differ")
 
   # clean up
   file.remove(fake_mapfile)
@@ -53,6 +53,6 @@ test_that("Marker differ in size", {
 
 test_that("No file path throws error", {
   # test for errors
-  expect_error(RUNS.run("fake_genotype", mapFile), "doesn't exists")
-  expect_error(RUNS.run(genotypeFile, "fake_map"), "doesn't exists")
+  expect_error(slidingRUNS.run("fake_genotype", mapFile), "doesn't exists")
+  expect_error(slidingRUNS.run(genotypeFile, "fake_map"), "doesn't exists")
 })
