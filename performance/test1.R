@@ -73,6 +73,14 @@ colnames(mapfile) <- c("Chrom","SNP","cM","bps")
 # calculate sequence. 11 elements, then remove the first
 steps <- ceiling(seq(1, length(x), length.out = (x_points+1) ))[-1]
 
+# calculating runs of Homozygosity
+runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
+                        minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1,
+                        maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+
+# fix column names
+names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+
 # a dataframe in which i will store everything
 tests <- data.frame(fun=character(), step=integer(), time=integer(), language=character())
 
@@ -219,13 +227,6 @@ for (i in steps) {
   mappa$x <- NULL
   chrom <- "2"
   mapChrom <- mappa[mappa$CHR==chrom, ]
-
-  # calculating runs of Homozygosity
-  runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-                   ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-
-  # fix column names
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   # get runs only for one chromosome
   runsChrom <- runs[runs$CHROMOSOME==chrom, ]

@@ -253,7 +253,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
-#' @param mapFile Plink-like map file (the R data.frame from RUNS.run)
+#' @param mapFile Plink-like map file (data.frame)
 #' @param minSNP minimun n. of SNP to call a RUN
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
@@ -420,7 +420,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runsChrom R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runsChrom R object (dataframe) with results per chromosome
 #' @param mapChrom R map object with SNP per chromosome
 #' @param genotypeFile genotype (.ped) file location
 #'
@@ -444,7 +444,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data

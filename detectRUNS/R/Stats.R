@@ -82,7 +82,7 @@ chromosomeLength <- function(mapFile){
 #' Froh = (sum of all ROH for individual) / (Genome length covered by SNP)
 #'
 #'
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome
 #' @param mapFile Plink map file (for SNP position)
 #' @param genome_wide vector of TRUE/FALSE (Analisys genome-wide)
 #'
@@ -102,7 +102,7 @@ chromosomeLength <- function(mapFile){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -162,7 +162,7 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 
 #' Function to calculated Froh using a ROH-class
 #'
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome
 #' @param mapFile Plink map file (for SNP position)
 #' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
 #'
@@ -180,7 +180,7 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -259,7 +259,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome
 #' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
 #' @param snpInRuns function to create a dataframe for SNP inside Runs
 #'
@@ -277,7 +277,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -431,7 +431,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome
 #' @param threshold value 0 to 1 (default 0.7)
 #' @param SnpInRuns dataframe for SNP inside Runs
 #'
@@ -449,7 +449,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
