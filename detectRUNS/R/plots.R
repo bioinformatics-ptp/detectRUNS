@@ -13,7 +13,6 @@
 #' IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' obtained from RUNS.run
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
@@ -32,7 +31,7 @@
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -144,7 +143,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -273,7 +272,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' # calculating runs of Homozygosity
 #' # skipping runs calculation
 #' \dontrun{
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -397,7 +396,7 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -566,7 +565,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -643,7 +642,7 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
@@ -696,7 +695,7 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")){
 #' It's possible choose the long plot or polar plot.
 #'
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
+#' @param runs R object (dataframe) with results per chromosome
 #' @param polar dataframe for SNP inside Runs
 #'
 #' @return plot Inbreeding by chromosome
@@ -710,7 +709,7 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- RUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
