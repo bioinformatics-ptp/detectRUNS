@@ -22,7 +22,7 @@ test_that("detected ROHet are identical", {
   # testing slinding windows
   test_consecutive <- consecutiveRUNS.run(genotypeFile, mapFile, minSNP=15,
                           ROHet=FALSE,  minLengthBps=100000,
-                          maxOppRun=0, maxMissRun=0)
+                          maxOppRun=1, maxMissRun=1)
 
   # reading rohet reference: this need to be updated
   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
