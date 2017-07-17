@@ -828,3 +828,34 @@ test_that("Testing consecutiveRunsCpp", {
   expect_equal(test, reference)
 
 })
+
+test_that("Testing snpInsideRuns", {
+  # defining mapChrom
+  mappa <- data.table::fread(mapFile, header = FALSE)
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  chrom <- "24"
+
+  # subsetting mapChrom
+  set.seed(42)
+  mapChrom <- mappa[mappa$CHR==chrom, ]
+  mapChrom <- mapChrom[sort(sample(nrow(mapChrom), 10)), ]
+
+  # loading pre-calculated data
+  runsFile <- "test.ROHet.sliding.csv"
+  colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+  runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+                    colClasses = colClasses)
+
+  # fix column names and define runsChrom
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+
+  # get snps inside runs
+  reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+
+  # testing functions
+  expect_equal(test, reference)
+
+})
