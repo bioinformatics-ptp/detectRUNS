@@ -29,6 +29,27 @@ struct IncGenerator {
 using namespace Rcpp;
 
 
+// http://gallery.rcpp.org/articles/fast-factor-generation/
+template <int RTYPE>
+IntegerVector fast_factor_template( const Vector<RTYPE>& x ) {
+  Vector<RTYPE> levs = sort_unique(x);
+  IntegerVector out = match(x, levs);
+  out.attr("levels") = as<CharacterVector>(levs);
+  out.attr("class") = "factor";
+  return out;
+}
+
+// [[Rcpp::export]]
+SEXP fast_factor( SEXP x ) {
+  switch( TYPEOF(x) ) {
+  case INTSXP: return fast_factor_template<INTSXP>(x);
+  case REALSXP: return fast_factor_template<REALSXP>(x);
+  case STRSXP: return fast_factor_template<STRSXP>(x);
+  }
+  return R_NilValue;
+}
+
+
 //' Convert 0/1/2 genotypes to 0/1
 //'
 //' This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
@@ -41,6 +62,7 @@ using namespace Rcpp;
 //' @examples
 //' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
 //' geno01 <- genoConvertCpp(geno012)
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -82,6 +104,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' @examples
 //' ped <- c("A", "A", "A", "B", "5", "5")
 //' geno01 <- pedConvertCpp(ped)
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -408,6 +431,7 @@ List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
 //' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
 //'
 //' @examples #not yet
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -496,6 +520,7 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
 //' @examples
 //' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 //' pops <- readPOPCpp(genotypeFile)
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -602,6 +627,9 @@ void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVec
 //' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
 //'
 //' @return A data frame of runs per individual sample
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
 //' @export
 //'
 // [[Rcpp::export]]
@@ -791,4 +819,134 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
   // returning all runs for this individual genotype
   return(res);
 
+}
+
+
+// Helper function to subset runs by breed
+DataFrame runsByBreed(DataFrame runs, std::string breed) {
+  CharacterVector population = runs["POPULATION"];
+  CharacterVector ind = runs["IND"];
+  CharacterVector chromosome = runs["CHROMOSOME"];
+  NumericVector count = runs["COUNT"];
+  NumericVector start = runs["START"];
+  NumericVector end = runs["END"];
+  NumericVector length = runs["LENGTH"];
+
+  // https://stackoverflow.com/questions/40691823/rcpp-subsetting-rows-of-dataframe
+  LogicalVector indexes(population.size());
+
+  // get indexes where population == bread
+  for (int i = 0; i < population.size(); i++){
+    indexes[i] = (population[i] == breed);
+  }
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("POPULATION")=population[indexes],
+    Named("IND")=ind[indexes],
+    Named("CHROMOSOME")=chromosome[indexes],
+    Named("COUNT")=count[indexes],
+    Named("START")=start[indexes],
+    Named("END")=end[indexes],
+    Named("LENGTH")=length[indexes],
+    _["stringsAsFactors"] = false);
+
+  // returning all runs for this individual genotype
+  return(res);
+}
+
+
+//' Function to count number of times a SNP is in a RUN
+//'
+//'
+//' @param runsChrom R object (dataframe) with results per chromosome
+//' @param mapChrom R map object with SNP per chromosome
+//' @param genotypeFile genotype (.ped) file location
+//'
+//' @return dataframe with counts per SNP in runs (per population)
+//' @export
+//'
+//' @import utils
+//'
+//' @examples
+//' # getting map and ped paths
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+//'
+//' # defining mapChrom
+//' mappa <- data.table::fread(mapFile, header = FALSE)
+//' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+//' mappa$x <- NULL
+//' chrom <- "24"
+//' mapChrom <- mappa[mappa$CHR==chrom, ]
+//'
+//' # calculating runs of Homozygosity
+//' \dontrun{
+//' # skipping runs calculation
+//' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+//' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+//' }
+//' # loading pre-calculated data
+//' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+//' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+//' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+//' colClasses = colClasses)
+//'
+//' # fix column names and define runsChrom
+//' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+//' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+//'
+//' snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
+                           std::string genotypeFile) {
+
+  // the columns of data.frame Defining data types accordingly slinding window
+  CharacterVector snp_name;
+  IntegerVector chrom; // as defined in R function. What about X?
+  NumericVector position;
+  IntegerVector count;
+  CharacterVector breed;
+  NumericVector percentage;
+
+  // get unique breeds
+  CharacterVector population = runsChrom["POPULATION"];
+  CharacterVector unique_breeds = unique(population);
+
+  // declare others variables
+  std::string ras;
+  DataFrame runsBreed;
+  int nBreed;
+
+  // get all populations
+  DataFrame pops = readPOPCpp(genotypeFile);
+  CharacterVector pop = pops["POP"];
+
+  // cicle among single breeds
+  for (int i=0; i<unique_breeds.size(); i++) {
+    ras = unique_breeds[i];
+
+    // subset runs by breed
+    runsBreed = runsByBreed(runsChrom, ras);
+
+    // get total if individuals by breed
+    nBreed = std::count(pop.begin(), pop.end(), ras.c_str());
+    // Rcout << "N. of animals of Population " << ras << ": " << nBreed << std::endl;
+
+  }
+
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
+    Named("COUNT")=count, Named("BREED")=fast_factor(breed), //returns a factor
+    Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
+
+  // returning all runs for this individual genotype
+  return(res);
 }
