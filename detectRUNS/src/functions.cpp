@@ -822,15 +822,28 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 }
 
 
-// Helper function to subset runs by breed
-DataFrame runsByBreed(DataFrame runs, std::string breed) {
+// Helper class to subset runs by breed
+class runsBreed {
+  CharacterVector chromosome;
+  IntegerVector start;
+  IntegerVector end;
+  int size;
+public:
+  runsBreed(DataFrame runs, std::string breed);
+  int countSnp(int position);
+  void dumpRuns();
+  // function to count runs by breed
+};
+
+runsBreed::runsBreed(DataFrame runs, std::string breed) {
+  // get vectors for simplicity
   CharacterVector population = runs["POPULATION"];
   CharacterVector ind = runs["IND"];
   CharacterVector chromosome = runs["CHROMOSOME"];
-  NumericVector count = runs["COUNT"];
-  NumericVector start = runs["START"];
-  NumericVector end = runs["END"];
-  NumericVector length = runs["LENGTH"];
+  IntegerVector count = runs["COUNT"];
+  IntegerVector start = runs["START"];
+  IntegerVector end = runs["END"];
+  IntegerVector length = runs["LENGTH"];
 
   // https://stackoverflow.com/questions/40691823/rcpp-subsetting-rows-of-dataframe
   LogicalVector indexes(population.size());
@@ -840,19 +853,43 @@ DataFrame runsByBreed(DataFrame runs, std::string breed) {
     indexes[i] = (population[i] == breed);
   }
 
-  // initialize dataframe of results.
-  DataFrame res = DataFrame::create(
-    Named("POPULATION")=population[indexes],
-    Named("IND")=ind[indexes],
-    Named("CHROMOSOME")=chromosome[indexes],
-    Named("COUNT")=count[indexes],
-    Named("START")=start[indexes],
-    Named("END")=end[indexes],
-    Named("LENGTH")=length[indexes],
-    _["stringsAsFactors"] = false);
+  // debug
+  // Rcout << indexes << std::endl;
 
-  // returning all runs for this individual genotype
-  return(res);
+  // set my private attributes
+  // Rcout << start << std::endl;
+
+  this->chromosome = chromosome[indexes];
+  this->start = start[indexes];
+  this->end = end[indexes];
+
+  // set size
+  this->size = this->chromosome.size();
+
+}
+
+// count how many type a snp (position) belong to a RUN
+int runsBreed::countSnp(int position) {
+  // define variables
+  int count = 0;
+
+  // debug
+  // Rcout << "Got position: " << position << std::endl;
+
+  // iter over runs
+  for (int i=0; i<this->size; i++) {
+    if (position >= this->start[i] && position <= this->end[i]) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+void runsBreed::dumpRuns() {
+  for (int i=0; i<this->size; i++) {
+    Rcout << "chrom " << this->chromosome[i] << " start " << this->start[i] << " end " << this->end[i] << std::endl;
+  }
 }
 
 
@@ -909,7 +946,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // the columns of data.frame Defining data types accordingly slinding window
   CharacterVector snp_name;
   IntegerVector chrom; // as defined in R function. What about X?
-  NumericVector position;
+  IntegerVector position, POSITIONS = mapChrom["POSITION"];
   IntegerVector count;
   CharacterVector breed;
   NumericVector percentage;
@@ -920,8 +957,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // declare others variables
   std::string ras;
-  DataFrame runsBreed;
-  int nBreed;
+  int nBreed, pos, snpCount;
 
   // get all populations
   DataFrame pops = readPOPCpp(genotypeFile);
@@ -931,20 +967,40 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   for (int i=0; i<unique_breeds.size(); i++) {
     ras = unique_breeds[i];
 
-    // subset runs by breed
-    runsBreed = runsByBreed(runsChrom, ras);
+    // instantiate a runsBreed object
+    runsBreed runs_breed(runsChrom, ras);
+
+    // debug
+    // runs_breed.dumpRuns();
 
     // get total if individuals by breed
     nBreed = std::count(pop.begin(), pop.end(), ras.c_str());
     // Rcout << "N. of animals of Population " << ras << ": " << nBreed << std::endl;
 
-  }
+    // iterate over position. Update single values
+    for (int j=0; j<POSITIONS.size(); j++) {
+      // get a snp position
+      pos = POSITIONS[j];
 
+      // update counts
+      snpCount = runs_breed.countSnp(pos);
+      count.push_back(snpCount);
+      breed.push_back(ras);
+      percentage.push_back(double(snpCount)/nBreed*100);
+
+      // read data from mapChrom
+      snp_name.push_back(as<CharacterVector>(mapChrom["SNP_NAME"])[j]);
+      chrom.push_back(as<IntegerVector>(mapChrom["CHR"])[j]);
+      position.push_back(pos);
+
+    } // cicle for snp position
+
+  } // cicle for breed
 
   // initialize dataframe of results.
   DataFrame res = DataFrame::create(
     Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
-    Named("COUNT")=count, Named("BREED")=fast_factor(breed), //returns a factor
+    Named("COUNT")=count, Named("BREED")=breed, //returns a factor
     Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
 
   // returning all runs for this individual genotype
