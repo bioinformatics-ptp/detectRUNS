@@ -240,21 +240,21 @@ for (i in steps) {
   test_fun <- rep("snpInsideRuns", times)
   test_step = rep(i, times)
   test_language <- rep("R", times)
-  tmp <- data.frame(fun=test_fun, step=test_step, time=test_slidingRuns$time, language=test_language)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRuns$time, language=test_language)
   tests <- rbind(tests, tmp)
 
-  # # check cpp snpInsideRuns
-  # test_snpInsideRunsCpp <- microbenchmark(
-  #   snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile),
-  #   unit = 'ms',
-  #   times = times
-  # )
-  #
-  # test_fun <- rep("snpInsideRuns", times)
-  # test_step <- rep(i, times)
-  # test_language <- rep("Cpp", times)
-  # tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRunsCpp$time, language=test_language)
-  # tests <- rbind(tests, tmp)
+  # check cpp snpInsideRuns
+  test_snpInsideRunsCpp <- microbenchmark(
+    snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile),
+    unit = 'ms',
+    times = times
+  )
+
+  test_fun <- rep("snpInsideRuns", times)
+  test_step <- rep(i, times)
+  test_language <- rep("Cpp", times)
+  tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRunsCpp$time, language=test_language)
+  tests <- rbind(tests, tmp)
 }
 
 # as described by http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/
