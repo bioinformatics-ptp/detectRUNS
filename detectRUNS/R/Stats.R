@@ -409,7 +409,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
     for (chrom in sort(unique(runs$CHROMOSOME))) {
       runsChrom <- runs[runs$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
+      snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
       all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
       n=n+1
       setTxtProgressBar(pb, n)
@@ -504,7 +504,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
     for (chrom in sort(unique(runs$CHROMOSOME))) {
       runsChrom <- runs[runs$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideRuns(runsChrom,mapKrom, genotypeFile)
+      snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
       all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
       n=n+1
       setTxtProgressBar(pb, n)

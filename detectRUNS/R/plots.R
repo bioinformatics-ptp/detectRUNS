@@ -316,7 +316,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
     mapChrom <- mappa[mappa$CHR==chrom,]
     print(paste("N.of SNP is",nrow(mapChrom)))
 
-    snpInRuns <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
+    snpInRuns <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
     krom <- subset(snpInRuns,CHR==chrom)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -448,7 +448,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
   for (chrom in sort(unique(runs$CHROMOSOME))) {
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
     mapChrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snpInsideRuns(runsChrom,mapChrom, genotypeFile)
+    snpInRuns <- snpInsideRunsCpp(runsChrom,mapChrom, genotypeFile)
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
