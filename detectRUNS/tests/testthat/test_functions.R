@@ -856,6 +856,6 @@ test_that("Testing snpInsideRuns", {
   test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
 
   # testing functions
-  expect_equal(test, reference)
+  expect_equivalent(test, reference)
 
 })

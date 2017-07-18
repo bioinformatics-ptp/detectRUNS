@@ -1000,7 +1000,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // initialize dataframe of results.
   DataFrame res = DataFrame::create(
     Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
-    Named("COUNT")=count, Named("BREED")=breed, //returns a factor
+    Named("COUNT")=count, Named("BREED")=fast_factor(breed)  , //returns a factor
     Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
 
   // returning all runs for this individual genotype
