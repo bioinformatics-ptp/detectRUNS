@@ -285,42 +285,58 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //'
 // [[Rcpp::export]]
 StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
-  // Initialize oppositeAndMissingGenotypes
-  StringVector oppositeAndMissingGenotypes;
+  // Initialize a temporary array for oppositeAndMissingGenotypes
+  std::vector<std::string> tmp(data.size());
 
   // Initialize vector for names
-  std::vector< std::string > names;
+  std::vector<std::string> names(data.size());
 
   // declare values
   std::string missing = "9";
   std::string opposite = "0";
 
+  // count missing and opposite
+  int index = 0;
+
   // iter in data vector
   for (int i=0; i<data.size(); i++) {
     if (data[i] == NA_INTEGER) {
       // is missing
-      oppositeAndMissingGenotypes.push_back(missing);
+      tmp[index]= missing;
       // R index are 1 based
-      names.push_back(patch::to_string(i+1));
+      names[index] = patch::to_string(i+1);
+      // increment index
+      index++;
       continue;
     }
 
     if (ROHet == true){
       if (data[i] == 0) {
         // is homozygote
-        oppositeAndMissingGenotypes.push_back(opposite);
-        names.push_back(patch::to_string(i+1));
+        tmp[index] = opposite;
+        names[index] = patch::to_string(i+1);
+        // increment index
+        index++;
       }
     } else {
       // ROHom condition
       if (data[i] == 1) {
         // is heterozygote
-        oppositeAndMissingGenotypes.push_back(opposite);
-        names.push_back(patch::to_string(i+1));
+        tmp[index] = opposite;
+        names[index] = patch::to_string(i+1);
+        // increment index
+        index++;
       }
     }
 
   }
+
+  // resize StringVectors
+  tmp.resize(index);
+  names.resize(index);
+
+  // get a string vector from tmp data
+  StringVector oppositeAndMissingGenotypes = wrap(tmp);
 
   // Finally assign names to StringVector
   oppositeAndMissingGenotypes.attr("names") = names;
