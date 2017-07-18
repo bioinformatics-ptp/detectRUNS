@@ -96,6 +96,9 @@ for (i in steps) {
   ##############################################################################
   # Test Windows
 
+  # debug
+  message(paste("Test sliding window: step", i))
+
   # calculate sliding window
   y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
                      parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss)
@@ -130,6 +133,9 @@ for (i in steps) {
   ##############################################################################
   # Test snpInRun
 
+  # debug
+  message(paste("Test snpInRun: step", i))
+
   # vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
   snpRun <- snpInRun(y$windowStatus, parameters$windowSize, parameters$threshold)
 
@@ -161,6 +167,9 @@ for (i in steps) {
   ##############################################################################
   # Test slidingRuns
 
+  # debug
+  message(paste("Test slidingRuns: step", i))
+
   test_slidingRuns <- microbenchmark(
     slidingRuns(subset_genotype, animal, subset_map, gaps, parameters, cpp=FALSE),
     unit = 'ms',
@@ -188,6 +197,9 @@ for (i in steps) {
 
   ##############################################################################
   # Test consecutiveRuns
+
+  # debug
+  message(paste("Test consecutiveRuns: step", i))
 
   test_consecutiveRuns <- microbenchmark(
     consecutiveRuns(subset_genotype, animal, subset_map, parameters$ROHet, parameters$minSNP,
@@ -221,18 +233,19 @@ for (i in steps) {
   ##############################################################################
   # Test snpInsideRuns
 
+  # debug
+  message(paste("Test snpInsideRuns: step", i))
+
   # get temporary variables
   mappa <- subset_map
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
-  chrom <- "2"
-  mapChrom <- mappa[mappa$CHR==chrom, ]
 
-  # get runs only for one chromosome
-  runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+  # snpInsideRuns needs to be launched against a single chromosome. For testing
+  # purpose, we will consider mappa and runs as a unique chromosome
 
   test_snpInsideRuns <- microbenchmark(
-    snpInsideRuns(runsChrom, mapChrom, genotypeFile),
+    snpInsideRuns(runs, mappa, genotypeFile),
     unit = 'ms',
     times = times
   )
@@ -245,7 +258,7 @@ for (i in steps) {
 
   # check cpp snpInsideRuns
   test_snpInsideRunsCpp <- microbenchmark(
-    snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile),
+    snpInsideRunsCpp(runs, mappa, genotypeFile),
     unit = 'ms',
     times = times
   )
