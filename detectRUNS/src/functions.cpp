@@ -840,21 +840,21 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
 
 // Helper class to deal with runs
 class Runs {
-  std::vector<std::string> population;
+  std::vector<std::string> breed;
   std::vector<std::string> chromosome;
   std::vector<int> start;
   std::vector<int> end;
   int size;
 public:
   Runs(DataFrame runs);
-  int countSnpbyBreed(int position, std::string breed);
+  std::map <std::string, int> countSnpbyBreed(int position);
   void dumpRuns();
   // function to count runs by breed
 };
 
 Runs::Runs(DataFrame runs) {
   // get vectors for simplicity
-  this->population = as<std::vector<std::string> >(runs["POPULATION"]);
+  this->breed = as<std::vector<std::string> >(runs["POPULATION"]);
   this->chromosome = as<std::vector<std::string> >(runs["CHROMOSOME"]);
   this->start = as<std::vector<int> >(runs["START"]);
   this->end = as<std::vector<int> >(runs["END"]);
@@ -865,26 +865,31 @@ Runs::Runs(DataFrame runs) {
 }
 
 // count how many type a snp (position) belong to a RUN
-int Runs::countSnpbyBreed(int position, std::string breed) {
+std::map <std::string, int> Runs::countSnpbyBreed(int position) {
   // define variables
-  int count = 0;
+  std::map <std::string, int> counts;
 
   // debug
   // Rcout << "Got position: " << position << std::endl;
 
   // iter over runs
   for (int i=0; i<this->size; i++) {
-    if (this->population[i] == breed && position >= this->start[i] && position <= this->end[i]) {
-      count++;
+    if (position >= this->start[i] && position <= this->end[i]) {
+      // create a new key-pair if key doesn't exists
+      if (counts.find(this->breed[i]) == counts.end()) {
+        counts[this->breed[i]] = 1;
+      } else {
+        counts[this->breed[i]]++;
+      }
     }
   }
 
-  return count;
+  return counts;
 }
 
 void Runs::dumpRuns() {
   for (int i=0; i<this->size; i++) {
-    Rcout << "breed " << this->population[i] << "chrom " << this->chromosome[i];
+    Rcout << "breed " << this->breed[i] << "chrom " << this->chromosome[i];
     Rcout << " start " << this->start[i] << " end " << this->end[i] << std::endl;
   }
 }
@@ -951,7 +956,8 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // declare others variables
   std::string ras;
-  int nBreed, pos, snpCount;
+  int pos;
+  std::map <std::string, int> snpCounts, nBreeds ;
 
   // define result size like n SNPs * unique_breeds
   int result_size = SNP_NAME.size() * unique_breeds.size();
@@ -971,27 +977,32 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // instantiate a Runs object
   Runs runs(runsChrom);
 
-  // cicle among single breeds
+  // cicle among single breeds and find breed numbers
   for (int i=0; i<unique_breeds.size(); i++) {
     ras = unique_breeds[i];
 
-    // debug
-    // runs_breed.dumpRuns();
-
     // get total if individuals by breed
-    nBreed = std::count(pop.begin(), pop.end(), ras.c_str());
-    // Rcout << "N. of animals of Population " << ras << ": " << nBreed << std::endl;
+    nBreeds[ras] = std::count(pop.begin(), pop.end(), ras.c_str());
+    // Rcout << "N. of animals of Population " << ras << ": " << nBreeds[ras] << std::endl;
+  }
 
-    // iterate over position. Update single values
-    for (int j=0; j<POSITIONS.size(); j++) {
-      // get a snp position
-      pos = POSITIONS[j];
+  // iterate over position. Update single values
+  for (int j=0; j<POSITIONS.size(); j++) {
+    // get a snp position
+    pos = POSITIONS[j];
 
-      // update counts
-      snpCount = runs.countSnpbyBreed(pos, ras);
-      count[(i+1)*j] = snpCount;
+    // update counts
+    snpCounts = runs.countSnpbyBreed(pos);
+
+    // update results by breed
+    for (int i=0; i<unique_breeds.size(); i++) {
+      // get a breed
+      ras = unique_breeds[i];
+
+      // update values
+      count[(i+1)*j] = snpCounts[ras];
       breed[(i+1)*j] = ras;
-      percentage[(i+1)*j] = double(snpCount)/nBreed*100;
+      percentage[(i+1)*j] = double(snpCounts[ras])/nBreeds[ras]*100;
 
       // read data from mapChrom
       snp_name[(i+1)*j] = SNP_NAME[j];
