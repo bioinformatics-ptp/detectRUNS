@@ -845,14 +845,31 @@ class Runs {
   std::vector<int> start;
   std::vector<int> end;
   int size;
+
+  // a map object for position indexing: in order to avoid to scan all runs
+  // for a SNP, I will divide all chromosome size in chunk and in each chunk
+  // I will put the run index which span this chunk. When I will have a position
+  // I will calculate its chunk and then I will scan for each runs in this chunk
+  // if the snps belong to it or not
+  std::map <int, std::vector<int> > indexes;
+
+  // chunk by size
+  int chunk;
+
 public:
   Runs(DataFrame runs);
-  std::map <std::string, int> countSnpbyBreed(int position);
-  void dumpRuns();
   // function to count runs by breed
+  std::map <std::string, int> countSnpbyBreed(int position, CharacterVector unique_breeds);
+  void dumpRuns();
 };
 
 Runs::Runs(DataFrame runs) {
+  // declare variables
+  int start, end;
+
+  // define chunk size
+  this->chunk = 1e6;
+
   // get vectors for simplicity
   this->breed = as<std::vector<std::string> >(runs["POPULATION"]);
   this->chromosome = as<std::vector<std::string> >(runs["CHROMOSOME"]);
@@ -862,25 +879,53 @@ Runs::Runs(DataFrame runs) {
   // set size
   this->size = this->chromosome.size();
 
+  // index the object. Get index position by dividing run position by chunks
+  for (int i=0; i<this->size; i++) {
+    // by dividing integer number, I get the integer part of division
+    start = this->start[i] / this->chunk;
+    end = this->end[i] / this->chunk;
+
+    // add this run index to indexes map
+    for (int j=start; j<=end; j++){
+      if (indexes.find(j) == indexes.end()) {
+        indexes[j] = std::vector<int>();
+      }
+
+      // push back index in chunk list
+      indexes[j].push_back(i);
+    }
+  }
 }
 
 // count how many type a snp (position) belong to a RUN
-std::map <std::string, int> Runs::countSnpbyBreed(int position) {
+std::map <std::string, int> Runs::countSnpbyBreed(int position, CharacterVector unique_breeds) {
   // define variables
   std::map <std::string, int> counts;
+  std::string ras;
+
+  // initialize
+  for (int i=0; i<unique_breeds.size(); i++) {
+    ras = unique_breeds[i];
+    counts[ras] = 0;
+  }
+
+  // define chunk number
+  int index = position / this->chunk;
 
   // debug
-  // Rcout << "Got position: " << position << std::endl;
+  // Rcout << "Got position: " << position << " (";
+  // Rcout << index * this->chunk << "-" << (index+1) * this->chunk;
+  // Rcout << ")" << std::endl;
 
-  // iter over runs
-  for (int i=0; i<this->size; i++) {
-    if (position >= this->start[i] && position <= this->end[i]) {
-      // create a new key-pair if key doesn't exists
-      if (counts.find(this->breed[i]) == counts.end()) {
-        counts[this->breed[i]] = 1;
-      } else {
-        counts[this->breed[i]]++;
-      }
+  // get chunk indexes
+  std::vector<int> chunk_indexes = this->indexes[index];
+
+  // iter over runs in chunks
+  for(std::vector<int>::iterator it = chunk_indexes.begin();
+      it != chunk_indexes.end(); ++it) {
+
+    if (position >= this->start[*it] && position <= this->end[*it]) {
+      counts[this->breed[*it]]++;
     }
   }
 
@@ -889,8 +934,21 @@ std::map <std::string, int> Runs::countSnpbyBreed(int position) {
 
 void Runs::dumpRuns() {
   for (int i=0; i<this->size; i++) {
-    Rcout << "breed " << this->breed[i] << "chrom " << this->chromosome[i];
+    Rcout << "breed " << this->breed[i] << " chrom " << this->chromosome[i];
     Rcout << " start " << this->start[i] << " end " << this->end[i] << std::endl;
+  }
+
+  // dump indexes. Cicle around map iterators
+  std::map <int, std::vector<int> >::iterator it;
+
+  for (it = this->indexes.begin(); it != this->indexes.end(); ++it) {
+    Rcout << "Chunk " << it->first * this->chunk << "-" << (it->first+1) * this->chunk << ": ";
+    for(std::vector<int>::iterator it2 = it->second.begin();
+        it2 != it->second.end(); ++it2) {
+      Rcout << *it2+1 << " ";
+    }
+
+    Rcout << std::endl;
   }
 }
 
@@ -977,6 +1035,9 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // instantiate a Runs object
   Runs runs(runsChrom);
 
+  // debug: dump object
+  // runs.dumpRuns();
+
   // cicle among single breeds and find breed numbers
   for (int i=0; i<unique_breeds.size(); i++) {
     ras = unique_breeds[i];
@@ -992,7 +1053,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
     pos = POSITIONS[j];
 
     // update counts
-    snpCounts = runs.countSnpbyBreed(pos);
+    snpCounts = runs.countSnpbyBreed(pos, unique_breeds);
 
     // update results by breed
     for (int i=0; i<unique_breeds.size(); i++) {
