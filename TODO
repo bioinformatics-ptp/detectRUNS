@@ -18,3 +18,7 @@
   - tests?
 
 * Deal with compressed data?
+
+* Examples MUST be reduced (4.4Mb/5Mb is too much!)
+
+* Try to index Runs (Cpp class) with hash 
