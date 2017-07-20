@@ -859,7 +859,8 @@ class Runs {
 public:
   Runs(DataFrame runs);
   // function to count runs by breed
-  std::map <std::string, int> countSnpbyBreed(int position, CharacterVector unique_breeds);
+  std::map <std::string, int> countSnpbyBreed(
+      int position, std::vector<std::string> unique_breeds);
   void dumpRuns();
 };
 
@@ -898,7 +899,8 @@ Runs::Runs(DataFrame runs) {
 }
 
 // count how many type a snp (position) belong to a RUN
-std::map <std::string, int> Runs::countSnpbyBreed(int position, CharacterVector unique_breeds) {
+std::map <std::string, int> Runs::countSnpbyBreed(
+    int position, std::vector<std::string> unique_breeds) {
   // define variables
   std::map <std::string, int> counts;
   std::string ras;
@@ -909,7 +911,7 @@ std::map <std::string, int> Runs::countSnpbyBreed(int position, CharacterVector 
     counts[ras] = 0;
   }
 
-  // define chunk number
+  // calculating chunk position: we will investigate only runs spanning this region
   int index = position / this->chunk;
 
   // debug
@@ -1010,15 +1012,18 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // get unique breeds
   CharacterVector population = runsChrom["POPULATION"];
-  CharacterVector unique_breeds = unique(population);
+  std::vector<std::string> unique_breeds = as<std::vector<std::string> >(unique(population));
+
+  // sort unique breeds
+  std::sort(unique_breeds.begin(), unique_breeds.end());
 
   // declare others variables
   std::string ras;
-  int pos;
+  int pos, index, map_size = SNP_NAME.size();
   std::map <std::string, int> snpCounts, nBreeds ;
 
   // define result size like n SNPs * unique_breeds
-  int result_size = SNP_NAME.size() * unique_breeds.size();
+  int result_size = map_size * unique_breeds.size();
 
   // the columns of data.frame Defining data types accordingly slinding window
   CharacterVector snp_name(result_size);
@@ -1060,15 +1065,24 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
       // get a breed
       ras = unique_breeds[i];
 
+      //calculating results index
+      index = i * map_size + j;
+
       // update values
-      count[(i+1)*j] = snpCounts[ras];
-      breed[(i+1)*j] = ras;
-      percentage[(i+1)*j] = double(snpCounts[ras])/nBreeds[ras]*100;
+      count[index] = snpCounts[ras];
+      breed[index] = ras;
+      percentage[index] = double(snpCounts[ras])/nBreeds[ras]*100;
+
+      // debug
+      // if (SNP_NAME[j] == "OAR24_6970428.1") {
+      //   Rcout << "Index i: " << i << " Index j: " << j << " Final index: " << index;
+      //   Rcout << " Breed: " << ras << " Count: " << snpCounts[ras] << std::endl;
+      // }
 
       // read data from mapChrom
-      snp_name[(i+1)*j] = SNP_NAME[j];
-      chrom[(i+1)*j] = CHR[j];
-      position[(i+1)*j] = pos;
+      snp_name[index] = SNP_NAME[j];
+      chrom[index] = CHR[j];
+      position[index] = pos;
 
     } // cicle for snp position
 

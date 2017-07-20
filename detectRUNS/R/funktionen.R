@@ -473,14 +473,16 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 
   M <- data.frame("SNP_NAME"=character(),
                    "CHR"=integer(),
-                   "POSITION"=numeric(),
+                   "POSITION"=integer(),
                    "COUNT"=integer(),
                    "BREED"=factor(),
                    "PERCENTAGE"=numeric(),
                    stringsAsFactors=FALSE
   )
 
-  for (ras in unique(runsChrom$POPULATION)) {
+  unique_breeds <- unique(runsChrom$POPULATION)
+
+  for (ras in sort(unique_breeds)) {
 
     #print(paste("Population is:", ras))
     runsBreed <- runsChrom[runsChrom$POPULATION==ras,]
@@ -500,7 +502,7 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
     }
 
     mapChrom$COUNT <- snpCount
-    mapChrom$BREED <- rep(ras,nrow(mapChrom))
+    mapChrom$BREED <- as.factor(rep(ras,nrow(mapChrom)))
     mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
     mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
     M <- rbind.data.frame(M,mapChrom)
