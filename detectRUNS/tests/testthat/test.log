@@ -8,26 +8,26 @@ Options in effect:
 
 Hostname: jessie
 Working directory: /home/paolo/Projects/RoHet/detectRUNS/inst/extdata
-Start time: Tue Jul 11 15:21:06 2017
+Start time: Thu Jul 20 14:21:04 2017
 
-Random number seed: 1499779266
+Random number seed: 1500553264
 3952 MB RAM detected; reserving 1976 MB for main workspace.
 Scanning .ped file... done.
 Performing single-pass .bed write (563 variants, 160 people).
 --file: test-temporary.bed + test-temporary.bim + test-temporary.fam written.
 563 variants loaded from .bim file.
 160 people (42 males, 118 females) loaded from .fam.
---keep: 10 people remaining.
+--keep: 20 people remaining.
 Using 1 thread (no multithreaded calculations invoked).
-Before main variant filters, 10 founders and 0 nonfounders present.
+Before main variant filters, 20 founders and 0 nonfounders present.
 Calculating allele frequencies... done.
-Warning: 756 het. haploid genotypes present (see test.hh ); many commands treat
+Warning: 985 het. haploid genotypes present (see test.hh ); many commands treat
 these as missing.
 Warning: Nonmissing nonmale Y chromosome genotype(s) present; many commands
 treat these as missing.
-Total genotyping rate in remaining samples is 0.729307.
-563 variants and 10 people pass filters and QC.
+Total genotyping rate in remaining samples is 0.706039.
+563 variants and 20 people pass filters and QC.
 Note: No phenotypes present.
 --recode to test.ped + test.map ... done.
 
-End time: Tue Jul 11 15:21:06 2017
+End time: Thu Jul 20 14:21:04 2017
