@@ -14,7 +14,8 @@
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
-#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param savePlots should plots be saved out to files (one pdf file for all chromosomes) or plotted in the graphical terminal (default)?
+#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of runs by chromosome (pdf files)
@@ -44,7 +45,7 @@
 #' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NULL) {
+plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
   # suppress notes
   IND <- NULL
   LENGTH <- NULL
@@ -60,6 +61,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
   list_chr=unique(runs$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
+  plot_list <- list()
   for (chrom in new_list_chr) {
 
     #subset by chromosome
@@ -97,12 +99,6 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
     teilsatz$IND <- as.factor(teilsatz$IND)
     teilsatz$IND <- factor(teilsatz$IND, levels = unique(teilsatz$IND[order(teilsatz$NEWID)]))
 
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "chromosome", chrom, sep="_")
-    } else {
-      titel <- paste("chromosome", chrom, sep="_")
-    }
-
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END,
                                                      yend = IND,colour=as.factor(POPULATION)),alpha=alfa, size=grosse)
@@ -111,11 +107,44 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix=NU
     p <- p + optionen
 
     if(savePlots) {
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(p)
-      dev.off()
+      plot_list[[chrom]] <- p
     } else print(p)
+  }
 
+  # if (! is.null(title_prefix)) {
+  #   titel <- paste(title_prefix, "chromosome", chrom, sep="_")
+  # } else {
+  #   titel <- paste("chromosome", chrom, sep="_")
+  # }
+
+  if(savePlots) {
+
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix, "all_chromosomes", sep="_")
+    } else {
+      titel <- "all_chromosomes"
+
+      pdf(paste(titel,".pdf",sep=""))
+
+      for(p in plot_list) {
+        print(p)
+      }
+
+      dev.off()
+    }
+  }
+
+  if(savePlots & separatePlots) {
+    for(chrom in names(plot_list)) {
+      if (! is.null(title_prefix)) {
+        titel <- paste(title_prefix, "chromosome", chrom, sep="_")
+      } else {
+        titel <- paste("chromosome", chrom, sep="_")
+      }
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(plot_list[[chrom]])
+      dev.off()
+    }
   }
 }
 
