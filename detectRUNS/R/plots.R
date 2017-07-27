@@ -363,7 +363,7 @@ readFromPlink <- function(plinkFile="plink.hom") {
   plinkDatei$KB <- (plinkDatei$KB*1000)
 
   #rename columns
-  names(plinkDatei) <- c("breed","id","chrom","nSNP","von","bis","lengthBps")
+  names(plinkDatei) <- c("breed","id","chrom","nSNP","from","to","lengthBps")
 
   return(plinkDatei)
 }
