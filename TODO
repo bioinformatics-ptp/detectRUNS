@@ -20,4 +20,11 @@
 * Deal with compressed data?
 
 * Examples MUST be reduced (4.4Mb/5Mb is too much!)
+* After reducing the example files, create a Plink .hom file for the example of the readFromPlink() function
+
+* Standardize column names across functions (limit renaming only to where it is necessary)
+* Decide which functions to export (and remove the @export statement from all other functions)
+* Revise documentation
+* Revise Title and Description (subject, verb, object)
+* Make Vignette (not too big --> leave material for the paper/extended documentation)
  
