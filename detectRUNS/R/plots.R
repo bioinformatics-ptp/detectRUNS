@@ -385,14 +385,16 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
 
 readFromPlink <- function(plinkFile="plink.hom") {
 
-  plinkDatei <- read.table(file=plinkFile, header=TRUE)
+  plinkDatei <- read.table(file=plinkFile, header=TRUE,
+                           colClasses = c("character","character","character","character","character",
+                                          "character","integer","integer","numeric","numeric","character","character","character" ))
   plinkDatei <- plinkDatei[,c("FID","IID","CHR","NSNP","POS1","POS2","KB")]
 
   #convert kbps to bps
   plinkDatei$KB <- (plinkDatei$KB*1000)
 
   #rename columns
-  names(plinkDatei) <- c("breed","id","chrom","nSNP","from","to","lengthBps")
+  names(plinkDatei) <- c("group","id","chrom","nSNP","from","to","lengthBps")
 
   return(plinkDatei)
 }
