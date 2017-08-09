@@ -514,7 +514,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
       ndx <- which(subset_group[, "CHR"]==i)
       lstMrk <- max(subset_group[ndx, "BP"])
       if (index < chrNum) ndx2 <- which(subset_group[, "CHR"]==chroms[index+1])
-      if (index < chrNum) subset_group[ndx2, "BP"] <- subset_group[ndx2, "BP"] + lstMrk
+      if (index < chrNum) subset_group[ndx2, "BP"] <- as.numeric(subset_group[ndx2, "BP"] + lstMrk)
     }
 
 
