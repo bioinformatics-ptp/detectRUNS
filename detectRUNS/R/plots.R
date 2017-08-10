@@ -46,37 +46,27 @@
 #'
 
 plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
-  # suppress notes
-  IND <- NULL
-  LENGTH <- NULL
-  CHROMOSOME <- NULL
-  START <- NULL
-  END <- NULL
-  POPULATION <- NULL
-
-  # then names runs
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   chr_order <-c((0:99),"X","Y","XY","MT")
-  list_chr=unique(runs$CHROMOSOME)
+  list_chr=unique(runs$chrom)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
   plot_list <- list()
   for (chrom in new_list_chr) {
 
     #subset by chromosome
-    krom <- subset(runs,CHROMOSOME==chrom)
+    krom <- subset(runs,chrom==chrom)
 
     #rearrange subset
     teilsatz <- krom[,c(5,6,2,1)]
-    teilsatz <- teilsatz[order(teilsatz$POPULATION),]
+    teilsatz <- teilsatz[order(teilsatz$group),]
 
     #new progressive numerical ID
-    newID <- seq(1,length(unique(teilsatz$IND)))
-    id <- unique(teilsatz$IND)
-    teilsatz$NEWID=newID[match(teilsatz$IND,id)]
+    newID <- seq(1,length(unique(teilsatz$id)))
+    id <- unique(teilsatz$id)
+    teilsatz$NEWID=newID[match(teilsatz$id,id)]
 
-    optionen <- ggplot2::scale_y_discrete("IDs",limits=unique(teilsatz$IND))
+    optionen <- ggplot2::scale_y_discrete("IDs",limits=unique(teilsatz$id))
     alfa <- 1
     grosse <- 1
 
@@ -91,18 +81,18 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
                                                  axis.title.y=element_blank(),axis.ticks.y=element_blank())
 
     #size in mb
-    teilsatz$START <- (teilsatz$START/(10^6))
-    teilsatz$END <- (teilsatz$END/(10^6))
+    teilsatz$from <- (teilsatz$from/(10^6))
+    teilsatz$to <- (teilsatz$to/(10^6))
 
     row.names(teilsatz) <- NULL
 
-    teilsatz$IND <- as.factor(teilsatz$IND)
-    teilsatz$IND <- factor(teilsatz$IND, levels = unique(teilsatz$IND[order(teilsatz$NEWID)]))
+    teilsatz$id <- as.factor(teilsatz$id)
+    teilsatz$id <- factor(teilsatz$id, levels = unique(teilsatz$id[order(teilsatz$NEWID)]))
 
     p <- ggplot2::ggplot(teilsatz)
-    p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = START, y = IND, xend = END,
-                                                     yend = IND,colour=as.factor(POPULATION)),alpha=alfa, size=grosse)
-    p <- p + ggplot2::xlim(0, max(teilsatz$END)) + ggplot2::ggtitle(paste('Chromosome:',chrom))
+    p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = from, y = id, xend = to,
+                                                     yend = id,colour=as.factor(group)),alpha=alfa, size=grosse)
+    p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome:',chrom))
     p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
     p <- p + optionen
 
@@ -156,6 +146,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of stacked runs by population and by chromosome (pdf files)
@@ -185,37 +176,31 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' plot_StackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
 #'
 
-plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
+plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
 
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
-  # avoid warnings in testing
-  CHROMOSOME <- NULL
-  START <- NULL
-  END <- NULL
-
+  plot_list <- list()
   #select a POPULATION
-  for (rasse in unique(runs$POPULATION)){
+  for (rasse in unique(runs$group)){
     print(paste('Current population: ',rasse))
-    teilsatz <- subset(runs,runs$POPULATION==rasse)
+    teilsatz <- subset(runs,runs$group==rasse)
 
     chr_order <-c((0:99),"X","Y","XY","MT")
-    list_chr=unique(teilsatz$CHROMOSOME)
+    list_chr=unique(teilsatz$chrom)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
     #select a chromosome
     for (chrom in new_list_chr){
 
       print(paste('CHR: ',chrom))
-      krom <- subset(teilsatz,CHROMOSOME==chrom)
-      krom <- krom[order(krom$START),]
+      krom <- subset(teilsatz,chrom==chrom)
+      krom <- krom[order(krom$from),]
 
       #start the order
       yread <- c(); #keeps track of the x space that is used up by segments
 
       # get x axis limits
-      minstart <- min(krom$START);
-      maxend <- max(krom$END);
+      minstart <- min(krom$from);
+      maxend <- max(krom$to);
 
       # initialise yread
       yread[1] <- minstart - 1;
@@ -223,7 +208,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
       for (r in 1:nrow(krom)){
         read <- krom[r,];
-        start <- read$START;
+        start <- read$from;
         placed <- FALSE;
 
         # iterate through yread to find the next availible
@@ -233,7 +218,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
           if(yread[y] < start){
             ypos[r] <- y;
-            yread[y] <- read$END;
+            yread[y] <- read$to;
             placed <- TRUE;
           }
 
@@ -258,21 +243,47 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
-      p <- p + ggplot2::geom_segment(data=krom, aes(x = START/(10^6), y = ypos, xend = END/(10^6), yend = ypos),
+      p <- p + ggplot2::geom_segment(data=krom, aes(x = from/(10^6), y = ypos, xend = to/(10^6), yend = ypos),
                                      colour="lightcoral", alpha=1, size=0.75)
-      p <- p + xlim(0, max(krom$END/(10^6))+10) + ylim(0,length(yread)+1)
+      p <- p + xlim(0, max(krom$to/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
 
       if(savePlots) {
-        pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-        print(p)
-        dev.off()
+        plot_list[[chrom]] <- p
       } else print(p)
 
     }
   }
+  if(savePlots) {
 
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix, "all_chromosomes_stacked", sep="_")
+    } else {
+      titel <- "all_chromosomes_stacked"
+
+      pdf(paste(titel,".pdf",sep=""))
+
+      for(p in plot_list) {
+        print(p)
+      }
+
+      dev.off()
+    }
+  }
+
+  if(savePlots & separatePlots) {
+    for(chrom in names(plot_list)) {
+      if (! is.null(title_prefix)) {
+        titel <- paste(title_prefix, "stacked_chromosome", chrom, sep="_")
+      } else {
+        titel <- paste("stacked_chromosome", chrom, sep="_")
+      }
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(plot_list[[chrom]])
+      dev.off()
+    }
+  }
 }
 
 
@@ -285,6 +296,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' @param genotypeFile genotype (.ped) file location
 #' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
 #' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
@@ -312,7 +324,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, title_prefix=NULL) {
 #' # plot runs per animal (interactive)
 #' plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
 
-plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL) {
+plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
@@ -336,6 +348,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
   PERCENTAGE <- NULL
   BREED <- NULL
 
+  plot_list <- list()
   for (chrom in new_list_chr) {
 
     print(paste("Chromosome is: ",chrom))
@@ -360,13 +373,39 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_
     }
 
     if(savePlots) {
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(p)
-      dev.off()
+      plot_list[[chrom]] <- p
     } else print(p)
 
   }
+  if(savePlots) {
 
+    if (! is.null(title_prefix)) {
+      titel <- paste(title_prefix, "all_chromosomes_snpInRun", sep="_")
+    } else {
+      titel <- "all_chromosomes_snpInRun"
+
+      pdf(paste(titel,".pdf",sep=""))
+
+      for(p in plot_list) {
+        print(p)
+      }
+
+      dev.off()
+    }
+  }
+
+  if(savePlots & separatePlots) {
+    for(chrom in names(plot_list)) {
+      if (! is.null(title_prefix)) {
+        titel <- paste(title_prefix, "snpInRun_chromosome", chrom, sep="_")
+      } else {
+        titel <- paste("snpInRun_chromosome", chrom, sep="_")
+      }
+      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
+      print(plot_list[[chrom]])
+      dev.off()
+    }
+  }
 }
 
 
@@ -387,7 +426,7 @@ readFromPlink <- function(plinkFile="plink.hom") {
 
   plinkDatei <- read.table(file=plinkFile, header=TRUE,
                            colClasses = c("character","character","character","character","character",
-                                          "character","integer","integer","numeric","numeric","character","character","character" ))
+                                          "character","numeric","numeric","numeric","numeric","character","character","character" ))
   plinkDatei <- plinkDatei[,c("FID","IID","CHR","NSNP","POS1","POS2","KB")]
 
   #convert kbps to bps
