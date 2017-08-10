@@ -657,33 +657,28 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
   # checking cromsome lengths
   LengthGenome=chromosomeLength(mapFile)
 
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
   # avoid warnings
-  IND <- NULL
-  LENGTH <- NULL
   freq <- NULL
-  GROUP <- NULL
 
   #start calculation by method
   if (method=="sum") {
     message("Using sum")
-    sum_ROH_genome <- ddply(runs,.(IND),summarize,sum=sum(LENGTH)/1000000)
+    sum_ROH_genome <- ddply(runs,.(id),summarize,sum=sum(lengthBps)/10^6)
     method="Sum"
   } else {
     message("Using mean")
-    sum_ROH_genome <- ddply(runs,.(IND),summarize,sum=mean(LENGTH)/1000000)
+    sum_ROH_genome <- ddply(runs,.(id),summarize,sum=mean(lengthBps)/10^6)
     method="Mean"
   }
 
   #sum of ROH for Sample
-  count_ROH_genome <- count(runs,"IND")
-  sum_ROH_genome=merge(sum_ROH_genome,count_ROH_genome,by='IND')
-  sum_ROH_genome=merge(sum_ROH_genome,unique(runs[,c("IND","GROUP")]),by='IND')
+  count_ROH_genome <- count(runs,"id")
+  sum_ROH_genome=merge(sum_ROH_genome,count_ROH_genome,by='id')
+  sum_ROH_genome=merge(sum_ROH_genome,unique(runs[,c("id","group")]),by='id')
   head(sum_ROH_genome)
 
   #RESULTS!!!!!
-  p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=GROUP)) + geom_point()
+  p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=group)) + geom_point()
   p <- p + xlab(paste(method," of ROH in Mbps" , sep='')) + ylab ("Number of ROH for Individual")
   p
 
@@ -725,14 +720,7 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #' plot_ViolinRuns(runs, method="mean")
 #'
 
-plot_ViolinRuns <- function(runs, method=c("sum","mean")){
-
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-
-  # avoid warnings
-  IND <- NULL
-  GROUP <- NULL
-  LENGTH <- NULL
+plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 
   #check method
   method <- match.arg(method)
@@ -741,16 +729,16 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")){
   #start calculation by method
   if (method=="sum") {
     #use ddply
-    mean_roh=ddply(runs,.(IND,GROUP),summarize,sum=sum(LENGTH/1000000))
+    mean_roh=ddply(runs,.(id,group),summarize,sum=sum(lengthBps/10^6))
     method="Sum"
   }else{
-    mean_roh=ddply(runs,.(IND,GROUP),summarize,sum=mean(LENGTH/1000000))
+    mean_roh=ddply(runs,.(id,group),summarize,sum=mean(lengthBps/10^6))
     method="Mean"
   }
 
   #Violinplot
-  p <- ggplot(data=mean_roh, aes(x=GROUP, y=sum, colour=GROUP))
-  p <- p + geom_violin (aes(fill=GROUP)) + geom_boxplot(width=0.1)
+  p <- ggplot(data=mean_roh, aes(x=group, y=sum, colour=group))
+  p <- p + geom_violin (aes(fill=group)) + geom_boxplot(width=0.1)
   p <- p + ylab(paste(method," of ROH in Mbps" , sep=''))
   p
 
