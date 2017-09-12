@@ -52,10 +52,10 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
   plot_list <- list()
-  for (chrom in new_list_chr) {
+  for (chromosome in new_list_chr) {
 
     #subset by chromosome
-    krom <- subset(runs,chrom==chrom)
+    krom <- subset(runs,chrom==chromosome)
 
     #rearrange subset
     teilsatz <- krom[,c(5,6,2,1)]
@@ -92,19 +92,19 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = from, y = id, xend = to,
                                                      yend = id,colour=as.factor(group)),alpha=alfa, size=grosse)
-    p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome:',chrom))
+    p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome:',chromosome))
     p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
     p <- p + optionen
 
     if(savePlots) {
-      plot_list[[chrom]] <- p
+      plot_list[[chromosome]] <- p
     } else print(p)
   }
 
   # if (! is.null(title_prefix)) {
-  #   titel <- paste(title_prefix, "chromosome", chrom, sep="_")
+  #   titel <- paste(title_prefix, "chromosome", chromosome, sep="_")
   # } else {
-  #   titel <- paste("chromosome", chrom, sep="_")
+  #   titel <- paste("chromosome", chromosome, sep="_")
   # }
 
   if(savePlots) {
@@ -125,14 +125,14 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
   }
 
   if(savePlots & separatePlots) {
-    for(chrom in names(plot_list)) {
+    for(chromosome in names(plot_list)) {
       if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "chromosome", chrom, sep="_")
+        titel <- paste(title_prefix, "chromosome", chromosome, sep="_")
       } else {
-        titel <- paste("chromosome", chrom, sep="_")
+        titel <- paste("chromosome", chromosome, sep="_")
       }
       pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chrom]])
+      print(plot_list[[chromosome]])
       dev.off()
     }
   }
@@ -189,10 +189,10 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
     #select a chromosome
-    for (chrom in new_list_chr){
+    for (chromosome in new_list_chr){
 
-      print(paste('CHR: ',chrom))
-      krom <- subset(teilsatz,chrom==chrom)
+      print(paste('CHR: ',chromosome))
+      krom <- subset(teilsatz,chrom==chromosome)
       krom <- krom[order(krom$from),]
 
       #start the order
@@ -236,9 +236,9 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       utils::head(krom)
 
       if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "chr", chrom, rasse, "stacked", sep="_")
+        titel <- paste(title_prefix, "chr", chromosome, rasse, "stacked", sep="_")
       } else {
-        titel <- paste("chr", chrom, rasse, "stacked", sep="_")
+        titel <- paste("chr", chromosome, rasse, "stacked", sep="_")
       }
 
       #PLOT STACKED RUNS
@@ -247,10 +247,10 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
                                      colour="lightcoral", alpha=1, size=0.75)
       p <- p + xlim(0, max(krom$to/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
-      p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chrom))
+      p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chromosome))
 
       if(savePlots) {
-        plot_list[[chrom]] <- p
+        plot_list[[chromosome]] <- p
       } else print(p)
 
     }
@@ -273,14 +273,14 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
   }
 
   if(savePlots & separatePlots) {
-    for(chrom in names(plot_list)) {
+    for(chromosome in names(plot_list)) {
       if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "stacked_chromosome", chrom, sep="_")
+        titel <- paste(title_prefix, "stacked_chromosome", chromosome, sep="_")
       } else {
-        titel <- paste("stacked_chromosome", chrom, sep="_")
+        titel <- paste("stacked_chromosome", chromosome, sep="_")
       }
       pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chrom]])
+      print(plot_list[[chromosome]])
       dev.off()
     }
   }
