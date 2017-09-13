@@ -250,7 +250,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chromosome))
 
       if(savePlots) {
-        plot_list[[chromosome]] <- p
+        plot_list[[paste(rasse,chromosome,sep="_")]] <- p
       } else print(p)
 
     }
