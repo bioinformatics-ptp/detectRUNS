@@ -337,7 +337,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
     # Add nOpp and nMiss columns to dataframe
     dL <- plyr::adply(dL, 1, function(x) {
       # calc nOpp by filtering opposite SNPs using RUN coordinates
-      nOpp <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+      nOpp <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
                        W$oppositeAndMissingSNP==0, ])
 
       # calc nMiss by filtering opposite SNPs using RUN coordinates
