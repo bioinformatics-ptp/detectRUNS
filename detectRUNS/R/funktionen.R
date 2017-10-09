@@ -341,7 +341,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                        W$oppositeAndMissingSNP==0, ])
 
       # calc nMiss by filtering opposite SNPs using RUN coordinates
-      nMiss <- nrow(W[(W$bps >= x$from & W$bps <= x$to) &
+      nMiss <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
                         W$oppositeAndMissingSNP==9, ])
 
       return(c("nOpp"=nOpp,"nMiss"=nMiss))
