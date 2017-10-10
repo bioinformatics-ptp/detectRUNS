@@ -541,14 +541,14 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
   # use sliding windows (check cpp)
   if (cpp == TRUE) {
     res <- slidingWindowCpp(indGeno, gaps, parameters$windowSize, step=1,
-                            parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
-                            parameters$maxMiss);
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppWindow,
+                            parameters$maxMissWindow);
 
     snpRun <- snpInRunCpp(res$windowStatus, parameters$windowSize, parameters$threshold)
   } else {
     res <- slidingWindow(indGeno, gaps, parameters$windowSize, step=1,
-                            parameters$maxGap, parameters$ROHet, parameters$maxOppositeGenotype,
-                            parameters$maxMiss);
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppWindow,
+                            parameters$maxMissWindow);
 
     snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
   }
