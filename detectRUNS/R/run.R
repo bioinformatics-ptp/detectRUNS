@@ -17,8 +17,8 @@
 #' (only for the slidingWindow method)
 #' @param minSNP minimum n. of SNP in a RUN
 #' @param ROHet should we look for ROHet or ROHom?
-#' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
-#' @param maxMiss max. n. of missing SNP
+#' @param maxOppWindow max n. of homozygous/heterozygous SNP in the sliding window
+#' @param maxMissWindow max. n. of missing SNP in the sliding window
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
@@ -67,7 +67,7 @@
 #'
 
 slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.05,
-                            minSNP = 3, ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1,
+                            minSNP = 3, ROHet = FALSE, maxOppWindow = 1, maxMissWindow = 1,
                             maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
                             maxOppRun = NULL, maxMissRun = NULL) {
 
@@ -101,8 +101,8 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
 
   # collect all parameters in a variable
   parameters <- list(windowSize=windowSize, threshold=threshold, minSNP=minSNP,
-                     ROHet=ROHet, maxOppositeGenotype=maxOppositeGenotype,
-                     maxMiss=maxMiss, maxGap=maxGap, minLengthBps=minLengthBps,
+                     ROHet=ROHet, maxOppWindow=maxOppWindow,
+                     maxMissWindow=maxMissWindow, maxGap=maxGap, minLengthBps=minLengthBps,
                      minDensity=minDensity, maxOppRun=maxOppRun, maxMissRun=maxMissRun)
 
   # calculate gaps
