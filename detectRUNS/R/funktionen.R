@@ -275,26 +275,31 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                         minDensity = 1/10, oppositeAndMissingSNP, maxOppRun=NULL,
                         maxMissRun=NULL) {
 
-  # define where RUNs change states
-  cutPoints <- which(diff(sign(snpRun)) != 0)
-  from <- c(1, cutPoints + 1)
-  to <- c(cutPoints, length(snpRun))
+  dd <- cbind.data.frame(snpRun,"Chrom"=mapFile$Chrom,"n"=seq(1,nrow(mapFile)))
 
-  # define an iterator between RUNs limits
-  iLaenge <- itertools::izip(a = from,b = to)
+  dL <- plyr::ddply(dd,"Chrom",function(x) {
 
-  # A RUNs is a region of TRUE snpRun: there are much SNPs as TRUE values
-  lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
+    # define where RUNs change states
+    # cutPoints for "from" and "to" on the original snpRun vector
+    cutPoints <- x[which(diff(sign(x$snpRun)) != 0),"n"]
+    from <- c(x$n[1], cutPoints + 1)
+    to <- c(cutPoints, x$n[length(x$snpRun)])
+    # internal cutPoints for n. SNP calculations
+    cutPoints <- which(diff(sign(x$snpRun)) != 0)
+    from_bis <- c(1, cutPoints + 1)
+    to_bis <- c(cutPoints, length(x$snpRun))
+    # iterate on the vectors from and to
+    iLaenge <- itertools::izip(a = from_bis,b = to_bis)
+    lengte <- sapply(iLaenge, function(n) sum(x$snpRun[n$a:n$b]))
+    # get n of rows
+    n_rows <- length(lengte)
 
-  # get n of rows
-  n_rows <- length(lengte)
-
-  # initialize a dataframe of RUNs
-  dL <- data.frame("from"=from,
-                   "to"=to,
-                   "nSNP"=lengte,
-                   "chrom"=character(n_rows),
-                   "lengthBps"=numeric(n_rows), stringsAsFactors = F)
+    return(data.frame("from"=from,
+                      "to"=to,
+                      "nSNP"=lengte,
+                      "chrom"=character(n_rows),
+                      "lengthBps"=numeric(n_rows), stringsAsFactors = F))
+  })
 
   # filter RUNs by minSNP
   dL <- dL[dL$nSNP>=minSNP, ]
