@@ -2,15 +2,15 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity (RoHom) and Runs of Heterozygosity (RoHet) in
     diploid genomes
-Version: 0.6.9
+Version: 0.7.0
 Date: 2017-06-13
 Authors@R: as.person(c(
     "Filippo Biscarini <filippo.biscarini@ptp.it> [aut, cre]",
     "Gabriele Marras <gabriele.marras@ptp.it> [aut]",
     "Paolo Cozzi <paolo.cozzi@ptp.it> [ctb]"
   ))
-Description: Functions to detect Runs of Homozygosity (RoHom) and of
-    Heterozygosity (RoHet) in diploid genomes, using two methods (sliding windows
+Description: Package to detect Runs of Homozygosity (RoHom) and of
+    Heterozygosity (RoHet) in diploid genomes using two methods (sliding windows
     and consecutive runs)
 Depends:
     R (>= 3.0.0)
