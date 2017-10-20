@@ -9,7 +9,7 @@ mapFile <- "test.map"
 test_that("detected ROHet are identical", {
   # testing slinding windows
   test_sliding <- slidingRUNS.run(genotypeFile, mapFile, windowSize=15, threshold=0.1, minSNP=15,
-                         ROHet=FALSE, maxOppositeGenotype=1, maxMiss=1,  minLengthBps=100000,
+                         ROHet=FALSE, maxOppWindow=1, maxMissWindow=1,  minLengthBps=100000,
                          minDensity=1/10000, maxOppRun=NULL, maxMissRun=NULL)
 
   # reading rohet reference: this need to be updated

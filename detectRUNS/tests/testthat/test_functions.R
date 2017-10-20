@@ -69,8 +69,8 @@ test_that("Testing slidingWindow", {
   windowSize <- 3
   step <- 1
   maxGap <- 1000
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
+  maxOppWindow <- 1
+  maxMissWindow <- 1
 
   # setting values for RoHet
   data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
@@ -88,7 +88,7 @@ test_that("Testing slidingWindow", {
 
   # calling function
   test <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
-                        ROHet=TRUE, maxOppositeGenotype, maxMiss)
+                        ROHet=TRUE, maxOppWindow, maxMissWindow)
 
   # testing values
   expect_equal(expected, test, info="testing ROHet")
@@ -98,7 +98,7 @@ test_that("Testing slidingWindow", {
 
   # calling function
   test <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
-                        ROHet=FALSE, maxOppositeGenotype, maxMiss)
+                        ROHet=FALSE, maxOppWindow, maxMissWindow)
 
   # testing values
   expect_equal(expected, test, info="testing ROHom")
@@ -130,8 +130,8 @@ test_that("Testing slidingWindowCpp", {
   windowSize <- 3
   step <- 1
   maxGap <- 1000
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
+  maxOppWindow <- 1
+  maxMissWindow <- 1
 
   # setting values for RoHet
   data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
@@ -149,7 +149,7 @@ test_that("Testing slidingWindowCpp", {
 
   # calling function
   test <- slidingWindowCpp(data, gaps, windowSize, step=step, maxGap=maxGap,
-                           ROHet=TRUE, maxOppositeGenotype, maxMiss)
+                           ROHet=TRUE, maxOppWindow, maxMissWindow)
 
   # testing values
   expect_equal(expected, test, info="testing ROHet")
@@ -159,7 +159,7 @@ test_that("Testing slidingWindowCpp", {
 
   # calling function
   test <- slidingWindowCpp(data, gaps, windowSize, step=step, maxGap=maxGap,
-                           ROHet=FALSE, maxOppositeGenotype, maxMiss)
+                           ROHet=FALSE, maxOppWindow, maxMissWindow)
 
   # testing values
   expect_equal(expected, test, info="testing ROHom")
@@ -222,8 +222,8 @@ test_that("Testing createRUNdf", {
   maxGap <- 1000
   windowSize <- 3
   step <- 1
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
+  maxOppWindow <- 1
+  maxMissWindow <- 1
   threshold <- 0.5
 
   # defining gaps
@@ -237,7 +237,7 @@ test_that("Testing createRUNdf", {
 
   # defining slidingWindow result
   res <- slidingWindow(data, gaps, windowSize, step=step, maxGap=maxGap,
-                       ROHet=TRUE, maxOppositeGenotype, maxMiss)
+                       ROHet=TRUE, maxOppWindow, maxMissWindow)
 
   # define snpInRun results
   snpRun <- snpInRun(res$windowStatus, windowSize, threshold)
@@ -389,11 +389,11 @@ test_that("Testing createRUNdf", {
   gaps <- diff(mapFile$bps)
 
   # defining expected dataframe with all datas (there is a min length > 100)
-  from=as.numeric(c(200, 400, 900, 1500))
-  to=as.numeric(c(300, 500, 1100, 1700))
-  nSNP=as.integer(c(2, 2, 3, 3))
-  chrom=as.character(c(rep(1, 1), rep(2, 3)))
-  lengthBps=as.numeric(c(100, 100, 200, 200))
+  from=as.numeric(c(200, 1600, 400, 900, 1500))
+  to=as.numeric(c(300, 1800, 500, 1100, 1700))
+  nSNP=as.integer(c(2, 2, 2, 3, 3))
+  chrom=as.character(c(rep(1, 2), rep(2, 3)))
+  lengthBps=as.numeric(c(100, 200, 100, 200, 200))
 
   reference <- data.frame(from=from,
                           to=to,
@@ -702,8 +702,8 @@ test_that("Testing loading pop from ped", {
 test_that("Testing consecutiveRuns", {
   # setting parameters
   maxGap <- 1000
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
+  maxOppRun <- 1
+  maxMissRun <- 1
   minLengthBps <- 100
   ROHet <- TRUE
   minSNP <- 1
@@ -756,7 +756,7 @@ test_that("Testing consecutiveRuns", {
 
   # calling consecutiveRuns
   test <- consecutiveRuns(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
-                          maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                          maxOppositeGenotype=maxOppRun, maxMiss=maxMissRun,
                           minLengthBps=minLengthBps,maxGap=maxGap)
 
   # testing functions
@@ -767,8 +767,8 @@ test_that("Testing consecutiveRuns", {
 test_that("Testing consecutiveRunsCpp", {
   # setting parameters
   maxGap <- 1000
-  maxOppositeGenotype <- 1
-  maxMiss <- 1
+  maxOppRun <- 1
+  maxMissRun <- 1
   minLengthBps <- 100
   ROHet <- TRUE
   minSNP <- 1
@@ -821,7 +821,7 @@ test_that("Testing consecutiveRunsCpp", {
 
   # calling consecutiveRuns
   test <- consecutiveRunsCpp(indGeno, ind, mapFile, ROHet=ROHet, minSNP=minSNP,
-                             maxOppositeGenotype=maxOppositeGenotype, maxMiss=maxMiss,
+                             maxOppositeGenotype=maxOppRun, maxMiss=maxMissRun,
                              minLengthBps=minLengthBps,maxGap=maxGap)
 
   # testing functions
