@@ -113,15 +113,15 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
       titel <- paste(title_prefix, "all_chromosomes", sep="_")
     } else {
       titel <- "all_chromosomes"
-
+    }
       pdf(paste(titel,".pdf",sep=""))
-
+    
       for(p in plot_list) {
         print(p)
       }
 
       dev.off()
-    }
+    
   }
 
   if(savePlots & separatePlots) {
@@ -261,7 +261,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       titel <- paste(title_prefix, "all_chromosomes_stacked", sep="_")
     } else {
       titel <- "all_chromosomes_stacked"
-
+    }
       pdf(paste(titel,".pdf",sep=""))
 
       for(p in plot_list) {
@@ -269,7 +269,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       }
 
       dev.off()
-    }
+    
   }
 
   if(savePlots & separatePlots) {
@@ -383,7 +383,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
       titel <- paste(title_prefix, "all_chromosomes_snpInRun", sep="_")
     } else {
       titel <- "all_chromosomes_snpInRun"
-
+    }
       pdf(paste(titel,".pdf",sep=""))
 
       for(p in plot_list) {
@@ -391,7 +391,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
       }
 
       dev.off()
-    }
+    
   }
 
   if(savePlots & separatePlots) {
