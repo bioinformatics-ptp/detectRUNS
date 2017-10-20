@@ -29,13 +29,23 @@ library("detectRUNS")
 
 ## Overview
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+**detectRUNS** is an R package for the detection of runs of homozygosity (ROH/ROHom) and of heterozygosity (ROHet, a.k.a. "heterozygosity-rich regions") in diploid genomes. detectRUNS uses two methods to detect genomic runs: 
+
+1. sliding-window based method: 
+2. consecutive runs:
+
+the performances of one or more genomic regressors when artificial noise is injected in an existing dataset. It is possible, however, to use GROAN to simply compare the prediction accuracy of different regression models without the injection of extra noise. Tests can either be perfomed on a single dataset (through crossvalidation) or multiple datasets (one for training, and one or more for testing). Crossvalidation and data management are transparent and the user is only required high level input.
 
 - Never uses retina figures
 - Has a smaller default figure size
 - Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
 
-## Vignette Info
+## Sample data
+
+```{r}
+genotypeFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
+mapFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.map", package="detectRUNS")
+```
 
 Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
 
