@@ -301,6 +301,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                       "lengthBps"=numeric(n_rows), stringsAsFactors = F))
   })
 
+  dL$Chrom <- NULL
   # filter RUNs by minSNP
   dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
