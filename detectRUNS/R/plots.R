@@ -115,13 +115,13 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
       titel <- "all_chromosomes"
     }
       pdf(paste(titel,".pdf",sep=""))
-    
+
       for(p in plot_list) {
         print(p)
       }
 
       dev.off()
-    
+
   }
 
   if(savePlots & separatePlots) {
@@ -269,7 +269,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       }
 
       dev.off()
-    
+
   }
 
   if(savePlots & separatePlots) {
@@ -391,7 +391,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
       }
 
       dev.off()
-    
+
   }
 
   if(savePlots & separatePlots) {
@@ -438,6 +438,36 @@ readFromPlink <- function(plinkFile="plink.hom") {
   return(plinkDatei)
 }
 
+#' READ RUNS FROM FILE
+#' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
+#' The file must contain the exact same information as the data.frame obtained from detectRUNS
+#'
+#' @param runsFile name of file where results from detectRUNS have been written to
+#'
+#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
+#' @export
+#'
+#' @examples #not yet
+#'
+#'
+
+readRunsFromFile <- function(runsFile) {
+
+  runs <- read.table(
+    textConnection(
+      gsub("[,\\. ]", "\t", readLines(runsFile))
+    ),
+    header=TRUE,
+    stringsAsFactors = FALSE
+  )
+
+  if(ncol(runs)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(runs),sep=" "))
+
+  #rename columns
+  names(runs) <- c("group","id","chrom","nSNP","from","to","lengthBps")
+
+  return(runs)
+}
 
 #' Plot N. of times SNP is in runs - MANHATTAN PLOT
 #'
