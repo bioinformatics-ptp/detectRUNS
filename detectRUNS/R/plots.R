@@ -545,7 +545,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
     #create a new position
     chrNum <- length(unique(subset_group$CHR))
-    chr_order <-c((0:99),"X","Y","XY","MT")
+    chr_order <-c((0:99),"X","Y","XY","MT","Z","W")
     list_chr=unique(subset_group$CHR)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
     chroms = new_list_chr
