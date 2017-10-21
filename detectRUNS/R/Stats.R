@@ -19,11 +19,11 @@
 
 reorderDF <- function(dfx) {
 
-  chr_order <- c((0:99),"X","Y","XY","MT")
-  list_chr <- unique(dfx$CHROMOSOME)
+  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
+  list_chr <- unique(dfx$chrom)
   chr_order <- chr_order[chr_order %in% list_chr]
   #order
-  ordered_dfx <- dfx[match(chr_order,dfx$CHROMOSOME),]
+  ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
 
   return(ordered_dfx)
 }
@@ -118,43 +118,42 @@ chromosomeLength <- function(mapFile){
 Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 
   LengthGenome=chromosomeLength(mapFile = mapFile)
-
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  info_breed=unique(runs[c('GROUP','IND')])
+  info_breed=unique(runs[c('group','id')])
 
   # Suppress warnings
-  IND <- NULL
-  LENGTH <- NULL
-  CHROMOSOME <- NULL
+  id <- NULL
+  lengthBps <- NULL
+  chrom <- NULL
 
   #sum of ROH for Sample
   if (genome_wide) {
     message("calculating Froh on all genome")
 
     # RESULTS!!!!!
-    Froh <- ddply(runs,.(IND),summarize,sum=sum(LENGTH))
+    Froh <- ddply(runs,.(id),summarize,sum=sum(lengthBps))
     Froh$Froh_genome =  Froh$sum/sum(LengthGenome$CHR_LENGTH)
 
   } else {
     message("calculating Froh chromosome by chromosome")
 
-    Froh_temp <- ddply(runs,.(IND,CHROMOSOME),summarize,sum=sum(LENGTH))
-    Froh_temp=merge(Froh_temp,LengthGenome,by='CHROMOSOME')
+    Froh_temp <- ddply(runs,.(id,chrom),summarize,sum=sum(lengthBps))
+    Froh_temp=merge(Froh_temp,LengthGenome,by.y='CHROMOSOME',by.x='chrom')
     Froh_temp$Froh =  Froh_temp$sum/Froh_temp$CHR_LENGTH
 
-    Froh=reshape2::dcast(Froh_temp,IND ~ CHROMOSOME ,value.var = "Froh")
-    chr_order <-c((1:99),"X","Y","XY","MT")
-    list_chr=unique(Froh_temp$CHROMOSOME)
+    Froh=reshape2::dcast(Froh_temp,id ~ chrom ,value.var = "Froh")
+    
+    chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
+    list_chr=unique(Froh_temp$chrom)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
     new_list_chr1=paste("Chr_",new_list_chr,sep="")
-    new_list_chr=c("IND",new_list_chr)
+    new_list_chr=c("id",new_list_chr)
 
     # RESULTS!!!!!
     Froh <- Froh[new_list_chr]
-    colnames(Froh) <- c('IND',new_list_chr1)
+    colnames(Froh) <- c('id',new_list_chr1)
   }
 
-  Froh=merge(info_breed,Froh,by="IND",all=TRUE)
+  Froh=merge(info_breed,Froh,by="id",all=TRUE)
 
   return(Froh)
 }
@@ -209,11 +208,8 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
                paste(">",range_mb[5],sep=''),
                paste(">",range_mb[6],sep=''))
 
-
-  print(paste("Class created:"  ,name_CLASS[0:5],sep=' '))
-
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  runs$MB <- runs$LENGTH/1000000
+  # Creating the data frame
+  runs$MB <- runs$lengthBps/1000000
   runs$CLASS=cut(as.numeric(runs$MB),range_mb)
   levels(runs$CLASS) = name_CLASS
   runs$CLASS=factor(runs$CLASS)
@@ -225,30 +221,25 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
   message("calculating Froh by Class")
 
   # Suppress warnings
-  IND <- NULL
-  LENGTH <- NULL
+  id <- NULL
+  lengthBps <- NULL
 
-  Froh_Class=unique(runs[c('GROUP','IND')])
+  Froh_Class=unique(runs[c('group','id')])
   for (i in range_mb[1:5]){
     print(paste("Class used: >",i,sep=''))
-
-    head(runs)
-
+  
+    # subset ROHom/ROHet
     subset_roh <- runs[runs$MB >= i,]
 
     #if subset is empty (no runs for that class) skip/continue
     if(nrow(subset_roh)<1) next
 
-    Froh_temp <- ddply(subset_roh,.(IND),summarize,sum=sum(LENGTH))
+    Froh_temp <- ddply(subset_roh,.(id),summarize,sum=sum(lengthBps))
     Froh_temp[[paste("Froh_Class_",i,sep="")]] =  Froh_temp$sum/sum(LengthGenome$CHR_LENGTH)
     colnames(Froh_temp)[2]<- paste("Sum_Class_",i,sep="")
-
-    Froh_Class=merge(Froh_Class,Froh_temp,by="IND",all=TRUE)
-    #print(head(subset_roh))
+    Froh_Class=merge(Froh_Class,Froh_temp,by="id",all=TRUE)
   }
 
-
-  #RESULTS!!!!!
   return(Froh_Class)
 
 }
@@ -294,10 +285,10 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   message(paste("Using class:",Class))
 
   # Avoid warnings
-  GROUP <- NULL
+  group <- NULL
   CLASS <- NULL
   MB <- NULL
-  CHROMOSOME <- NULL
+  chrom <- NULL
 
   n_class=Class
 
@@ -307,13 +298,13 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   result_Froh_chromosome_wide <- Froh_inbreeding(runs = runs,
                                                  mapFile = mapFile,
                                                  genome_wide = FALSE)
-
-  result_Froh_chromosome_class <- Froh_inbreedingClass(runs = runs,
+  result_Froh_class <- Froh_inbreedingClass(runs = runs,
                                                        mapFile = mapFile,
                                                        Class = n_class)
 
-  names(runs) <- c("GROUP","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-  runs$MB <- runs$LENGTH/1000000
+
+  runs$MB <- runs$lengthBps/1000000
+  head(runs)
   #step_value=2
 
   range_mb <- c(0,0,0,0,0,99999)
@@ -337,34 +328,29 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   runs$CLASS=factor(runs$CLASS)
 
   #RESULTS!!!!!
-  summary_ROH_mean1 = ddply(runs,.(GROUP,CLASS),summarize,sum=mean(MB))
-  summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ GROUP ,value.var = "sum")
+  summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
+  summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
   levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
-  summary_ROH_mean_class
 
   #RESULTS!!!!!
-  summary_ROH_mean_chr1 = ddply(runs,.(GROUP,CHROMOSOME),summarize,sum=mean(MB))
-  summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,CHROMOSOME ~ GROUP ,value.var = "sum"))
-  # summary_ROH_mean_chr
+  summary_ROH_mean_chr1 = ddply(runs,.(group,chrom),summarize,sum=mean(MB))
+  summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,chrom ~ group ,value.var = "sum"))
 
   #RESULTS!!!!!
-  summary_ROH_count = ddply(runs,.(CLASS,GROUP),nrow)
+  summary_ROH_count = ddply(runs,.(CLASS,group),nrow)
   names(summary_ROH_count)[3] <- "nRuns"
   summary_ROH_percentage <- summary_ROH_count[,c(1,2)]
   summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
 
   #RESULTS!!!!!
-  # summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
-  # names(summary_ROH_count_chr)[3] <- "nRuns"
-  # summary_ROH_count_chr <- reorderDF(dcast(summary_ROH_count_chr,CHROMOSOME ~ GROUP ,value.var = "nRuns"))
-  # summary_ROH_percentage_chr <- summary_ROH_count_chr[,c(1,2)]
-  # summary_ROH_percentage_chr$pctRuns <- summary_ROH_count_chr$nRuns/sum(summary_ROH_count_chr$nRuns)
-
-  summary_ROH_count_chr =  ddply(runs,.(CHROMOSOME,GROUP),nrow)
-  summary_ROH_count_chr = as.data.frame( daply(runs,.(CHROMOSOME,GROUP),nrow))
+  summary_ROH_count_chr =  ddply(runs,.(chrom,group),nrow)
+  summary_ROH_count_chr1=dcast(summary_ROH_count_chr, chrom ~ group , value.var = "V1")
+  rownames(summary_ROH_count_chr1)=summary_ROH_count_chr1$chrom
+  summary_ROH_count_chr1$chrom=NULL
+  summary_ROH_count_chr=summary_ROH_count_chr1
   summary_ROH_percentage_chr= as.data.frame(t(as.data.frame( t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr,na.rm=TRUE))))
-  summary_ROH_percentage_chr$CHROMOSOME=row.names(summary_ROH_percentage_chr)
-
+  summary_ROH_percentage_chr$chrom=row.names(summary_ROH_percentage_chr)
+  summary_ROH_percentage_chr
 
   result_summary <- list(summary_ROH_count_chr=summary_ROH_count_chr,
                           summary_ROH_percentage_chr=summary_ROH_percentage_chr,
@@ -374,7 +360,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
                           summary_ROH_mean_class=summary_ROH_mean_class,
                           result_Froh_genome_wide = result_Froh_genome_wide,
                           result_Froh_chromosome_wide = result_Froh_chromosome_wide,
-                          result_Froh_chromosome_class= result_Froh_chromosome_class)
+                          result_Froh_class= result_Froh_class)
 
   if (snpInRuns){
 
@@ -524,7 +510,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
   #consecutive number
   all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
-
+  
   #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
                             "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
@@ -538,7 +524,9 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
     #create subset for group/thresold
     group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-
+  
+    #print(group_subset)
+    
     #variable
     old_pos=group_subset[1,7]
     snp_pos1=group_subset[1,3]
@@ -557,14 +545,24 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
       diff=new_pos-old_pos
 
       if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
-        # print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
+        #print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
+        #print(paste("x=",x,"diff",diff,group_subset[x-1,3],group_subset[x-1,1],"lunghezza:",length(rownames(group_subset))))
+        
+        if (x==length(rownames(group_subset))){
+          end_SNP=group_subset[x,1]
+          TO=group_subset[x,3]
+        }else{
+          end_SNP=group_subset[x-1,1]
+          TO=group_subset[x-1,3]
+        }
+        
         final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5],
                                                                            "Start_SNP"=Start_SNP,
-                                                                           "End_SNP"=group_subset[x-1,1],
+                                                                           "End_SNP"=end_SNP,
                                                                            "chrom"=group_subset[x-1,2],
                                                                            "nSNP"=snp_count,
                                                                            "from"=snp_pos1,
-                                                                           "to"=group_subset[x-1,3]))
+                                                                           "to"=TO))
 
         #reset variable
         snp_count=0
