@@ -47,7 +47,7 @@
 
 plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
 
-  chr_order <-c((0:99),"X","Y","XY","MT")
+  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$chrom)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
@@ -184,7 +184,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
     print(paste('Current population: ',rasse))
     teilsatz <- subset(runs,runs$group==rasse)
 
-    chr_order <-c((0:99),"X","Y","XY","MT")
+    chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
     list_chr=unique(teilsatz$chrom)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
@@ -338,7 +338,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
 
-  chr_order <-c((0:99),"X","Y","XY","MT")
+  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$CHROMOSOME)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
 
@@ -349,31 +349,31 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   BREED <- NULL
 
   plot_list <- list()
-  for (chrom in new_list_chr) {
+  for (chromosome in new_list_chr) {
 
-    print(paste("Chromosome is: ",chrom))
-    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    print(paste("Chromosome is: ",chromosome))
+    runsChrom <- runs[runs$CHROMOSOME==chromosome,]
     print(paste("N. of runs:",nrow(runsChrom)))
 
-    mapChrom <- mappa[mappa$CHR==chrom,]
+    mapChrom <- mappa[mappa$CHR==chromosome,]
     print(paste("N.of SNP is",nrow(mapChrom)))
 
     snpInRuns <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
-    krom <- subset(snpInRuns,CHR==chrom)
+    krom <- subset(snpInRuns,CHR==chromosome)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
-    p <- p + geom_line() +  ggtitle(paste('chr', chrom, sep=' '))
+    p <- p + geom_line() +  ggtitle(paste('chr', chromosome, sep=' '))
     p <- p + scale_y_continuous(limits = c(-0, 100)) + xlab("Mbps")
     p <- p + scale_x_continuous(limits = c(-0, max(snpInRuns$POSITION/(10^6))+1))
 
     if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "chr", chrom, "SNP", sep="_")
+      titel <- paste(title_prefix, "chr", chromosome, "SNP", sep="_")
     } else {
-      titel <- paste("chr", chrom, "SNP", sep="_")
+      titel <- paste("chr", chromosome, "SNP", sep="_")
     }
 
     if(savePlots) {
-      plot_list[[chrom]] <- p
+      plot_list[[chromosome]] <- p
     } else print(p)
 
   }
@@ -395,14 +395,14 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   }
 
   if(savePlots & separatePlots) {
-    for(chrom in names(plot_list)) {
+    for(chromosome in names(plot_list)) {
       if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "snpInRun_chromosome", chrom, sep="_")
+        titel <- paste(title_prefix, "snpInRun_chromosome", chromosome, sep="_")
       } else {
-        titel <- paste("snpInRun_chromosome", chrom, sep="_")
+        titel <- paste("snpInRun_chromosome", chromosome, sep="_")
       }
       pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chrom]])
+      print(plot_list[[chromosome]])
       dev.off()
     }
   }
@@ -804,7 +804,7 @@ plot_InbreedingChr<- function(runs, mapFile , polar=FALSE){
   #ggplot
   p <- ggplot(data=final_DF, aes(x=variable, y=value, colour=GROUP))
   p <- p + geom_line(aes(group=GROUP))+ geom_point()
-  p <- p + scale_x_discrete(labels=list_chr)  #+coord_polar()
+  p <- p + scale_x_discrete(labels=list_chr)
   p <- p + xlab("Inbreeding by Chromosome") + ylab("Froh")
   p
 
