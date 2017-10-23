@@ -1,6 +1,6 @@
 ---
 title: "detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes"
-author: "Filippo Biscarini, Paolo Cozzi, Gabrtiele Marras"
+author: "Filippo Biscarini, Paolo Cozzi, Gabriele Marras"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
@@ -29,16 +29,33 @@ library("detectRUNS")
 
 ## Overview
 
-**detectRUNS** is an R package for the detection of runs of homozygosity (ROH/ROHom) and of heterozygosity (ROHet, a.k.a. "heterozygosity-rich regions") in diploid genomes. detectRUNS uses two methods to detect genomic runs: 
+**detectRUNS** is a R package for the detection of **runs of homozygosity** (**ROH/ROHom**) and of **heterozygosity** (**ROHet**, a.k.a. "**heterozygosity-rich regions**") in diploid genomes.
+**ROH/ROHom** were first studied in humans (e.g. McQuillan et al. 2008) and rapidly found applications not only in human genetics abut also in animal genetics (e.g. Ferencakovic et al., 2011, in *Bos taurus*). More recently, the idea of looking also at "runs of heterozygosity" (**ROHet** or, more appropriately, "heterozygosity-rich regions") has been proposed (Wiliams et al. 2016).
+
+detectRUNS uses two methods to detect genomic runs: 
 
 1. sliding-window based method: 
 2. consecutive runs:
 
-the performances of one or more genomic regressors when artificial noise is injected in an existing dataset. It is possible, however, to use GROAN to simply compare the prediction accuracy of different regression models without the injection of extra noise. Tests can either be perfomed on a single dataset (through crossvalidation) or multiple datasets (one for training, and one or more for testing). Crossvalidation and data management are transparent and the user is only required high level input.
+The sliding-window based method is similar to what is implemented in the computer package *Plink* (Purcell et al., 2007) [see Bjelland et al., 2013 for a description]. In brief, a sliding window is used to scan the genome, and the characteristics of consecutive windows are used to determine whether a SNP is or not in a run (either ROH/ROHom or ROHet). Parameters for both the sliding window and the run need to be specified.
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+The "consecutive runs" method is window-free and directly scans the genome SNP by SNP. It was first proposed by Marras et al. (2015). Here, only parameters for the runs need to be specified.
+
+Besides detecting genomic runs (again, either homozygosity or heterozygosity, either sliding-window based or consecutive), and saving results to a data frame of individual runs, **detectRUNS** can:
+
+- plot runs along the genome:
+    * plot runs per individual
+    * plot stacked (piled) runs
+    * plot the % of times each SNP is in a run in the population (per chromosome)
+    * Manhattan-like plot of the % of times each SNP is in a run
+- plot mean or total run length vs number of runs per individual
+- generate summary descriptive statistics on detected runs
+- calculate inbreeding based on ROH (*$F_{ROH}$*), genome-wide and chromosome-wide
+- plot $F_{ROH}$ per chromosome
+
+The input files for **detectRUNS** are *Plink* **ped/map** files. If one wishes to use this R package only for plots and summary statistics, output files from *Plink* (.hom files) can be easily read into **detectRUNS** through a specific function.
+
+**detectRUNS** can be used with genotype data from any diploid organisms: humans, animals or plants.
 
 ## Sample data
 
@@ -86,3 +103,12 @@ Also a quote using `>`:
 
 > "He who gives up [code] safety for [code] speed deserves neither."
 ([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+## References
+
+- Bjelland, D. W., K. A. Weigel, N. Vukasinovic, and J. D. Nkrumah. "Evaluation of inbreeding depression in Holstein cattle using whole-genome SNP markers and alternative measures of genomic inbreeding." journal of dairy Science 96, no. 7 (2013): 4697-4706.
+- Ferencakovic, Maja, Edin Hamzic, Birgit Gredler, Ino Curik, and Johann Sölkner. "Runs of homozygosity reveal genome-wide autozygosity in the Austrian Fleckvieh cattle." Agriculturae Conspectus Scientificus (ACS) 76, no. 4 (2011): 325-329.
+- Marras, Gabriele, Giustino Gaspa, Silvia Sorbolini, Corrado Dimauro, Paolo Ajmone‐Marsan, Alessio Valentini, John L. Williams, and Nicolò PP Macciotta. "Analysis of runs of homozygosity and their relationship with inbreeding in five cattle breeds farmed in Italy." Animal genetics 46, no. 2 (2015): 110-121.
+- McQuillan, Ruth, Anne-Louise Leutenegger, Rehab Abdel-Rahman, Christopher S. Franklin, Marijana Pericic, Lovorka Barac-Lauc, Nina Smolej-Narancic et al. "Runs of homozygosity in European populations." The American Journal of Human Genetics 83, no. 3 (2008): 359-372.
+- Purcell, Shaun, Benjamin Neale, Kathe Todd-Brown, Lori Thomas, Manuel AR Ferreira, David Bender, Julian Maller et al. "PLINK: a tool set for whole-genome association and population-based linkage analyses." The American Journal of Human Genetics 81, no. 3 (2007): 559-575.
+- Williams, John L., Stephen JG Hall, Marcello Del Corvo, K. T. Ballingall, L. I. C. I. A. Colli, P. A. O. L. O. Ajmone Marsan, and F. Biscarini. "Inbreeding and purging at the genomic Level: the Chillingham cattle reveal extensive, non‐random SNP heterozygosity." Animal genetics 47, no. 1 (2016): 19-27.
