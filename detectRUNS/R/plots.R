@@ -821,19 +821,19 @@ plot_InbreedingChr<- function(runs, mapFile , polar=FALSE){
   GROUP <- NULL
 
   #transform data in long format using reshape2
-  long_DF=melt(Chromosome_Inbreeding,id.vars = c("IND", "GROUP"))
-  compact_DF=dcast(long_DF, GROUP ~variable ,fun.aggregate = mean, na.rm = TRUE)
+  long_DF=melt(Chromosome_Inbreeding,id.vars = c("id", "group"))
+  compact_DF=dcast(long_DF, group ~variable ,fun.aggregate = mean, na.rm = TRUE)
 
   #creating list chromosome
   name_val=colnames(compact_DF)
   list_chr=gsub("Chr_","",name_val[2:length(name_val)])
 
   #final data frame
-  final_DF=melt(compact_DF, id.vars = c("GROUP"))
+  final_DF=melt(compact_DF, id.vars = c("group"))
 
   #ggplot
-  p <- ggplot(data=final_DF, aes(x=variable, y=value, colour=GROUP))
-  p <- p + geom_line(aes(group=GROUP))+ geom_point()
+  p <- ggplot(data=final_DF, aes(x=variable, y=value, colour=group))
+  p <- p + geom_line(aes(group=group))+ geom_point()
   p <- p + scale_x_discrete(labels=list_chr)
   p <- p + xlab("Inbreeding by Chromosome") + ylab("Froh")
   p
