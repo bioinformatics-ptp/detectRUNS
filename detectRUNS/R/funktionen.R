@@ -11,11 +11,6 @@
 #' @param x vector of 0/1/2 genotypes
 #'
 #' @return converted vector of genotypes (0/1)
-#' @export
-#'
-#' @examples
-#' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-#' geno01 <- genoConvert(geno012)
 #'
 
 genoConvert <- function(x) {
