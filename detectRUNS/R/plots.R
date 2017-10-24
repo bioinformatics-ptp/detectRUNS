@@ -456,7 +456,7 @@ readRunsFromFile <- function(runsFile) {
 
   runs <- read.table(
     textConnection(
-      gsub("[,\\; ]", "\t", readLines(runsFile))
+      gsub("[,\\; \t]", "\t", readLines(runsFile))
     ),
     header=TRUE,
     stringsAsFactors = FALSE

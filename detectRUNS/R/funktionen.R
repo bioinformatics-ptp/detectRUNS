@@ -9,7 +9,7 @@
 #' (either homozygous/heterozygous)
 #'
 #' @param x vector of 0/1/2 genotypes
-#'
+#' @keywords internal
 #' @return converted vector of genotypes (0/1)
 #'
 
