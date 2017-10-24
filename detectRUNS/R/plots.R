@@ -439,6 +439,7 @@ readFromPlink <- function(plinkFile="plink.hom") {
 }
 
 #' READ RUNS FROM FILE
+#'
 #' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
 #' The file must contain the exact same information as the data.frame obtained from detectRUNS
 #'
@@ -455,7 +456,7 @@ readRunsFromFile <- function(runsFile) {
 
   runs <- read.table(
     textConnection(
-      gsub("[,\\. ]", "\t", readLines(runsFile))
+      gsub("[,\\; ]", "\t", readLines(runsFile))
     ),
     header=TRUE,
     stringsAsFactors = FALSE
