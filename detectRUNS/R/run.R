@@ -68,7 +68,7 @@
 
 slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.05,
                             minSNP = 3, ROHet = FALSE, maxOppWindow = 1, maxMissWindow = 1,
-                            maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10,
+                            maxGap = 10^6, minLengthBps = 1000, minDensity = 1/1000,
                             maxOppRun = NULL, maxMissRun = NULL) {
 
   message(paste("You are using the method: SLIDING WINDOWS"))
