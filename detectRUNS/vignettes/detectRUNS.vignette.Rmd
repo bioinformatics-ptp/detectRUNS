@@ -59,22 +59,66 @@ The input files for **detectRUNS** are *Plink* **ped/map** files. If one wishes 
 
 ## Sample data
 
+To illustrate the functionalities of **detectRUNS**, we use data on sheep (*Ovis aries*) SNP genotypes from the work by Kijas et al. (2016), available on-line through "Dryad" (https://goo.gl/sfAy8k). 
+A subset with two breeds ("Jacobs" and "Navajo-Churro", 160 animals) and three chromosomes ($6\,263$ SNPs from OAA 2, 10 and 24) was used.
+
 ```{r}
 genotypeFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
 mapFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.map", package="detectRUNS")
 ```
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+## Detect runs
 
-## Styles
+For the detection of genomic runs, **detectRUNS** uses two main functions:
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+1. **slidingRUNS.run**: for sliding-window-based detection
+2. **consecutiveRUNS.run**: for consecutive-SNP-based detection
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+Input files can equivalently be paths to files (e.g. /home/Documents/experiment/file.ped/map), or dataframes from reading ped/map files into *R*.
 
-## Figures
+The function *slidingRUNS.run()* accepts in input several parameters: besides the paths (or names) of ped/map files, there are parameters related to the sliding window and parameters related to the genomic runs.
+
+Sliding-window parameters are: *windowSize*, *threshold* (to call a SNP "in run"), *minSNP* (minimum number of homozygous/heterozygous SNP in the window), *maxOppWindow* (maximum number of SNP with opposite genotype: heterozygous/homozygous) and *maxMissWindow* (maximum number of missing genotypes).
+
+Run-related parameters are: *maxGap* (maximum gap between consecutive SNPs, in basepairs -bps), *minLenghtBps* (minimum length of the run, in bps), *minDensity* (number of SNPs every $x$ kilo-basepairs -kbps), *maxOppRun* (maximum number of opposite genotypes in the run), *maxMissRun* (maximum number of missing genotypes in the run).
+
+*ROHet* controls whether runs of homozygosity (ROH/ROHom) or of heterozygosity (heterozygosity-rich regions, ROHet) will be detected. It defaults to **FALSE** (ROH/ROHom).
+
+```{r}
+slidingRuns <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
+                               mapFile = mapFilePath, 
+                               windowSize = 15, 
+                               threshold = 0.05,
+                               minSNP = 3, 
+                               ROHet = FALSE, 
+                               maxOppWindow = 1, 
+                               maxMissWindow = 1,
+                               maxGap = 10^6, 
+                               minLengthBps = 1000, 
+                               minDensity = 1/10, # SNP/kbps
+                               maxOppRun = NULL,
+                               maxMissRun = NULL
+) 
+```
+
+The function *consecutiveRUNS.run()* has a similar structure, obviously without the sliding-window parameters.  
+
+```{r}
+consecutiveRuns <- consecutiveRUNS.run(
+                                      genotypeFile =genotypeFilePath,
+                                      mapFile = mapFilePath,
+                                      minSNP = 3,
+                                      ROHet = FALSE,
+                                      maxGap = 10^6,
+                                      minLengthBps = 1000,
+                                      maxOppRun = 1,
+                                      maxMissRun = 1
+)
+```
+
+*slidingRUNS.run()* detected **`r nrow(slidingRuns)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns)`** ROH
+
+## Plots
 
 The figure sizes have been customised so that you can easily put two images side-by-side. 
 
@@ -91,7 +135,7 @@ You can enable figure captions by `fig_caption: yes` in YAML:
 
 Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
 
-## More Examples
+## $F_{ROH}$: ROH-based inbreeding
 
 You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
 
@@ -104,10 +148,13 @@ Also a quote using `>`:
 > "He who gives up [code] safety for [code] speed deserves neither."
 ([via](https://twitter.com/hadleywickham/status/504368538874703872))
 
+## Importing data from *Plink*
+
 ## References
 
 - Bjelland, D. W., K. A. Weigel, N. Vukasinovic, and J. D. Nkrumah. "Evaluation of inbreeding depression in Holstein cattle using whole-genome SNP markers and alternative measures of genomic inbreeding." journal of dairy Science 96, no. 7 (2013): 4697-4706.
 - Ferencakovic, Maja, Edin Hamzic, Birgit Gredler, Ino Curik, and Johann Sölkner. "Runs of homozygosity reveal genome-wide autozygosity in the Austrian Fleckvieh cattle." Agriculturae Conspectus Scientificus (ACS) 76, no. 4 (2011): 325-329.
+- Kijas, James W., Tracy Hadfield, Marina Naval Sanchez, and Noelle Cockett. "Genome‐wide association reveals the locus responsible for four‐horned ruminant." Animal genetics 47, no. 2 (2016): 258-262.
 - Marras, Gabriele, Giustino Gaspa, Silvia Sorbolini, Corrado Dimauro, Paolo Ajmone‐Marsan, Alessio Valentini, John L. Williams, and Nicolò PP Macciotta. "Analysis of runs of homozygosity and their relationship with inbreeding in five cattle breeds farmed in Italy." Animal genetics 46, no. 2 (2015): 110-121.
 - McQuillan, Ruth, Anne-Louise Leutenegger, Rehab Abdel-Rahman, Christopher S. Franklin, Marijana Pericic, Lovorka Barac-Lauc, Nina Smolej-Narancic et al. "Runs of homozygosity in European populations." The American Journal of Human Genetics 83, no. 3 (2008): 359-372.
 - Purcell, Shaun, Benjamin Neale, Kathe Todd-Brown, Lori Thomas, Manuel AR Ferreira, David Bender, Julian Maller et al. "PLINK: a tool set for whole-genome association and population-based linkage analyses." The American Journal of Human Genetics 81, no. 3 (2007): 559-575.
