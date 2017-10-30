@@ -47,6 +47,12 @@
 
 plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
 
+  # avoid notes
+  chrom <- NULL
+  from <- NULL
+  to <- NULL
+  group <- NULL
+
   chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$chrom)
   new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
@@ -177,6 +183,11 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #'
 
 plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
+
+  # avoid notes
+  chrom <- NULL
+  from <- NULL
+  to <- NULL
 
   plot_list <- list()
   #select a POPULATION
@@ -681,6 +692,10 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
 plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 
+  # avoid notes
+  lengthBps <- NULL
+  group <- NULL
+
   # check method
   method <- match.arg(method)
   message(paste("You are using the method:", method))
@@ -753,6 +768,10 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 
 plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 
+  # avoid notes
+  lengthBps <- NULL
+  group <- NULL
+
   #check method
   method <- match.arg(method)
   message(paste("You are using the method:", method))
@@ -819,7 +838,7 @@ plot_InbreedingChr<- function(runs, mapFile , polar=FALSE){
   # avoid warnings
   variable <- NULL
   value <- NULL
-  GROUP <- NULL
+  group <- NULL
 
   #transform data in long format using reshape2
   long_DF=melt(Chromosome_Inbreeding,id.vars = c("id", "group"))
