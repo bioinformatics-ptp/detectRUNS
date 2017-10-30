@@ -32,7 +32,7 @@ genoConvert <- function(x) {
 #' @param i index along the genome (genome-vector for each individual)
 #' @param windowSize size of window (n. of SNP)
 #'
-#' @return TRUE/FALSE (whether a window is homozygous or NOT)
+#' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
 #' @export
 #'
 #' @examples
@@ -81,7 +81,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #' @param i index along the genome (genome-vector for each individual)
 #' @param windowSize size of window (n. of SNP)
 #'
-#' @return TRUE/FALSE (whether a window is heterozygous or NOT)
+#' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
 #' @export
 #'
 #' @examples
@@ -245,6 +245,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
 #' Function to create a dataframe of RUNS per individual animal
 #' Requires a map file (other filename to read or R object)
+#' Parameters on maximum number of missing and opposite genotypes in the run (not the window) are implemented here
 #'
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
@@ -476,18 +477,18 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
                    "CHR"=integer(),
                    "POSITION"=integer(),
                    "COUNT"=integer(),
-                   "BREED"=factor(),
+                   "GROUP"=factor(),
                    "PERCENTAGE"=numeric(),
                    stringsAsFactors=FALSE
   )
 
-  unique_breeds <- unique(runsChrom$POPULATION)
+  unique_groups <- unique(runsChrom$POPULATION)
 
-  for (ras in sort(unique_breeds)) {
+  for (ras in sort(unique_groups)) {
 
     #print(paste("Population is:", ras))
-    runsBreed <- runsChrom[runsChrom$POPULATION==ras,]
-    nBreed <- nrow(pops[pops$POP==as.character(ras),])
+    runsGroup <- runsChrom[runsChrom$POPULATION==ras,]
+    nGroup <- nrow(pops[pops$POP==as.character(ras),])
     #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 
     iPos <- itertools::ihasNext(mapChrom$POSITION)
@@ -497,15 +498,15 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
     while(hasNext(iPos)) {
 
       pos <- iterators::nextElem(iPos)
-      inRun <- (pos >= runsBreed$START & pos <= runsBreed$END)
+      inRun <- (pos >= runsGroup$START & pos <= runsGroup$END)
       snpCount[i] <- length(inRun[inRun==TRUE])
       i <- i + 1
     }
 
     mapChrom$COUNT <- snpCount
-    mapChrom$BREED <- as.factor(rep(ras,nrow(mapChrom)))
-    mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
-    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
+    mapChrom$GROUP <- as.factor(rep(ras,nrow(mapChrom)))
+    mapChrom$PERCENTAGE <- (snpCount/nGroup)*100
+    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","GROUP","PERCENTAGE")]
     M <- rbind.data.frame(M,mapChrom)
   }
 
