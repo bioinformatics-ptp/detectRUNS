@@ -422,8 +422,8 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runsChrom R object (dataframe) with results per chromosome
-#' @param mapChrom R map object with SNP per chromosome
+#' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","x","POSITION")
 #' @param genotypeFile genotype (.ped) file location
 #'
 #' @return dataframe with counts per SNP in runs (per population)
