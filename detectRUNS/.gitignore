@@ -16,3 +16,5 @@ prova
 *.png
 *.jpg
 snpInRuns
+inst/doc
+*.Rd

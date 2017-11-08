@@ -3,6 +3,28 @@
 
 * Calculate by chromosome (cut mapfile by chrom, then subset genotype)
 
-* plotSnpsInRuns need to be fixed (genotype.raw and plink.map were removed)
+* remove all subsetChillingham.* files
+  - remove files from repository (bfg?)
+  - replace with Kijas2016_Sheep_subset
 
-* get n of columns of a ped file via CPP
+* Fix notes:
+  - Malformed Description field: should contain one or more complete sentences
+    (ex. http://r.789695.n4.nabble.com/what-constitutes-a-complete-sentence-td4709358.html -
+    subject verb object)
+
+* Cpp support
+
+* Private functions
+  - tests?
+
+* Deal with compressed data?
+
+* Examples MUST be reduced (4.4Mb/5Mb is too much!)
+* After reducing the example files, create a Plink .hom file for the example of the readFromPlink() function
+
+* Standardize column names across functions (limit renaming only to where it is necessary)
+* Decide which functions to export (and remove the @export statement from all other functions)
+* Revise documentation
+* Revise Title and Description (subject, verb, object)
+* Make Vignette (not too big --> leave material for the paper/extended documentation)
+ 

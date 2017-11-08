@@ -1,26 +1,45 @@
-##################################
-### Compute ROH in R (a la Plink)
-##################################
+###########################################################
+### Compute Genomic Runs in R (homozygosity/heterozygosity)
+###########################################################
 
 
-#' Run functions to detect RUNS (ROHom/ROHet)
+#' Main function to detect RUNS (ROHom/ROHet) using sliding windows (a la Plink)
 #'
-#' This is the main function of RUNS and would probably require
-#' some good documentation.
+#' This is the main function of detectRUNS and is used to detect runs (of homozygosity or heterozygosity)
+#' in the genome. All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
+#' max n. of opposite genotypes etc.) are specified here.
+#' Input data are in the ped/map Plink format
 #'
-#' @param genotype_path genotype (.ped) file location
-#' @param mapfile_path map file (.map) file location
-#' @param windowSize the size of sliding window
+#' @param genotypeFile genotype (.ped) file location
+#' @param mapFile map file (.map) file location
+#' @param windowSize the size of sliding window (only for the slidingWindow method)
 #' @param threshold the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
+#' (only for the slidingWindow method)
 #' @param minSNP minimum n. of SNP in a RUN
 #' @param ROHet should we look for ROHet or ROHom?
-#' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
-#' @param maxMiss max. n. of missing SNP
+#' @param maxOppWindow max n. of homozygous/heterozygous SNP in the sliding window
+#' @param maxMissWindow max. n. of missing SNP in the sliding window
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
+#' (only for the slidingWindow method)
+#' @param maxOppRun max n. of opposite genotype SNPs in the run (optional)
+#' @param maxMissRun max n. of missing SNPs in the run (optional)
 #'
-#' @return a dataframe with RUNs of Homozygosity or Heterozygosity
+#' @details
+#' This function is a wrapper for many component functions that handle the input data (ped/map files), performs internal conversions,
+#' accepts parameters specifications, selects the statistical method to detect runs (sliding windows, consecutive loci) and whether
+#' runs of homozygosity (RoHom) or of heterozygosity (RoHet) are looked for.
+#'
+#' In the ped file, the groups samples belong to can be specified (first column). This is important if comparisons between
+#' human ethnic groups or between animal breeds or plant varieties or biological populations are to be performed.
+#' Also, if cases and controls are to be compared, this is the place where this information needs to be specified.
+#'
+#' This function returns a data frame with all runs detected in the dataset. This data frame can then be written out to a csv file.
+#' The data frame is, in turn, the input for other functions of the detectRUNS package that create plots and produce statistics
+#' of the results (see plot and statistic functions in this manual, and/or refer to the vignette of detectRUNS).
+#'
+#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset
 #' @export
 #'
 #' @import plyr
@@ -31,16 +50,28 @@
 #'
 #' @examples
 #' # getting map and ped paths
-#' genotype_path <- system.file("extdata", "subsetChillingham.ped", package = "detectRUNS")
-#' mapfile_path <- system.file("extdata", "subsetChillingham.map", package = "detectRUNS")
-#' runs <- RUNS.run(genotype_path, mapfile_path, windowSize = 20, threshold = 0.1, minSNP = 5,
-#' ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 1000, minDensity = 1/10)
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#' # calculating runs with sliding window approach
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
+#' minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1, maxGap=10^6,
+#' minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
 #'
 
-# TODO add output file parameter
-RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0.1,
-                     minSNP = 3, ROHet = TRUE, maxOppositeGenotype = 1, maxMiss = 1,
-                     maxGap = 10^6, minLengthBps = 1000, minDensity = 1/10) {
+slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 0.05,
+                            minSNP = 3, ROHet = FALSE, maxOppWindow = 1, maxMissWindow = 1,
+                            maxGap = 10^6, minLengthBps = 1000, minDensity = 1/1000,
+                            maxOppRun = NULL, maxMissRun = NULL) {
+
+  message(paste("You are using the method: SLIDING WINDOWS"))
 
   # debug
   if (ROHet == TRUE) {
@@ -51,59 +82,38 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     stop(paste("Unknown ROHet value:",ROHet, ". It MUST be only TRUE/FALSE (see documentation)"))
   }
 
-  message(paste("Window size:", windowSize))
-  message(paste("Threshold for calling SNP in a Run:", threshold))
-
   # if genotype is file, open file
-  if(file.exists(genotype_path)){
-    conn  <- file(genotype_path, open = "r")
+  if(file.exists(genotypeFile)){
+    conn  <- file(genotypeFile, open = "r")
   } else {
-    stop(paste("file", genotype_path, "doesn't exists"))
+    stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
-  if(file.exists(mapfile_path)){
+  if(file.exists(mapFile)){
     # using data.table to read data
-    mapFile <- data.table::fread(mapfile_path, header = F)
+    mapFile <- data.table::fread(mapFile, header = F)
   } else {
-    stop(paste("file", mapfile_path, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exists"))
   }
 
   # setting colnames
   colnames(mapFile) <- c("Chrom","SNP","cM","bps")
 
-  # record all runs in a dataframe
-  RUNs <- data.frame(breed=character(), id=character(), chrom=character(), nSNP=integer(),
-                     from=integer(), to=integer(), lengthBps=integer())
+  # collect all parameters in a variable
+  parameters <- list(windowSize=windowSize, threshold=threshold, minSNP=minSNP,
+                     ROHet=ROHet, maxOppWindow=maxOppWindow,
+                     maxMissWindow=maxMissWindow, maxGap=maxGap, minLengthBps=minLengthBps,
+                     minDensity=minDensity, maxOppRun=maxOppRun, maxMissRun=maxMissRun)
 
   # calculate gaps
   gaps <- diff(mapFile$bps)
 
-  # define an internal function to call other functions
-  find_run <- function(x, animal) {
-    # get individual and breed
-    ind <- as.character(animal$IID)
-    breed <- as.character(animal$FID)
+  message(paste("Window size:", windowSize))
+  message(paste("Threshold for calling SNP in a Run:", threshold))
 
-    # use sliding windows
-    y <- slidingWindowCpp(x, gaps, windowSize, step=1, maxGap, ROHet=ROHet, maxOppositeGenotype, maxMiss);
-    snpRun <- snpInRunCpp(y,windowSize,threshold)
-    dRUN <- createRUNdf(snpRun,mapFile,minSNP,minLengthBps,minDensity)
-
-    # manipulate dRUN to order columns
-    dRUN$id <- rep(ind, nrow(dRUN))
-    dRUN$breed <- rep(breed, nrow(dRUN))
-    dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
-
-    # debug
-    if(nrow(dRUN) > 0) {
-      message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
-    } else {
-      message(paste("No RUNs found for animal",ind))
-    }
-
-    #return RUNs to caller
-    return(dRUN)
-  }
+  # initialize data.frame of results
+  RUNs <- data.frame(group=character(), id=character(), chrom=character(), nSNP=integer(),
+                     from=integer(), to=integer(), lengthBps=integer())
 
   # read file line by line (http://stackoverflow.com/questions/4106764/what-is-a-good-way-to-read-line-by-line-in-r)
   while (length(oneLine <- readLines(conn, n = 1, warn = FALSE)) > 0) {
@@ -122,7 +132,7 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
     genotype <- pedConvertCpp(genotype[7:length(genotype)])
 
     # find run for this genotype
-    a_run <- find_run(genotype, animal)
+    a_run <- slidingRuns(genotype, animal, mapFile, gaps, parameters)
 
     # bind this run (if has rows) to others RUNs (if any)
     RUNs <- rbind(RUNs, a_run)
@@ -139,3 +149,131 @@ RUNS.run <- function(genotype_path, mapfile_path, windowSize = 15, threshold = 0
   return(RUNs)
 }
 
+
+#' Main function to detect genomic RUNS (ROHom/ROHet) using the consecutive method (Marras et al. 2014)
+#'
+#' This is the main function of detectRUNS using the consecutive method and is used to detect runs (of homozygosity or heterozygosity)
+#' in the genome. All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
+#' max n. of opposite genotypes etc.) are specified here.
+#' Input data are in the ped/map Plink format
+#'
+#' @param genotypeFile genotype (.ped) file location
+#' @param mapFile map file (.map) file location
+#' @param ROHet should we look for ROHet or ROHom?
+#' @param maxOppRun max n. of opposite genotype SNPs in the run (default = 0)
+#' @param maxMissRun max n. of missing SNPs in the run (default = 0)
+#' @param minSNP minimum n. of SNP in a RUN (default = 15)
+#' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run (defaults to 10^6)
+#'
+#' @details
+#' This function is a wrapper for many component functions that handle the input data (ped/map files), performs internal conversions,
+#' accepts parameters specifications, selects the statistical method to detect runs (sliding windows, consecutive loci) and whether
+#' runs of homozygosity (RoHom) or of heterozygosity (RoHet) are looked for.
+#'
+#' In the ped file, the groups samples belong to can be specified (first column). This is important if comparisons between
+#' human ethnic groups or between animal breeds or plant varieties or biological populations are to be performed.
+#' Also, if cases and controls are to be compared, this is the place where this information needs to be specified.
+#'
+#' This function returns a data frame with all runs detected in the dataset. This data frame can then be written out to a csv file.
+#' The data frame is, in turn, the input for other functions of the detectRUNS package that create plots and produce statistics
+#' of the results (see plot and statistic functions in this manual, and/or refer to the vignette of detectRUNS).
+#'
+#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset
+#' @export
+#'
+#' @import plyr
+#' @import itertools
+#' @import ggplot2
+#' @import itertools
+#' @import utils
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#' # calculating runs with consecutive run approach
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- consecutiveRUNS.run(genotypeFile, mapFile, minSNP = 15, ROHet = FALSE,
+#' maxOppRun = 0, maxMissRun = 0, maxGap=10^6,
+#' minLengthBps = 100000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.consecutive.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
+#'
+
+consecutiveRUNS.run <- function(genotypeFile, mapFile, ROHet = FALSE,
+                                maxOppRun = 0, maxMissRun = 0,
+                                minSNP = 15, minLengthBps = 1000,
+                                maxGap = 10^6) {
+
+  message(paste("You are using the method: CONSECUTIVE RUNS"))
+
+  # debug
+  if (ROHet == TRUE) {
+    message("Analysing Runs of Heterozygosity (ROHet)")
+  } else if (ROHet == FALSE) {
+    message("Analysing Runs of Homozygosity (ROHom)")
+  } else {
+    stop(paste("Unknown ROHet value:",ROHet, ". It MUST be only TRUE/FALSE (see documentation)"))
+  }
+
+  # if genotype is file, open file
+  if(file.exists(genotypeFile)){
+    conn  <- file(genotypeFile, open = "r")
+  } else {
+    stop(paste("file", genotypeFile, "doesn't exists"))
+  }
+
+  if(file.exists(mapFile)){
+    # using data.table to read data
+    mapFile <- data.table::fread(mapFile, header = F)
+  } else {
+    stop(paste("file", mapFile, "doesn't exists"))
+  }
+
+  # setting colnames
+  colnames(mapFile) <- c("Chrom","SNP","cM","bps")
+
+  # initialize data.frame of results
+  RUNs <- data.frame(group=character(), id=character(), chrom=character(), nSNP=integer(),
+                     from=integer(), to=integer(), lengthBps=integer())
+
+  # read file line by line (http://stackoverflow.com/questions/4106764/what-is-a-good-way-to-read-line-by-line-in-r)
+  while (length(oneLine <- readLines(conn, n = 1, warn = FALSE)) > 0) {
+    genotype <- (strsplit(oneLine, " "))
+    genotype <- as.character(genotype[[1]])
+
+    # check that genotype columns and mapFile rows (+6) are identical
+    if (length(genotype)-6 != nrow(mapFile)*2) {
+      stop("Number of markers differ in mapFile and genotype: are those file the same dataset?")
+    }
+
+    # get animal
+    animal <- list(FID=genotype[1], IID=genotype[2])
+
+    # convert into genotype (use from 7th column to last column)
+    genotype <- pedConvertCpp(genotype[7:length(genotype)])
+
+    a_run <- consecutiveRunsCpp(genotype, animal, mapFile=mapFile, ROHet=ROHet, minSNP=minSNP,
+                                maxOppositeGenotype=maxOppRun, maxMiss=maxMissRun,
+                                minLengthBps=minLengthBps, maxGap = maxGap)
+
+    # bind this run (if has rows) to others RUNs (if any)
+    RUNs <- rbind(RUNs, a_run)
+
+  }
+
+  # close input stream
+  close(conn)
+
+  # fix row names
+  row.names(RUNs) <- NULL
+
+  # return calculated runs (data.frame)
+  return(RUNs)
+}

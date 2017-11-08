@@ -1,6 +1,9 @@
+
 #include <Rcpp.h>
 #include <string>
 #include <sstream>
+#include <fstream>
+
 
 // http://stackoverflow.com/questions/12975341/to-string-is-not-a-member-of-std-says-g
 namespace patch {
@@ -11,9 +14,41 @@ namespace patch {
   }
 }
 
+
+// http://stackoverflow.com/questions/17694579/use-stdfill-to-populate-vector-with-increasing-numbers
+struct IncGenerator {
+  int current_;
+  IncGenerator (int start) : current_(start) {}
+  int operator() () { return current_++; }
+};
+
+
 #include <iostream>
 
+
 using namespace Rcpp;
+
+
+// http://gallery.rcpp.org/articles/fast-factor-generation/
+template <int RTYPE>
+IntegerVector fast_factor_template( const Vector<RTYPE>& x ) {
+  Vector<RTYPE> levs = sort_unique(x);
+  IntegerVector out = match(x, levs);
+  out.attr("levels") = as<CharacterVector>(levs);
+  out.attr("class") = "factor";
+  return out;
+}
+
+// [[Rcpp::export]]
+SEXP fast_factor( SEXP x ) {
+  switch( TYPEOF(x) ) {
+  case INTSXP: return fast_factor_template<INTSXP>(x);
+  case REALSXP: return fast_factor_template<REALSXP>(x);
+  case STRSXP: return fast_factor_template<STRSXP>(x);
+  }
+  return R_NilValue;
+}
+
 
 //' Convert 0/1/2 genotypes to 0/1
 //'
@@ -27,6 +62,7 @@ using namespace Rcpp;
 //' @examples
 //' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
 //' geno01 <- genoConvertCpp(geno012)
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -55,6 +91,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
   return results;
 }
 
+
 //' Convert ped genotypes to 0/1
 //'
 //' This is a utility function, that convert ped genotypes (AA/AB/BB) into 0/1
@@ -67,6 +104,7 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' @examples
 //' ped <- c("A", "A", "A", "B", "5", "5")
 //' geno01 <- pedConvertCpp(ped)
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -82,10 +120,11 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
     stop(std::string("Need .ped input with 2 alleles per marker"));
   }
 
-  // set values
+  // set all possible missing values
   missing["0"] = NA_INTEGER;
   missing["5"] = NA_INTEGER;
   missing["N"] = NA_INTEGER;
+  missing["-"] = NA_INTEGER;
 
   // the converted vector
   IntegerVector results(genotype.size() / 2);
@@ -123,7 +162,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 }
 
 
-
 //' Function to check whether a window is (loosely) homozygous or not
 //'
 //' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
@@ -137,21 +175,15 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //' @return TRUE/FALSE (whether a window is homozygous or NOT)
 //'
 //' @examples
-//' maxHom <- 1
+//' maxHet <- 1
 //' maxMiss <- 1
 //' maxGap <- 10^6
-//' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+//' x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
 //'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 //' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 //'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is true
-//' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-//' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-//'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-//' test <- homoZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is false
+//' test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
+//' # test is TRUE
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
@@ -198,18 +230,12 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //' maxHom <- 1
 //' maxMiss <- 1
 //' maxGap <- 10^6
-//' x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+//' x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
 //'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
 //' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
 //'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 //' test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is false
-//' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-//' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-//'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-//' test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is true
+//' # test is FALSE
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
@@ -239,11 +265,92 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 }
 
 
+//' Function to calculate oppositeAndMissingGenotypes array
+//'
+//' This is an helper function, this will be called by another function
+//'
+//' @param data vector of 0/1/2 genotypes
+//' @param ROHet TRUE in ROHet evaluation, FALSE for ROHom
+//'
+//' @return character array; names will be index in which opposite and missing
+//' snps are found in data array
+//'
+//' @examples
+//' data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+//' oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
+  // Initialize a temporary array for oppositeAndMissingGenotypes
+  std::vector<std::string> tmp(data.size());
+
+  // Initialize vector for names
+  std::vector<std::string> names(data.size());
+
+  // declare values
+  std::string missing = "9";
+  std::string opposite = "0";
+
+  // count missing and opposite
+  int index = 0;
+
+  // iter in data vector
+  for (int i=0; i<data.size(); i++) {
+    if (data[i] == NA_INTEGER) {
+      // is missing
+      tmp[index]= missing;
+      // R index are 1 based
+      names[index] = patch::to_string(i+1);
+      // increment index
+      index++;
+      continue;
+    }
+
+    if (ROHet == true){
+      if (data[i] == 0) {
+        // is homozygote
+        tmp[index] = opposite;
+        names[index] = patch::to_string(i+1);
+        // increment index
+        index++;
+      }
+    } else {
+      // ROHom condition
+      if (data[i] == 1) {
+        // is heterozygote
+        tmp[index] = opposite;
+        names[index] = patch::to_string(i+1);
+        // increment index
+        index++;
+      }
+    }
+
+  }
+
+  // resize StringVectors
+  tmp.resize(index);
+  names.resize(index);
+
+  // get a string vector from tmp data
+  StringVector oppositeAndMissingGenotypes = wrap(tmp);
+
+  // Finally assign names to StringVector
+  oppositeAndMissingGenotypes.attr("names") = names;
+
+  // return results
+  return oppositeAndMissingGenotypes;
+}
+
+
 //' Function to slide a window over a vector (individual's genotypes)
 //'
 //' This is a core function. The functions to detect RUNS are slidden over the genome
 //'
-//' @param data vector of pair of genotypes (01, AA, AG)
+//' @param data vector of 0/1/2 genotypes
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param windowSize size of window (n. of SNP)
 //' @param step by which (how many SNP) is the window slidden
@@ -261,8 +368,9 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //' @export
 //'
 // [[Rcpp::export]]
-LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize, int step,
-                               int maxGap, bool ROHet=true, int maxOppositeGenotype=1, int maxMiss=1) {
+List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
+                      int step, int maxGap, bool ROHet=true,
+                      int maxOppositeGenotype=1, int maxMiss=1) {
 
   // get data lenght
   int data_length = data.size();
@@ -271,7 +379,10 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
   int spots_lenght = (data_length - windowSize) / step +1;
 
   // initialize results
-  LogicalVector results(spots_lenght, false);
+  LogicalVector windowStatus(spots_lenght, false);
+
+  // calculate opposite and missing snps
+  StringVector oppositeAndMissingGenotypes = findOppositeAndMissing(data, ROHet);
 
   // declare iterators
   IntegerVector::const_iterator from, to;
@@ -304,21 +415,23 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
     // eval RoHet or RoHom
     if (ROHet == true) {
       // calculate result
-      results[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = heteroZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
 
     } else {
       // calculate result
-      results[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
-      // Rcout << results[i] << std::endl;
+      windowStatus[i] = homoZygotTestCpp(y_spots, gaps_spots, maxOppositeGenotype, maxMiss, maxGap);
+      // Rcout << windowStatus[i] << std::endl;
     }
 
   }
 
   // check this affermation (could be N of SNPs - window +1)
-  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), results.size());
+  // msg(std::string("Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file): "), windowStatus.size());
 
-  return results;
+  // define a list of results and return it
+  return List::create(Named("windowStatus")=windowStatus,
+                      Named("oppositeAndMissingGenotypes")=oppositeAndMissingGenotypes);
 }
 
 
@@ -334,6 +447,7 @@ LogicalVector slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windo
 //' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
 //'
 //' @examples #not yet
+//'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
 //' @export
@@ -343,20 +457,40 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   // get vector size
   int RunVector_length = RunVector.size();
 
-  // debug
-  // msg(std::string("Length of input vector: "), RunVector_length);
-  // msg(std::string("Window size: "), windowSize);
-  // msg(std::string("Threshold for calling SNP in a Run: ") + patch::to_string(threshold));
-
   // compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  // initialize a vector with window as default value
-  std::vector<int> nWin(RunVector_length, windowSize);
+  // initialize a vector with window as default value. I need to have nWin size as
+  // the number of windows is size would be 1
+  int nWin_length = RunVector_length + windowSize -1 ;
+  std::vector<int> nWin(nWin_length, windowSize);
 
   // then fix values at both sides
   for (int i=0; i<windowSize; i++) {
     nWin[i] = i+1;
-    nWin[RunVector_length - i-1] = i+1;
+    nWin[nWin_length - i-1] = i+1;
   }
+
+  // create two sets of indices to slice the vector of windows containing or not
+  // a run (RunVector). Since they are array of positions, they should refere to
+  // O based coordinates, since in C++ array starts at 0 index
+  std::vector<int> ind1(nWin_length, 0);
+
+  // initialize with the first element of array.
+  IncGenerator g1(0);
+
+  // Fill with the result of calling g1() repeatedly.
+  // ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length))
+  // since ind1 is a vector of indexes, need to numbering after than R
+  std::generate(ind1.begin()+windowSize-1, ind1.end(), g1);
+
+  // define ind2 vector
+  std::vector<int> ind2(nWin_length, RunVector_length-1);
+
+  // initialize with the first element of array
+  IncGenerator g2(0);
+
+  // Fill with the result of calling g2() repeatedly.
+  // ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1))
+  std::generate(ind2.begin(), ind2.end()-windowSize+1, g2);
 
   // compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   float hWin;
@@ -364,15 +498,16 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
   LogicalVector::iterator from, to;
 
   // the returned value, a logical vector with false values as default values
-  LogicalVector snpRun(RunVector_length, false);
+  LogicalVector snpRun(nWin_length, false);
 
-  for (int i=0; i < RunVector_length; i++) {
-    //get from-to index fom nWin. Get iterators
-    from = RunVector.begin() + i;
+  for (int i=0; i < nWin_length; i++) {
+    // get from-to index fom nWin. Get iterators
+    from = RunVector.begin() + ind1[i];
+
     // the to index iterator is excluded
-    to = RunVector.begin() + i + nWin[i];
+    to = RunVector.begin() + ind2[i] + 1;
 
-    //count TRUE in interval
+    // count TRUE in interval
     hWin = std::count(from, to, true);
 
     //calc quotient
@@ -383,16 +518,582 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
       snpRun[i] = true;
     }
 
-    //debug
-    // if (i > 20 && i < 30) {
-    //   Rcout << "i: " << i << " hWin: " << hWin << " nWin[i]: "<< nWin[i] << " quotient: " << quotient;
-    //   Rcout << " snpRun[i]: " << snpRun[i] << std::endl;
-    // }
-
   }
 
-  //debug
-  //msg(std::string("Lenght of output vector: "), snpRun.size());
-
   return snpRun;
+}
+
+
+//' Function to return a dataframe of population (POP, ID)
+//'
+//' This is a core function. Read PED file and returns a data.frame with the first two
+//' columns
+//'
+//' @param genotypeFile genotype (.ped) file location
+//'
+//' @return a dataframe of POP, ID
+//'
+//' @examples
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//' pops <- readPOPCpp(genotypeFile)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame readPOPCpp(std::string genotypeFile) {
+  // the columns of data.frame
+  CharacterVector POP;
+  CharacterVector ID;
+
+  // open genotypeFile
+  std::ifstream ifile(genotypeFile.c_str());
+
+  // we read the full line here
+  std::string line;
+
+  // A tocken for read columns
+  std::string token;
+
+  // read the current line (http://stackoverflow.com/questions/30181600/reading-two-columns-in-csv-file-in-c)
+  while (std::getline(ifile, line)) {
+    // construct a string stream from line
+    std::istringstream iss(line);
+
+    // current token
+    std::getline(iss, token, ' ');
+    POP.push_back(token);
+
+    std::getline(iss, token, ' ');
+    ID.push_back(token);
+  }
+
+  // This is the resulting new dataframe (New Data Frame). A Cpp instance of
+  // stringsAsFactors = TRUE data.frame
+  DataFrame NDF = DataFrame::create(Named("POP")=POP, Named("ID")=ID, _["stringsAsFactors"] = false);
+
+  return NDF;
+}
+
+
+// helper RunData structure for consecutiveRunsCpp
+struct RunData {
+  int nOpposite;
+  int nMiss;
+  int runH;
+  int lengte;
+  std::string chrom;
+  int start;
+  int end;
+};
+
+
+// helper initializeRun function for consecutiveRunsCpp
+RunData initializeRun(std::string chrom, int start) {
+  RunData run_data;
+
+  // initialize values
+  run_data.chrom = chrom;
+  run_data.start = start;
+  run_data.end = start;
+  run_data.nOpposite = 0;
+  run_data.nMiss = 0;
+  run_data.runH = 0;
+  run_data.lengte = 0;
+
+  return run_data;
+}
+
+// helper function to update RUNs data for consecutiveRunsCpp
+void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVector *group,
+                CharacterVector *id, CharacterVector *chrom, IntegerVector *nSNP,
+                IntegerVector *from, IntegerVector *to, IntegerVector *lengthBps) {
+
+  // update arrays for current RUN
+  group->push_back(fid);
+  id->push_back(iid);
+  chrom->push_back(run_data.chrom);
+  nSNP->push_back(run_data.runH);
+  from->push_back(run_data.start);
+  to->push_back(run_data.end);
+  lengthBps->push_back(run_data.lengte);
+
+}
+
+//' Function to detect consecutive runs in a vector (individual's genotypes)
+//'
+//' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+//' (see Marras et al. 2015)
+//'
+//' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+//' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+//' @param mapFile Plink map file (for SNP position)
+//' @param ROHet shall we detect ROHet or ROHom?
+//' @param minSNP minimum number of SNP in a run
+//' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+//' @param maxMiss max. n. of missing SNP
+//' @param minLengthBps min length of a run in bps
+//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//'
+//' @details
+//' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+//' No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+//' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+//' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+//'
+//' @return A data frame of runs per individual sample
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,
+                             bool ROHet=true, int minSNP=3, int maxOppositeGenotype=1,
+                             int maxMiss=1, int minLengthBps=1000, int maxGap=10^6) {
+
+  // Bool to int conversion: ifelse(ROHet,1,0)
+  int typ = ROHet;
+
+  // animal data lile IID or FID
+  std::string iid = individual["IID"];
+  std::string fid = individual["FID"];
+
+  // initialize variables. First chromosome in ordered mapFile
+  CharacterVector Chrom = mapFile["Chrom"];
+  IntegerVector bps = mapFile["bps"];
+
+  std::string lastChrom = as<std::string>(Chrom[0]);
+  int lastPos = bps[0];
+  std::string currentChrom;
+  int currentPos;
+  int gap;
+
+  // a flag to determine if I'm in a RUN or not
+  bool flag_run = false;
+  RunData run_data;
+
+  // the columns of data.frame Defining data types accordingly slinding window
+  CharacterVector group;
+  CharacterVector id;
+  CharacterVector chrom;
+  IntegerVector nSNP;
+  IntegerVector from;
+  IntegerVector to;
+  IntegerVector lengthBps;
+
+  for (int i = 0; i < indGeno.size(); i++) {
+    // Check for Chromosome
+    currentChrom = Chrom[i];
+
+    // get current position
+    currentPos = bps[i];
+
+    // test if chromosome is changed
+    if (currentChrom != lastChrom ) {
+      // if I have run, write to file
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+        // debug
+        // Rcout << "Update RUN: chromosome changed" << std::endl;
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+      }
+
+      // update chrom and positions
+      lastChrom = currentChrom;
+      lastPos = currentPos;
+
+      // unset RUN flag. New runs with new chromosomes!!!
+      flag_run = false;
+    }
+
+    // calculate gap between consecutive SNP (in the same chrom)
+    gap = currentPos - lastPos;
+
+    // check if current gap is larger than max allowed gap. No matter current SNP
+    if (gap >= maxGap) {
+      if(flag_run == true && run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+        // debug
+        // Rcout << "Update RUN: gap size exceeded" << std::endl;
+        updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+      }
+
+      // unset RUN flag
+      flag_run = false;
+      }
+
+    // Start for ==. Is a new RUN or not? ensure that indGeno[i] is a number
+    if (indGeno[i] == typ && indGeno[i] != NA_INTEGER){
+      // initialize run if not yet initialized, or just written after a big GAP
+      if (flag_run == false) {
+        //debug
+        // Rcout << "Creating new RUN at i = " << i << std::endl;
+        // run_data is a struct of attributes for the current RUN
+        run_data = initializeRun(currentChrom, currentPos);
+        flag_run = true;
+      }
+
+      // update run_data values
+      run_data.runH++;
+      run_data.end = currentPos;
+      run_data.lengte = (run_data.end - run_data.start);
+
+    } // condition: the genotype I want
+
+    // start if !=
+    else if (indGeno[i] != typ && indGeno[i] != NA_INTEGER){
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update nOpposite genotypes (in a run)
+      run_data.nOpposite++;
+
+      // check if maxOppositeGenotype is reached
+      if (run_data.nOpposite <= maxOppositeGenotype) {
+      // update run_data values. This opposite genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
+
+      } else {
+        // debug
+        // Rcout << "max opposite reached" << std::endl;
+
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition nOpposite greather than maxOppositeGenotype
+
+    } // condition: opposite genotype
+
+    // start if 'NA'
+    else if (indGeno[i] == NA_INTEGER) {
+      // if not in a run, don't do anything
+      if (flag_run == false) {
+        continue;
+      }
+
+      // update missing values
+      run_data.nMiss++;
+
+      // check if maxMiss is reached
+      if (run_data.nMiss <= maxMiss){
+        // update run_data values. This missing genotype is a part of the RUN
+        run_data.runH++;
+        run_data.end = currentPos;
+        run_data.lengte = (run_data.end - run_data.start);
+      } else {
+        // debug
+        // Rcout << "max missing reached" << std::endl;
+
+        if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+          updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+        }
+
+        // unset RUN flag
+        flag_run = false;
+
+      } // condition: nMissing greather than permitted
+
+    } // condition: missing genotype
+
+  // update positions
+  lastPos = currentPos;
+
+  } // cicle: for i in genotypes
+
+  // last snp if it is in a run
+  if (flag_run == true ) {
+    if (run_data.runH >= minSNP && run_data.lengte >= minLengthBps) {
+      // Rcout << "Last RUN finished with last SNP" << std::endl;
+      updateRUNs(run_data, iid, fid, &group, &id, &chrom, &nSNP, &from, &to, &lengthBps);
+    }
+
+    // unset RUN flag
+    flag_run = false;
+  }
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("group")=group, Named("id")=id, Named("chrom")=chrom, Named("nSNP")=nSNP,
+    Named("from")=from, Named("to")=to, Named("lengthBps")=lengthBps,
+    _["stringsAsFactors"] = false);
+
+  // debug
+  if(res.nrows() > 0) {
+    Rcout << "N. of RUNS for individual " << iid << " is: " << res.nrows() << std::endl;
+  } else {
+    Rcout << "No RUNs found for animal " << iid << std::endl;
+  }
+
+  // returning all runs for this individual genotype
+  return(res);
+
+}
+
+
+// Helper class to deal with runs
+class Runs {
+  std::vector<std::string> breed;
+  std::vector<std::string> chromosome;
+  std::vector<int> start;
+  std::vector<int> end;
+  int size;
+
+  // a map object for position indexing: in order to avoid to scan all runs
+  // for a SNP, I will divide all chromosome size in chunk and in each chunk
+  // I will put the run index which span this chunk. When I will have a position
+  // I will calculate its chunk and then I will scan for each runs in this chunk
+  // if the snps belong to it or not
+  std::map <int, std::vector<int> > indexes;
+
+  // chunk by size
+  int chunk;
+
+public:
+  Runs(DataFrame runs);
+  // function to count runs by breed
+  std::map <std::string, int> countSnpbyBreed(
+      int position, std::vector<std::string> unique_breeds);
+  void dumpRuns();
+};
+
+Runs::Runs(DataFrame runs) {
+  // declare variables
+  int start, end;
+
+  // define chunk size
+  this->chunk = 1e6;
+
+  // get vectors for simplicity
+  this->breed = as<std::vector<std::string> >(runs["POPULATION"]);
+  this->chromosome = as<std::vector<std::string> >(runs["CHROMOSOME"]);
+  this->start = as<std::vector<int> >(runs["START"]);
+  this->end = as<std::vector<int> >(runs["END"]);
+
+  // set size
+  this->size = this->chromosome.size();
+
+  // index the object. Get index position by dividing run position by chunks
+  for (int i=0; i<this->size; i++) {
+    // by dividing integer number, I get the integer part of division
+    start = this->start[i] / this->chunk;
+    end = this->end[i] / this->chunk;
+
+    // add this run index to indexes map
+    for (int j=start; j<=end; j++){
+      if (indexes.find(j) == indexes.end()) {
+        indexes[j] = std::vector<int>();
+      }
+
+      // push back index in chunk list
+      indexes[j].push_back(i);
+    }
+  }
+}
+
+// count how many type a snp (position) belong to a RUN
+std::map <std::string, int> Runs::countSnpbyBreed(
+    int position, std::vector<std::string> unique_breeds) {
+  // define variables
+  std::map <std::string, int> counts;
+  std::string ras;
+
+  // initialize
+  for (int i=0; i<unique_breeds.size(); i++) {
+    ras = unique_breeds[i];
+    counts[ras] = 0;
+  }
+
+  // calculating chunk position: we will investigate only runs spanning this region
+  int index = position / this->chunk;
+
+  // debug
+  // Rcout << "Got position: " << position << " (";
+  // Rcout << index * this->chunk << "-" << (index+1) * this->chunk;
+  // Rcout << ")" << std::endl;
+
+  // get chunk indexes
+  std::vector<int> chunk_indexes = this->indexes[index];
+
+  // iter over runs in chunks
+  for(std::vector<int>::iterator it = chunk_indexes.begin();
+      it != chunk_indexes.end(); ++it) {
+
+    if (position >= this->start[*it] && position <= this->end[*it]) {
+      counts[this->breed[*it]]++;
+    }
+  }
+
+  return counts;
+}
+
+void Runs::dumpRuns() {
+  for (int i=0; i<this->size; i++) {
+    Rcout << "breed " << this->breed[i] << " chrom " << this->chromosome[i];
+    Rcout << " start " << this->start[i] << " end " << this->end[i] << std::endl;
+  }
+
+  // dump indexes. Cicle around map iterators
+  std::map <int, std::vector<int> >::iterator it;
+
+  for (it = this->indexes.begin(); it != this->indexes.end(); ++it) {
+    Rcout << "Chunk " << it->first * this->chunk << "-" << (it->first+1) * this->chunk << ": ";
+    for(std::vector<int>::iterator it2 = it->second.begin();
+        it2 != it->second.end(); ++it2) {
+      Rcout << *it2+1 << " ";
+    }
+
+    Rcout << std::endl;
+  }
+}
+
+
+//' Function to count number of times a SNP is in a RUN
+//'
+//'
+//' @param runsChrom R object (dataframe) with results per chromosome
+//' @param mapChrom R map object with SNP per chromosome
+//' @param genotypeFile genotype (.ped) file location
+//'
+//' @return dataframe with counts per SNP in runs (per population)
+//' @export
+//'
+//' @import utils
+//'
+//' @examples
+//' # getting map and ped paths
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+//'
+//' # defining mapChrom
+//' mappa <- data.table::fread(mapFile, header = FALSE)
+//' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+//' mappa$x <- NULL
+//' chrom <- "24"
+//' mapChrom <- mappa[mappa$CHR==chrom, ]
+//'
+//' # calculating runs of Homozygosity
+//' \dontrun{
+//' # skipping runs calculation
+//' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+//' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+//' }
+//' # loading pre-calculated data
+//' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+//' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+//' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+//' colClasses = colClasses)
+//'
+//' # fix column names and define runsChrom
+//' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+//' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+//'
+//' snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//' @export
+//'
+// [[Rcpp::export]]
+DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
+                           std::string genotypeFile) {
+
+  // transform R object in Cpp object
+  std::vector<int> POSITIONS = as<std::vector<int> >(mapChrom["POSITION"]);
+  std::vector<std::string> SNP_NAME = as<std::vector<std::string> >(mapChrom["SNP_NAME"]);
+  std::vector<int> CHR = as<std::vector<int> >(mapChrom["CHR"]);
+
+  // get unique breeds
+  CharacterVector population = runsChrom["POPULATION"];
+  std::vector<std::string> unique_breeds = as<std::vector<std::string> >(unique(population));
+
+  // sort unique breeds
+  std::sort(unique_breeds.begin(), unique_breeds.end());
+
+  // declare others variables
+  std::string ras;
+  int pos, index, map_size = SNP_NAME.size();
+  std::map <std::string, int> snpCounts, nBreeds ;
+
+  // define result size like n SNPs * unique_breeds
+  int result_size = map_size * unique_breeds.size();
+
+  // the columns of data.frame Defining data types accordingly slinding window
+  CharacterVector snp_name(result_size);
+  IntegerVector chrom(result_size); // as defined in R function. What about X?
+  IntegerVector position(result_size);
+  IntegerVector count(result_size);
+  CharacterVector breed(result_size);
+  NumericVector percentage(result_size);
+
+  // get all populations
+  DataFrame pops = readPOPCpp(genotypeFile);
+  CharacterVector pop = pops["POP"];
+
+  // instantiate a Runs object
+  Runs runs(runsChrom);
+
+  // debug: dump object
+  // runs.dumpRuns();
+
+  // cicle among single breeds and find breed numbers
+  for (int i=0; i<unique_breeds.size(); i++) {
+    ras = unique_breeds[i];
+
+    // get total if individuals by breed
+    nBreeds[ras] = std::count(pop.begin(), pop.end(), ras.c_str());
+    // Rcout << "N. of animals of Population " << ras << ": " << nBreeds[ras] << std::endl;
+  }
+
+  // iterate over position. Update single values
+  for (int j=0; j<POSITIONS.size(); j++) {
+    // get a snp position
+    pos = POSITIONS[j];
+
+    // update counts
+    snpCounts = runs.countSnpbyBreed(pos, unique_breeds);
+
+    // update results by breed
+    for (int i=0; i<unique_breeds.size(); i++) {
+      // get a breed
+      ras = unique_breeds[i];
+
+      //calculating results index
+      index = i * map_size + j;
+
+      // update values
+      count[index] = snpCounts[ras];
+      breed[index] = ras;
+      percentage[index] = double(snpCounts[ras])/nBreeds[ras]*100;
+
+      // debug
+      // if (SNP_NAME[j] == "OAR24_6970428.1") {
+      //   Rcout << "Index i: " << i << " Index j: " << j << " Final index: " << index;
+      //   Rcout << " Breed: " << ras << " Count: " << snpCounts[ras] << std::endl;
+      // }
+
+      // read data from mapChrom
+      snp_name[index] = SNP_NAME[j];
+      chrom[index] = CHR[j];
+      position[index] = pos;
+
+    } // cicle for snp position
+
+  } // cicle for breed
+
+  // initialize dataframe of results.
+  DataFrame res = DataFrame::create(
+    Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
+    Named("COUNT")=count, Named("BREED")=fast_factor(breed)  , //returns a factor
+    Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
+
+  // returning all runs for this individual genotype
+  return(res);
 }

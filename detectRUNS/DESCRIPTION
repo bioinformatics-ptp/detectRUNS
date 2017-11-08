@@ -1,15 +1,19 @@
 Package: detectRUNS
 Type: Package
-Title: Detect RoHom and RoHet in diploid genomes
-Version: 0.2.4
-Date: 2016-11-15
+Title: Detect Runs of Homozygosity (RoHom) and Runs of Heterozygosity (RoHet) in
+    diploid genomes
+Version: 0.8.0
+Date: 2017-06-13
 Authors@R: as.person(c(
-    "Filippo Biscarini <filippo.biscarini@ptp.it> [aut, cre]", 
+    "Filippo Biscarini <filippo.biscarini@ibba.cnr.it> [aut, cre]",
+    "Gabriele Marras <gabriele.marras@ptp.it> [aut]",
     "Paolo Cozzi <paolo.cozzi@ptp.it> [ctb]"
   ))
-Description: Detection of RUNS of Homozygosity (RoHom) and of Heterozygosity (RoHet)
-  a la Plink (see Bjelland et al. 2013).
-Depends: R (>= 3.0.0)
+Description: Detection of Runs of Homozygosity (RoHom) and of
+    Heterozygosity (RoHet) in diploid genomes using two methods (sliding windows
+    and consecutive runs).
+Depends:
+    R (>= 3.0.0)
 License: GPL-3
 LazyData: TRUE
 Imports:
@@ -17,8 +21,13 @@ Imports:
     iterators,
     itertools,
     ggplot2,
+    reshape2,
     Rcpp,
     data.table
-RoxygenNote: 5.0.1
-Suggests: testthat
+RoxygenNote: 6.0.1
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp
+VignetteBuilder: knitr

@@ -9,19 +9,16 @@
 #' (either homozygous/heterozygous)
 #'
 #' @param x vector of 0/1/2 genotypes
-#'
+#' @keywords internal
 #' @return converted vector of genotypes (0/1)
-#' @export
 #'
-#' @examples
-#' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-#' geno01 <- genoConvert(geno012)
-#'
+
 genoConvert <- function(x) {
   new <- c(0,1,0,NA)
   old <- c(0,1,2,NA)
   return(new[match(x,old)])
 }
+
 
 #' Function to check whether a window is (loosely) homozygous or not
 #'
@@ -32,33 +29,45 @@ genoConvert <- function(x) {
 #' @param maxHet max n. of heterozygous SNP in a homozygous window
 #' @param maxMiss max n. of missing in a window
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param i index along the genome (genome-vector for each individual)
+#' @param windowSize size of window (n. of SNP)
 #'
-#' @return TRUE/FALSE (whether a window is homozygous or NOT)
+#' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
 #' @export
 #'
 #' @examples
-#' maxHom <- 1
+#' maxHet <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
-#' x <- c(0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+#' i <- 175
+#' x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
 #'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 #' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
-#' # test is true
-#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- homoZygotTest(x, gaps, maxHom, maxMiss, maxGap)
-#' # test is false
+#' windowSize <- length(x)
+#' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+#' # test
+#' # $windowStatus
+#' # [1] TRUE
+#' #
+#' # $oppositeAndMissingSNP
+#' # 178 181
+#' #   9   0
 #'
-homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
+
+homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
   nHet <- sum(x==1,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  oppositeAndMissingSNP <- c(-1,0,9)[match(x,c(0,1,NA))]
+  oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
+  indexSNP <- seq(i,i+windowSize-1)[which(x==1 | is.na(x))]
+  names(oppositeAndMissingSNP) <- indexSNP
+
+  windowStatus <- ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
+
 
 #' Function to check whether a window is (loosely) heterozygous or not
 #'
@@ -69,33 +78,44 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss, maxGap) {
 #' @param maxHom max n. of homozygous SNP in a heterozygous window
 #' @param maxMiss max n. of missing in a window
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param i index along the genome (genome-vector for each individual)
+#' @param windowSize size of window (n. of SNP)
 #'
-#' @return TRUE/FALSE (whether a window is heterozygous or NOT)
+#' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
 #' @export
 #'
 #' @examples
 #' maxHom <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
-#' x <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+#' i <- 150 #random index
+#' x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
 #'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
 #' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
 #'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
-#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
-#' # test is false
-#' x <- c(0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-#'        1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
-#' gaps <- c(2514, 2408, 2776, 2936, 1657, 494, 1436, 680, 909, 678,
-#'           615, 1619, 2058, 2446, 1085, 660, 1259, 1042, 2135)
-#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap)
-#' # test is true
-#'
-heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
+#' windowSize <- length(x)
+#' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
+#' # test
+#' # $windowStatus
+#' # [1] FALSE
+#' #
+#' # $oppositeAndMissingSNP
+#' # 150 151 152 153 154 155 156 157 164 165 167 168 169
+#' #   0   0   9   0   9   0   0   0   0   0   0   0   0
+
+heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
   nHom <- sum(x==0,na.rm=TRUE)
   nMiss <- sum(is.na(x))
-  ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  oppositeAndMissingSNP <- c(0,-1,9)[match(x,c(0,1,NA))]
+  oppositeAndMissingSNP <- oppositeAndMissingSNP[oppositeAndMissingSNP!=-1]
+  indexSNP <- seq(i,i+windowSize-1)[which(x==0 | is.na(x))]
+  names(oppositeAndMissingSNP) <- indexSNP
+
+  windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
+
 
 #' Function to slide a window over a vector (individual's genotypes)
 #'
@@ -113,13 +133,34 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap) {
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #' @export
 #'
-#' @examples #not yet
+#' @examples
+#' windowSize <- 5
+#' step= 1
+#' maxOppositeGenotype <- 1
+#' maxMiss <- 1
+#' maxGap <- 10^5
+#' ROHet= FALSE
+#' x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
+#'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
+#' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
+#'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
+#' test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
+#' # test is
+#' # $windowStatus
+#' # [1] FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+#' # FALSE FALSE  TRUE  TRUE
 #'
+#' # $oppositeAndMissingGenotypes
+#' #   3   5   9  10  11  12  13  14  17
+#' # "9" "9" "0" "0" "0" "0" "0" "0" "0"
+#'
+
 slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxOppositeGenotype=1, maxMiss=1) {
 
   data_length <- length(data)
   spots <- seq(from = 1, to = (data_length - windowSize + 1), by = step)
   result <- vector(length = length(spots))
+  oppositeAndMissingGenotypes <- array(character(0))
   y <- genoConvert(data)
 
   print(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
@@ -127,25 +168,35 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
   if(ROHet) {
 
     for(i in 1:length(spots)){
-      result[i] <- heteroZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
+      ret <- heteroZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap,i,windowSize)
+      result[i] <- ret$windowStatus
+      # this will append the returned value of heteroZygotTest to existsting
+      # oppositeAndMissingGenotypes array. Since windows slide with sovraposition,
+      # we append new values to oppositeAndMissingGenotypes. We may calculate
+      # this array once.
+      oppositeAndMissingGenotypes <- c(oppositeAndMissingGenotypes,ret$oppositeAndMissingSNP[!(names(ret$oppositeAndMissingSNP) %in% names(oppositeAndMissingGenotypes))])
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     # for(i in (length(spots)+1):data_length) result[i] <- heteroZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   } else {
 
     for(i in 1:length(spots)){
-      result[i] <- homoZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap)
+      ret <- homoZygotTest(y[spots[i]:(spots[i]+windowSize-1)],gaps[spots[i]:(spots[i]+windowSize-2)],maxOppositeGenotype,maxMiss,maxGap,i,windowSize)
+      result[i] <- ret$windowStatus
+      oppositeAndMissingGenotypes <- c(oppositeAndMissingGenotypes,ret$oppositeAndMissingSNP[!(names(ret$oppositeAndMissingSNP) %in% names(oppositeAndMissingGenotypes))])
     }
     # to include a shrinking sliding-window at the end of the chromosome/genome, uncomment the following line
     #for(i in (length(spots)+1):data_length) result[i] <- homoZygotTest(y[seq(i,data_length)],maxOppositeGenotype,maxMiss)
   }
 
-  print(paste(
-    "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file):",
-    length(result),sep=" "))
+  # print(paste(
+  #   "Length of homozygous windows overlapping SNP loci (should be equal to the n. of SNP in the file):",
+  #   length(result),sep=" "))
 
-  return(result)
+  return(list("windowStatus"=result,"oppositeAndMissingGenotypes"=oppositeAndMissingGenotypes))
+
 }
+
 
 #' Function to return a vector of T/F for whether a SNP is or not in a RUN
 #'
@@ -161,44 +212,50 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
 #'
 #' @examples #not yet
 #'
+
 snpInRun <- function(RunVector,windowSize,threshold) {
 
   RunVector_length <- length(RunVector)
 
-  print(paste("Length of imput vector:",RunVector_length,sep=" "))
-  print(paste("Window size:",windowSize,sep=" "))
-  print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
+  # print(paste("Length of input vector:",RunVector_length,sep=" "))
+  # print(paste("Window size:",windowSize,sep=" "))
+  # print(paste("Threshold for calling SNP in a Run:",threshold,sep=" "))
 
-  #requires itertools
   # compute total n. of overlapping windows at each SNP locus (see Bjelland et al. 2013)
-  nWin <- c(seq(1,windowSize),rep(windowSize,(RunVector_length-(2*windowSize))),seq(windowSize,1))
+  nWin <- c(seq(1,windowSize), rep(windowSize,(RunVector_length-windowSize-1)), seq(windowSize,1))
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
-  iWin <- enumerate(nWin)
-  hWin <- sapply(iWin, function(n) sum(RunVector[n$index:(n$index+n$value-1)]), simplify = TRUE)
+  # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
+  iInd <- itertools::izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
+  hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
 
+
   #vector of SNP belonging to a ROH
   snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
-
-  print(paste(
-    "Lenght of output file:",
-    length(snpRun),sep=" "))
+  # print(paste(
+  #   "Lenght of output file:",
+  #   length(snpRun),sep=" "))
 
   return(snpRun)
 }
 
+
 #' Function to create a dataframe of RUNS per individual animal
 #' Requires a map file (other filename to read or R object)
+#' Parameters on maximum number of missing and opposite genotypes in the run (not the window) are implemented here
 #'
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
-#' @param mapa Plink-like map file (the R data.frame from RUNS.run)
+#' @param mapFile Plink-like map file (data.frame)
 #' @param minSNP minimun n. of SNP to call a RUN
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
+#' @param oppositeAndMissingSNP indexed array of missing and opposite genotypes (SNP order in the genome is the index)
+#' @param maxOppRun max n. of opposite genotype SNPs in the run (not in the window!)
+#' @param maxMissRun max n. of missing SNPs in the run (not in the window!)
 #'
 #' @return a data.frame with RUNS per animal
 #' @export
@@ -209,35 +266,110 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 #' @examples #not yet
 #'
-createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensity = 1/10) {
-  cutPoints <- which(diff(sign(snpRun))!=0)
-  from <- c(1,cutPoints+1)
-  to <- c(cutPoints,length(snpRun))
 
-  iLaenge <- itertools::izip(a = from,b = to)
-  lengte <- sapply(iLaenge, function(n) sum(snpRun[n$a:n$b]))
+createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
+                        minDensity = 1/10, oppositeAndMissingSNP, maxOppRun=NULL,
+                        maxMissRun=NULL) {
 
-  dL <- data.frame("from"=from,"to"=to,"nSNP"=lengte)
-  dL <- dL[dL$nSNP>minSNP,]
+  dd <- cbind.data.frame(snpRun,"Chrom"=mapFile$Chrom,"n"=seq(1,nrow(mapFile)))
+
+  dL <- plyr::ddply(dd,"Chrom",function(x) {
+
+    # define where RUNs change states
+    # cutPoints for "from" and "to" on the original snpRun vector
+    cutPoints <- x[which(diff(sign(x$snpRun)) != 0),"n"]
+    from <- c(x$n[1], cutPoints + 1)
+    to <- c(cutPoints, x$n[length(x$snpRun)])
+    # internal cutPoints for n. SNP calculations
+    cutPoints <- which(diff(sign(x$snpRun)) != 0)
+    from_bis <- c(1, cutPoints + 1)
+    to_bis <- c(cutPoints, length(x$snpRun))
+    # iterate on the vectors from and to
+    iLaenge <- itertools::izip(a = from_bis,b = to_bis)
+    lengte <- sapply(iLaenge, function(n) sum(x$snpRun[n$a:n$b]))
+    # get n of rows
+    n_rows <- length(lengte)
+
+    return(data.frame("from"=from,
+                      "to"=to,
+                      "nSNP"=lengte,
+                      "chrom"=character(n_rows),
+                      "lengthBps"=numeric(n_rows), stringsAsFactors = F))
+  })
+
+  dL$Chrom <- NULL
+  # filter RUNs by minSNP
+  dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
 
-  chroms <- mapa[dL$from,"Chrom"]
-  dL$from <- mapa[dL$from,"bps"]
-  dL$to <- mapa[dL$to,"bps"]
+  # return if all rows are filtered
+  if (nrow(dL) == 0) {
+    return(dL)
+  }
+
+  chroms <- mapFile[dL$from, "Chrom"]
+
+  # debug
+  # print(chroms)
+
+  dL$from <- mapFile[dL$from, "bps"]
+  dL$to <- mapFile[dL$to,"bps"]
 
   # setting other values
   dL$chrom <- as.character(chroms)
   dL$lengthBps <- (dL$to-dL$from)
 
-  #filters on minimum run length and minimum SNP density
-  dL <- dL[dL$lengthBps > minLengthBps,]
+  # filters on minimum run length and minimum SNP density
+  dL <- dL[dL$lengthBps >= minLengthBps,]
   dL$SNPdensity <- (dL$nSNP/dL$lengthBps)*1000 # n. SNP per kbps
-  dL <- dL[dL$SNPdensity > minDensity, ]
+  dL <- dL[dL$SNPdensity >= minDensity, ]
   dL$SNPdensity <- NULL
 
-  #print(paste("N. of RUNS for this animal","is:",nrow(dL),sep=" "))
+  # return if all rows are filtered
+  if (nrow(dL) == 0) {
+    return(dL)
+  }
+
+  # filters on max heterozygotes and missing in a run
+  if(!is.null(maxOppRun) | !is.null(maxMissRun)) {
+    # Add map information to opposite and missing SNPs
+    W <- cbind.data.frame(oppositeAndMissingSNP)
+    W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
+
+    # Add nOpp and nMiss columns to dataframe
+    dL <- plyr::adply(dL, 1, function(x) {
+      # calc nOpp by filtering opposite SNPs using RUN coordinates
+      nOpp <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
+                       W$oppositeAndMissingSNP==0, ])
+
+      # calc nMiss by filtering opposite SNPs using RUN coordinates
+      nMiss <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
+                        W$oppositeAndMissingSNP==9, ])
+
+      return(c("nOpp"=nOpp,"nMiss"=nMiss))
+    })
+
+    if(!is.null(maxOppRun)) {
+      # filter RUNs by opposite SNPs
+      dL <- dL[dL$nOpp <= maxOppRun,]
+    }
+
+    if (!is.null(maxMissRun)) {
+      # filter RUNs by missing SNPs
+      dL <- dL[dL$nMiss <= maxMissRun,]
+    }
+
+    # remove nOpp and nMiss columns
+    dL <- dL[,-c(6,7)]
+
+  }
+
+  # fix row.names: whitout it, dataframe will have row names like unfiltered one
+  row.names(dL) <- NULL
+
   return(dL)
 }
+
 
 #' Function to write out RUNS per individual animal
 #'
@@ -245,7 +377,7 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #' @param ind ID of animal
 #' @param dRUN data.frame with RUNS per animal
 #' @param ROHet shall we detect ROHet or ROHom?
-#' @param breed breed (factor)
+#' @param group group (factor): population, breed, ethnicity, case/control etc.
 #'
 #' @return TRUE/FALSE if RUNS are written out or not
 #' @export
@@ -254,10 +386,11 @@ createRUNdf <- function(snpRun, mapa, minSNP = 3, minLengthBps = 1000, minDensit
 #'
 #' @examples #not yet
 #'
-writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
+
+writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
-  dRUN$breed <- rep(breed,nrow(dRUN))
+  dRUN$group <- rep(group,nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
   if(nrow(dRUN) > 0) {
@@ -279,7 +412,7 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
     )
     is_run <- TRUE
   } else {
-    message(paste("No RUNs found for animal",ind,sep=" "))
+    message(paste("No RUNs found for sample",ind,sep=" "))
     is_run <- FALSE
   }
   return(is_run)
@@ -289,75 +422,373 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,breed) {
 #' Function to count number of times a SNP is in a RUN
 #'
 #'
-#' @param runs R object (dataframe) with results per chromosome: subsetted output from RUNS.run()
-#' @param mapChrom R map object with SNP per chromosome
-#' @param genotype_path genotype (.ped) file location
+#' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","x","POSITION")
+#' @param genotypeFile genotype (.ped) file location
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #' @export
 #'
 #' @import utils
 #'
-#' @examples #not yet
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-snp_inside_ROH <- function(runs, mapChrom, genotype_path) {
+#' # defining mapChrom
+#' mappa <- data.table::fread(mapFile, header = FALSE)
+#' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+#' mappa$x <- NULL
+#' chrom <- "24"
+#' mapChrom <- mappa[mappa$CHR==chrom, ]
+#'
+#' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
+#'
+#' # fix column names and define runsChrom
+#' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+#' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+#'
+#' snpInsideRuns(runsChrom, mapChrom, genotypeFile)
+#'
+
+snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 
   # if genotype is file, read with read.big.matrix
-  if(file.exists(genotype_path)){
-    # read data. I need to know only number of columns
-    # TODO: do this in C++?
-    conn  <- file(genotype_path, open = "r")
-    oneLine <- readLines(conn, n = 1, warn = FALSE)
-    genotype.sample <- (strsplit(oneLine, " "))
-    genotype.sample <- as.character(genotype.sample[[1]])
-    close(conn)
-    
-    # read animals properly
-    colClasses <- c(
-      rep("character", 2),
-      rep("NULL", length(genotype.sample)-2)
-    )
-    pops <- data.table::fread(genotype_path, sep = " ", header = FALSE, colClasses = colClasses)
-    names(pops) <- c("POP","ID")
+  if(file.exists(genotypeFile)){
+    # read first two columns of PED with a CPP function
+    pops <- readPOPCpp(genotypeFile)
 
   } else {
-    stop(paste("file", genotype_path, "doesn't exists"))
+    stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
   M <- data.frame("SNP_NAME"=character(),
                    "CHR"=integer(),
-                   "POSITION"=numeric(),
+                   "POSITION"=integer(),
                    "COUNT"=integer(),
-                   "BREED"=factor(),
+                   "GROUP"=factor(),
                    "PERCENTAGE"=numeric(),
                    stringsAsFactors=FALSE
   )
 
-    for (ras in unique(runs$POPULATION)) {
+  unique_groups <- unique(runsChrom$POPULATION)
 
-      print(paste("Breed is:", ras))
-      runsBreed <- runs[runs$POPULATION==ras,]
-      nBreed <- nrow(pops[pops$POP==as.character(ras),])
-      print(paste("N. of animals of breed",ras,nBreed,sep=" "))
+  for (ras in sort(unique_groups)) {
 
-      iPos <- itertools::ihasNext(mapChrom$POSITION)
-      snpCount <- rep(NA,nrow(mapChrom))
+    #print(paste("Population is:", ras))
+    runsGroup <- runsChrom[runsChrom$POPULATION==ras,]
+    nGroup <- nrow(pops[pops$POP==as.character(ras),])
+    #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
 
-      i <- 1
-      while(hasNext(iPos)) {
+    iPos <- itertools::ihasNext(mapChrom$POSITION)
+    snpCount <- rep(NA,nrow(mapChrom))
 
-        pos <- iterators::nextElem(iPos)
-        inRun <- (pos >= runsBreed$START & pos <= runsBreed$END)
-        snpCount[i] <- length(inRun[inRun==TRUE])
-        i <- i + 1
-      }
+    i <- 1
+    while(hasNext(iPos)) {
 
-      mapChrom$COUNT <- snpCount
-      mapChrom$BREED <- rep(ras,nrow(mapChrom))
-      mapChrom$PERCENTAGE <- (snpCount/nBreed)*100
-      mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","BREED","PERCENTAGE")]
-      M <- rbind.data.frame(M,mapChrom)
+      pos <- iterators::nextElem(iPos)
+      inRun <- (pos >= runsGroup$START & pos <= runsGroup$END)
+      snpCount[i] <- length(inRun[inRun==TRUE])
+      i <- i + 1
     }
-  
+
+    mapChrom$COUNT <- snpCount
+    mapChrom$GROUP <- as.factor(rep(ras,nrow(mapChrom)))
+    mapChrom$PERCENTAGE <- (snpCount/nGroup)*100
+    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","GROUP","PERCENTAGE")]
+    M <- rbind.data.frame(M,mapChrom)
+  }
+
   return(M)
 }
+
+
+#' Function to detect runs using sliding window approach
+#'
+#' This is a core function not intended to be exported
+#'
+#' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+#' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+#' @param mapFile Plink map file (for SNP position)
+#' @param gaps distance between SNPs
+#' @param parameters list of parameters
+#' @param cpp use cpp functions or not (DEBUG)
+#'
+#' @details
+#' This method uses slidingg windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+#' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+#' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+#' NOTE: this methos is intented to not be exported
+#'
+#' @return A data frame of runs per individual sample
+#' @export
+#'
+
+slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE) {
+  # get individual and group
+  ind <- as.character(individual$IID)
+  group <- as.character(individual$FID)
+
+  # use sliding windows (check cpp)
+  if (cpp == TRUE) {
+    res <- slidingWindowCpp(indGeno, gaps, parameters$windowSize, step=1,
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppWindow,
+                            parameters$maxMissWindow);
+
+    snpRun <- snpInRunCpp(res$windowStatus, parameters$windowSize, parameters$threshold)
+  } else {
+    res <- slidingWindow(indGeno, gaps, parameters$windowSize, step=1,
+                            parameters$maxGap, parameters$ROHet, parameters$maxOppWindow,
+                            parameters$maxMissWindow);
+
+    snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
+  }
+
+
+  # TODO: check arguments names
+  dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
+                      parameters$minDensity, res$oppositeAndMissingGenotypes,
+                      parameters$maxOppRun, parameters$maxMissRun)
+
+  # manipulate dRUN to order columns
+  dRUN$id <- rep(ind, nrow(dRUN))
+  dRUN$group <- rep(group, nrow(dRUN))
+  dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
+
+  # debug
+  if(nrow(dRUN) > 0) {
+    message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
+  } else {
+    message(paste("No RUNs found for animal", ind))
+  }
+
+  #return RUNs to caller
+  return(dRUN)
+}
+
+
+#' Function to detect consecutive runs in a vector (individual's genotypes)
+#'
+#' This is a core function. It implements the consecutive method for detection of runs in diploid genomes
+#' (see Marras et al. 2015)
+#'
+#' @param indGeno vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)
+#' @param individual list of group (breed, population, case/control etc.) and ID of individual sample
+#' @param mapFile Plink map file (for SNP position)
+#' @param ROHet shall we detect ROHet or ROHom?
+#' @param minSNP minimum number of SNP in a run
+#' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
+#' @param maxMiss max. n. of missing SNP
+#' @param minLengthBps min length of a run in bps
+#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#'
+#' @details
+#' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
+#' No sliding windows are used. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+#' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
+#' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
+#'
+#' @return A data frame of runs per individual sample
+#' @export
+#'
+
+consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
+                            maxOppositeGenotype=1, maxMiss=1, minLengthBps=1000,
+                            maxGap=10^6) {
+
+  # runs of heterozygosity or of homozygosity?
+  typ <- ifelse(ROHet,1,0)
+
+  # animal data like IID or FID
+  ind <- as.character(individual$IID)
+  group <- as.character(individual$FID)
+
+  # initialize variables. First chromosome in ordered mapFile
+  lastChrom <- mapFile$Chrom[1]
+  lastPos <- mapFile$bps[1]
+
+  # a function to initialize runData from a position
+  initializeRun <- function(chrom, start) {
+    return(list("nOpposite"=0, "nMiss"=0, "runH"=0, "lengte"=0,
+                "start"=start, chrom=chrom, end=NULL))
+  }
+
+  # a function to update RUNs data
+  updateRUNS <- function(res, runData) {
+    new_res <- data.frame("group"=group, "id"=ind, "chrom"=as.character(runData$chrom),
+                          "nSNP"=runData$runH, "from"=runData$start,"to"=runData$end,
+                          "lengthBps"=runData$lengte, stringsAsFactors = FALSE)
+    return(rbind(res, new_res))
+  }
+
+
+  # a flag to determine if I'm in a RUN or not
+  flag_run <- FALSE
+  runData <- NULL
+
+  # initialize dataframe of results. Defining data types accordingly slinding window
+  res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
+                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
+
+  ##########################################################################################
+  #PAOLO (c++)
+  for (i in seq_along(indGeno)) {
+    # Check for Chromosome
+    currentChrom <- mapFile$Chrom[i]
+
+    # get current position
+    currentPos <- mapFile$bps[i]
+
+    # test if chromosome is changed
+    if (currentChrom != lastChrom ) {
+      # if I have run, write to file
+      # message(paste("Chromosome change", currentChrom, lastChrom))
+
+      if(flag_run == TRUE && runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+        # message("Update RUN: chromosome changed")
+        res <- updateRUNS(res, runData)
+      }
+
+      # update chrom and positions
+      lastChrom <- currentChrom
+      lastPos <- currentPos
+
+      # unset RUN flag. New runs with new chromosomes!!!
+      flag_run <- FALSE
+      runData <- NULL
+    }
+
+    # calculate gap between consecutive SNP (in the same chrom)
+    gap <- (currentPos - lastPos)
+
+    # check if current gap is larger than max allowed gap. No matter current SNP
+    if (flag_run == TRUE && gap >= maxGap) {
+      # message("Gap condition")
+
+      if(runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+        res <- updateRUNS(res, runData)
+      }
+
+      # unset RUN flag
+      flag_run <- FALSE
+      runData <- NULL
+    }
+
+    # Start for ==. Is a new RUN or not? ensure that indGeno[i] is a number
+    if (indGeno[i] == typ && !is.na(indGeno[i])){
+      # initialize run if not yet initialized, or just written after a big GAP
+      if (flag_run == FALSE) {
+        # message("Run initialized")
+        # runData is a list of attributes for the current RUN
+        runData <- initializeRun(currentChrom, currentPos)
+        flag_run <- TRUE
+      }
+
+      # update runData values
+      runData$runH <- runData$runH+1
+      runData$end <- currentPos
+      runData$lengte <- (runData$end - runData$start)
+
+    } # condition: the genotype I want
+
+    # start if !=
+    else if (indGeno[i] != typ && !is.na(indGeno[i])){
+      # if not in a run, don't do anything
+      if (flag_run == FALSE) {
+        next
+      }
+
+      # update nOpposite genotypes (in a run)
+      runData$nOpposite <- runData$nOpposite + 1
+
+      # check if maxOppositeGenotype is reached
+      if (runData$nOpposite <= maxOppositeGenotype){
+        # update runData values. This opposite genotype is a part of the RUN
+        runData$runH <- runData$runH+1
+        runData$end <- currentPos
+        runData$lengte <- (runData$end - runData$start)
+
+      } else {
+        # message("max opposite reached")
+        if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+          res <- updateRUNS(res, runData)
+        }
+
+        # unset RUN flag
+        flag_run <- FALSE
+        runData <- NULL
+
+      } # condition nOpposite greather than maxOppositeGenotype
+
+    } # condition: opposite genotype
+
+    # start if 'NA'
+    else if (is.na(indGeno[i])) {
+      # if not in a run, don't do anything
+      if (flag_run == FALSE) {
+        next
+      }
+
+      # update missing values
+      runData$nMiss <- runData$nMiss + 1
+
+      # check if maxMiss is reached
+      if (runData$nMiss <= maxMiss){
+        # update runData values. This missing genotype is a part of the RUN
+        runData$runH <- runData$runH+1
+        runData$end <- currentPos
+        runData$lengte <- (runData$end - runData$start)
+
+      }
+      else {
+        # message("max missing reached")
+        if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+          res <- updateRUNS(res, runData)
+        }
+
+        # unset RUN flag
+        flag_run <- FALSE
+        runData <- NULL
+
+      } # condition: nMissing greather than permitted
+
+    } # condition: missing genotype
+
+    # update positions
+    lastPos <- currentPos
+
+  } # cicle: for i in genotypes
+
+  # last snp if it is in a run
+  if (flag_run == TRUE ) {
+    # message("last SNP")
+    if (runData$runH >= minSNP && runData$lengte >= minLengthBps) {
+      res <- updateRUNS(res, runData)
+    }
+
+    # unset RUN flag
+    flag_run <- FALSE
+    runData <- NULL
+  }
+
+  # debug
+  if(nrow(res) > 0) {
+    message(paste("N. of RUNS for individual", ind, "is:", nrow(res)))
+  } else {
+    message(paste("No RUNs found for animal",ind))
+  }
+
+  return(res)
+}
+
