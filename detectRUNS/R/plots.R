@@ -804,8 +804,12 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 #'
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results per chromosome
-#' @param polar dataframe for SNP inside Runs
-#'
+#' @param groupSplit plots split by group
+#' @param style type of plot: ChrBarPlot, ChrBoxPlot, FrohBoxPlot, All (all plots)
+#' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
+#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)#' 
+#' @param main_title title in plot
+#' 
 #' @return plot Inbreeding by chromosome
 #' @export
 #'
@@ -826,40 +830,90 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 #' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
 #' colClasses = colClasses)
 #'
-#' plot_InbreedingChr(runs = runs, mapFile = mapFile, polar=TRUE)
+#' plot_InbreedingChr(runs = runs, mapFile = mapFile, style='All')
 #'
 
-plot_InbreedingChr<- function(runs, mapFile , polar=FALSE){
-
+plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPlot","ChrBoxPlot","FrohBoxPlot","All"), 
+                              title_prefix = NULL, main_title = NULL , savePlots = FALSE){
+  
+  if(!is.null(title_prefix) & !is.null(main_title)){
+    stop('You gave me title_prefix and main_title! Please choose one!')
+  }
+  
+  # check method
+  method <- match.arg(style)
+  
   Chromosome_Inbreeding=Froh_inbreeding(runs = runs,
                                         mapFile = mapFile,
                                         genome_wide = FALSE)
-
+  Genome_Inbreeding=Froh_inbreeding(runs = runs,
+                                    mapFile = mapFile,
+                                    genome_wide = TRUE)
+  
+  #create a title for plot
+  if(!is.null(title_prefix) & is.null(main_title)){
+      PlotTitle1 <- paste('IB_BarPlot_',title_prefix,'.pdf',sep='') # title ChrBarPlot
+      PlotTitle2 <- paste('IB_BoxPlot_',title_prefix,'.pdf',sep='') # title ChrBoxPlot
+      PlotTitle3 <- paste('Froh_BoxPlot_',title_prefix,'.pdf',sep='') # title FrohBoxPlot
+  } else if (is.null(title_prefix) & !is.null(main_title)) {
+      PlotTitle1 <- paste(main_title,'_BarPlot.pdf',sep='') # title ChrBarPlot
+      PlotTitle2 <- paste(main_title,'_BoxPlot.pdf',sep='') # title ChrBoxPlot
+      PlotTitle3 <- paste(main_title,'_Froh.pdf',sep='') # title FrohBoxPlot
+  } else{
+      PlotTitle1 <- paste('ChrBarPlot.pdf',title_prefix,'.pdf',sep='') # title ChrBarPlot
+      PlotTitle2 <- paste('ChrBoxPlot.pdf',title_prefix,'.pdf',sep='') # title ChrBoxPlot
+      PlotTitle3 <- paste('BoxPlot_Froh.pdf',title_prefix,'.pdf',sep='') # title FrohBoxPlot
+  }
+  
   # avoid warnings
-  variable <- NULL
-  value <- NULL
-  group <- NULL
-
+  variable <- NULL ; value <- NULL ; group <- NULL ; Froh_genome <- NULL
+  
   #transform data in long format using reshape2
   long_DF=melt(Chromosome_Inbreeding,id.vars = c("id", "group"))
-  compact_DF=dcast(long_DF, group ~variable ,fun.aggregate = mean, na.rm = TRUE)
-
+  compact_DF=dcast(long_DF, group ~ variable ,fun.aggregate = mean, na.rm = TRUE)
+  
   #creating list chromosome
   name_val=colnames(compact_DF)
   list_chr=gsub("Chr_","",name_val[2:length(name_val)])
-
+  
   #final data frame
   final_DF=melt(compact_DF, id.vars = c("group"))
+  
+  ########
+  # Plot BarPlot, BoxPlot, Froh BoxPlot
+  # BarPlot by Chromosome style = ChrBarPlot
+  head(final_DF)
+  if (style == "ChrBarPlot" | style == "All") { 
+    g1 <- ggplot(data=final_DF, aes(x=variable, y=value, fill=group)) 
+    g1 <- g1 +  geom_bar(stat="identity", position=position_dodge())
+    g1 <- g1 +  scale_x_discrete(labels=list_chr)  
+    g1 <- g1 +  xlab("Inbreeding by Chromosome") + ylab("Froh")
+    # if you want split or not!
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }
+    if (savePlots){ ggsave(filename = PlotTitle1 , plot = g1, device = "pdf") } else { print(g1) }
+  }
+  
+  
+  # BoxPlot by Chromosome by group - style = ChrBoxPlot
+  head(long_DF)
+  if (style == "ChrBoxPlot" | style == "All") {
+    g2 <- ggplot(data=long_DF, aes(x=variable, y=value, fill=group)) 
+    g2 <- g2 + geom_boxplot() 
+    g2 <- g2 + scale_x_discrete(labels=list_chr)  
+    g2 <- g2 + xlab("Inbreeding by Chromosome") + ylab("Froh")
+    # if you want split or not!
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }
+    if (savePlots){ ggsave(filename = PlotTitle2 , plot = g2, device = "pdf") } else { print(g2) }
+  }
+  
+  # BoxPlot Froh by group - style = FrohBoxPlot
+  head(Genome_Inbreeding)
+  if (style == "FrohBoxPlot" | style == "All") {
+    g3 <- ggplot(data=Genome_Inbreeding, aes(x=group, y=Froh_genome, colour=group)) 
+    g3 <- g3 + geom_violin(aes(fill=group))  
+    g3 <- g3 + geom_boxplot(width=0.1)
+    g3 <- g3  + ylab("Froh") # +xlab("group")
+    if (savePlots){ ggsave(filename = PlotTitle3 , plot = g3, device = "pdf") } else { print(g3) }
+  }
 
-  #ggplot
-  p <- ggplot(data=final_DF, aes(x=variable, y=value, colour=group))
-  p <- p + geom_line(aes(group=group))+ geom_point()
-  p <- p + scale_x_discrete(labels=list_chr)
-  p <- p + xlab("Inbreeding by Chromosome") + ylab("Froh")
-  p
-
-  if  (polar) {
-    p <- p + coord_polar()}
-
-  return(p)
 }
