@@ -490,9 +490,9 @@ readRunsFromFile <- function(runsFile) {
 #' @param genotypeFile genotype (.ped) file location
 #' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
-#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
-#' @param main_titel title in plot
-#'
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
+#' @param plotTitle title in plot (default)
+#' 
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files) using manhattan
 #' @export
 #'
@@ -518,10 +518,10 @@ readRunsFromFile <- function(runsFile) {
 #' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
-#' plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
+#' plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots=FALSE, plotTitle="ROHom")
 #'
 
-plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix=NULL,main_titel=NULL) {
+plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, outputName=NULL, plotTitle=NULL) {
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -570,6 +570,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 
   print("Manhattan plot: START") #FILIPPO
   group_list=unique(all_SNPinROH$BREED)
+  
   for (group in group_list){
     print(paste('Processing Groups:',group)) #FILIPPO
 
@@ -581,8 +582,6 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
     #sort a file
     #subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
     subset_group=subset_group[order(subset_group$CHR),]
-
-
     row.names(subset_group) <- 1:nrow(subset_group)
 
     #create a new position
@@ -608,14 +607,17 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
       posSub <- subset_group[ndx, 3]
       bpMidVec[which(chroms==i)] <- ((max(posSub) - min(posSub))/2) + min(posSub)
     }
-
+    
+    #! is.null(plotTitle)
+    #plotTitle == "NA"
     #create a title for manhattan plot
-    if (! is.null(main_titel)) {
-      main_title <- paste(main_titel,group,sep = ' - ')
-    }
-    else {
-      main_title <- paste("Manhattan Plot - % SNP in ROH for",group) #FILIPPO
-    }
+    if (plotTitle == FALSE) {
+      #main_title <- paste(plotTitle,group,sep = ' - ')
+      main_title <- paste(group,sep = '')
+    }else if (! is.null(plotTitle)) {
+      #main_title <- paste(group,sep = '')
+      main_title <- paste(plotTitle,group,sep = ' - ')
+    } else { main_title <- paste("Manhattan Plot - % SNP in Runs for ",group) } #FILIPPO
 
     #Manhattan plot using ggplot2
     print(paste("Creating Manhattan plot for ",group)) #FILIPPO
@@ -626,28 +628,23 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
     p <- p + theme_bw(base_size=11) + theme(legend.position='none')
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
     #p <- p + geom_hline(yintercept=4.08, linetype=1, col='red', lwd=0.5)  #linea significativa ?? #FILIPPO
-    roh_plot <- p + ggtitle(main_title) + xlab('CHROMOSOME') + ylab('% SNP in ROH')
-
-    #main_titel=NULL
+    roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs')
 
     #create a title for manhattan plot
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix,group,sep = ' - ')
+    if (! is.null(outputName)) {
+      fileNameOutput <- paste(outputName,group,sep = ' - ')
     }
     else {
-      titel <- paste("Manhattan_Plot_SNP_in_ROH_",group) #FILIPPO
+      fileNameOutput <- paste("Manhattan_Plot_SNP_in_ROH_",group) #FILIPPO
     }
 
     #Save plot
-    if(savePlots) {
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(roh_plot)
-      dev.off()
-      print(paste('Manhattan plot created for ',group)) #FILIPPO
-    }
-    else {
-      print(roh_plot)
-    }
+    if (savePlots){ 
+      ggsave(filename = paste(fileNameOutput,"_",group,".pdf",sep="") , plot = roh_plot, device = "pdf")
+    } else { print(roh_plot) }
+    
+    print(paste('Manhattan plot created for ',group)) #FILIPPO
+    
   }
 
 }
@@ -661,7 +658,10 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param mapFile map file (.map) file location
 #' @param method "sum" or "mean" for single individual
-#'
+#' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#' 
+#' @param plotTitle title in plot (default NULL)
+#' 
 #' @return plot of n. of ROH by sum/mean
 #' @export
 #'
@@ -686,19 +686,31 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, tit
 #' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
 #' colClasses = colClasses)
 #'
-#' plot_SumMeanRuns(runs, mapFile, method='sum')
-#' plot_SumMeanRuns(runs, mapFile, method='mean')
+#' plot_PatternRuns(runs, mapFile, method='sum')
+#' plot_PatternRuns(runs, mapFile, method='mean')
 #'
 
-plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
-
-  # avoid notes
-  lengthBps <- NULL
-  group <- NULL
-
+plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = NULL , savePlots = FALSE, plotTitle = NULL){
+  
   # check method
   method <- match.arg(method)
   message(paste("You are using the method:", method))
+  
+  # set title name
+  if(!is.null(plotTitle)){
+    mainTitle <- paste(plotTitle,method,sep=' - ') # title plot
+  } 
+  
+  # Set output file name
+  if(!is.null(outputName) ){
+    fileNameOutput <- paste(outputName,'_',method,'.pdf',sep='') # name outputName
+  }else{
+    fileNameOutput <- paste('RunsPattern_',method,'.pdf',sep='') # name outputName
+  }
+  
+  # avoid notes
+  lengthBps <- NULL
+  group <- NULL
 
   # checking cromsome lengths
   LengthGenome=chromosomeLength(mapFile)
@@ -726,8 +738,11 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
   #RESULTS!!!!!
   p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=group)) + geom_point()
   p <- p + xlab(paste(method," of ROH in Mbps" , sep='')) + ylab ("Number of ROH for Individual")
-  p
-
+  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) }
+     
+  # Save Plot
+  if (savePlots){ ggsave(filename = fileNameOutput , plot = p, device = "pdf") } else { print(p) }
+  
 }
 
 
@@ -737,7 +752,10 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #'
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param method "sum" or "mean" for single individual
-#'
+#' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#' 
+#' @param plotTitle title in plot (default NULL)
+#' 
 #' @return Violin plot of n. of ROH by sum/mean
 #' @export
 #'
@@ -766,19 +784,30 @@ plot_SumMeanRuns <- function(runs,mapFile,method=c('sum','mean')){
 #' plot_ViolinRuns(runs, method="mean")
 #'
 
-plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
+plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plotTitle = NULL , savePlots = FALSE) {
 
-  # avoid notes
+  # Check method
+  method <- match.arg(method)
+  message(paste("You are using the method:", method))
+  
+  # Set plot title
+  if(!is.null(plotTitle)){
+    mainTitle <- paste(plotTitle,method,sep=' - ') # title plot
+  } 
+  
+  # Set output file name
+  if(!is.null(outputName) ){
+    fileNameOutput <- paste(outputName,'_',method,'_ViolinPlot.pdf',sep='') # name outputName
+  }else{
+    fileNameOutput <- paste('ViolinPlot_',method,'.pdf',sep='') # name outputName
+  }
+  
+  # Avoid notes
   lengthBps <- NULL
   group <- NULL
 
-  #check method
-  method <- match.arg(method)
-  message(paste("You are using the method:", method))
-
-  #start calculation by method
+  # Start calculation by method
   if (method=="sum") {
-    #use ddply
     mean_roh=ddply(runs,.(id,group),summarize,sum=sum(lengthBps/10^6))
     method="Sum"
   }else{
@@ -786,13 +815,12 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
     method="Mean"
   }
 
-  #Violinplot
+  # Violin Plot
   p <- ggplot(data=mean_roh, aes(x=group, y=sum, colour=group))
   p <- p + geom_violin (aes(fill=group)) + geom_boxplot(width=0.1)
   p <- p + ylab(paste(method," of ROH in Mbps" , sep=''))
-  p
-
-  return(p)
+  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) }
+  if (savePlots){ ggsave(filename = fileNameOutput , plot = p, device = "pdf") } else { print(p) }
 
 }
 
@@ -807,8 +835,8 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 #' @param groupSplit plots split by group
 #' @param style type of plot: ChrBarPlot, ChrBoxPlot, FrohBoxPlot, All (all plots)
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
-#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)#' 
-#' @param main_title title in plot
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#' 
+#' @param plotTitle title in plot (default NULL)
 #' 
 #' @return plot Inbreeding by chromosome
 #' @export
@@ -834,11 +862,7 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean")) {
 #'
 
 plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPlot","ChrBoxPlot","FrohBoxPlot","All"), 
-                              title_prefix = NULL, main_title = NULL , savePlots = FALSE){
-  
-  if(!is.null(title_prefix) & !is.null(main_title)){
-    stop('You gave me title_prefix and main_title! Please choose one!')
-  }
+                              outputName = NULL, plotTitle = NULL , savePlots = FALSE){
   
   # check method
   method <- match.arg(style)
@@ -850,19 +874,22 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
                                     mapFile = mapFile,
                                     genome_wide = TRUE)
   
-  #create a title for plot
-  if(!is.null(title_prefix) & is.null(main_title)){
-      PlotTitle1 <- paste('IB_BarPlot_',title_prefix,'.pdf',sep='') # title ChrBarPlot
-      PlotTitle2 <- paste('IB_BoxPlot_',title_prefix,'.pdf',sep='') # title ChrBoxPlot
-      PlotTitle3 <- paste('Froh_BoxPlot_',title_prefix,'.pdf',sep='') # title FrohBoxPlot
-  } else if (is.null(title_prefix) & !is.null(main_title)) {
-      PlotTitle1 <- paste(main_title,'_BarPlot.pdf',sep='') # title ChrBarPlot
-      PlotTitle2 <- paste(main_title,'_BoxPlot.pdf',sep='') # title ChrBoxPlot
-      PlotTitle3 <- paste(main_title,'_Froh.pdf',sep='') # title FrohBoxPlot
-  } else{
-      PlotTitle1 <- paste('ChrBarPlot.pdf',title_prefix,'.pdf',sep='') # title ChrBarPlot
-      PlotTitle2 <- paste('ChrBoxPlot.pdf',title_prefix,'.pdf',sep='') # title ChrBoxPlot
-      PlotTitle3 <- paste('BoxPlot_Froh.pdf',title_prefix,'.pdf',sep='') # title FrohBoxPlot
+  # Set plot title
+  if(!is.null(plotTitle)){
+    mainTitle1 <- paste(plotTitle,sep=' - ') # title ChrBarPlot
+    mainTitle2 <- paste(plotTitle,sep=' - ') # title ChrBoxPlot
+    mainTitle3 <- paste(plotTitle,sep=' - ') # title FrohBoxPlot
+  }
+  
+  # Set output file name
+  if(!is.null(outputName) ){
+    fileNameOutput1 <- paste(outputName,'_BarPlot.pdf',sep='') # title ChrBarPlot
+    fileNameOutput2 <- paste(outputName,'_BoxPlot.pdf',sep='') # title ChrBoxPlot
+    fileNameOutput3 <- paste(outputName,'_Froh.pdf',sep='') # title FrohBoxPlot
+  }else{
+    fileNameOutput1 <- paste('ChrBarPlot','.pdf',sep='') # title ChrBarPlot
+    fileNameOutput2 <- paste('ChrBoxPlot','.pdf',sep='') # title ChrBoxPlot
+    fileNameOutput3 <- paste('BoxPlot_Froh','.pdf',sep='') # title FrohBoxPlot
   }
   
   # avoid warnings
@@ -888,11 +915,10 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g1 <- g1 +  geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 +  scale_x_discrete(labels=list_chr)  
     g1 <- g1 +  xlab("Inbreeding by Chromosome") + ylab("Froh")
-    # if you want split or not!
-    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }
-    if (savePlots){ ggsave(filename = PlotTitle1 , plot = g1, device = "pdf") } else { print(g1) }
+    if(!is.null(plotTitle)) { g1 <- g1 +  ggtitle(mainTitle1) }
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }     # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
-  
   
   # BoxPlot by Chromosome by group - style = ChrBoxPlot
   head(long_DF)
@@ -901,9 +927,9 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g2 <- g2 + geom_boxplot() 
     g2 <- g2 + scale_x_discrete(labels=list_chr)  
     g2 <- g2 + xlab("Inbreeding by Chromosome") + ylab("Froh")
-    # if you want split or not!
-    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }
-    if (savePlots){ ggsave(filename = PlotTitle2 , plot = g2, device = "pdf") } else { print(g2) }
+    if(!is.null(plotTitle)) { g2 <- g2 +  ggtitle(mainTitle2) }
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
   
   # BoxPlot Froh by group - style = FrohBoxPlot
@@ -913,7 +939,8 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g3 <- g3 + geom_violin(aes(fill=group))  
     g3 <- g3 + geom_boxplot(width=0.1)
     g3 <- g3  + ylab("Froh") # +xlab("group")
-    if (savePlots){ ggsave(filename = PlotTitle3 , plot = g3, device = "pdf") } else { print(g3) }
+    if(!is.null(plotTitle)) { g3 <- g3 +  ggtitle(mainTitle3) }
+    if (savePlots){ ggsave(filename = fileNameOutput3 , plot = g3, device = "pdf") } else { print(g3) }
   }
 
 }
