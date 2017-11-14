@@ -608,16 +608,14 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
       bpMidVec[which(chroms==i)] <- ((max(posSub) - min(posSub))/2) + min(posSub)
     }
     
-    #! is.null(plotTitle)
-    #plotTitle == "NA"
     #create a title for manhattan plot
-    if (plotTitle == FALSE) {
-      #main_title <- paste(plotTitle,group,sep = ' - ')
-      main_title <- paste(group,sep = '')
-    }else if (! is.null(plotTitle)) {
-      #main_title <- paste(group,sep = '')
-      main_title <- paste(plotTitle,group,sep = ' - ')
-    } else { main_title <- paste("Manhattan Plot - % SNP in Runs for ",group) } #FILIPPO
+    # if (plotTitle == 'none') {
+    #   main_title <- paste(group,sep = '') # only the group
+    # }else 
+    if (! is.null(plotTitle)) {
+      main_title <- paste(plotTitle,group,sep = ' - ') # title + group
+    } else { 
+      main_title <- paste("Manhattan Plot - % SNP in Runs for ",group) } # default title
 
     #Manhattan plot using ggplot2
     print(paste("Creating Manhattan plot for ",group)) #FILIPPO
@@ -625,10 +623,10 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
     p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
-    p <- p + theme_bw(base_size=11) + theme(legend.position='none')
+    p <- p + theme_bw(base_size=11) + theme(legend.position='none') 
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
     #p <- p + geom_hline(yintercept=4.08, linetype=1, col='red', lwd=0.5)  #linea significativa ?? #FILIPPO
-    roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs')
+    roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs') + theme(plot.title = element_text(hjust = 0.5))
 
     #create a title for manhattan plot
     if (! is.null(outputName)) {
@@ -738,7 +736,7 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
   #RESULTS!!!!!
   p <- ggplot(data=sum_ROH_genome, aes(x=sum, y=freq, colour=group)) + geom_point()
   p <- p + xlab(paste(method," of ROH in Mbps" , sep='')) + ylab ("Number of ROH for Individual")
-  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) }
+  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) + theme(plot.title = element_text(hjust = 0.5)) }
      
   # Save Plot
   if (savePlots){ ggsave(filename = fileNameOutput , plot = p, device = "pdf") } else { print(p) }
@@ -819,7 +817,7 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
   p <- ggplot(data=mean_roh, aes(x=group, y=sum, colour=group))
   p <- p + geom_violin (aes(fill=group)) + geom_boxplot(width=0.1)
   p <- p + ylab(paste(method," of ROH in Mbps" , sep=''))
-  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) }
+  if(!is.null(plotTitle)) { p <- p +  ggtitle(mainTitle) + theme(plot.title = element_text(hjust = 0.5)) }
   if (savePlots){ ggsave(filename = fileNameOutput , plot = p, device = "pdf") } else { print(p) }
 
 }
@@ -828,7 +826,6 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 #' Plot Inbreeding by Chromosome
 #'
 #' The function report a plot with the level fo Froh by chromosome by population
-#' It's possible choose the long plot or polar plot.
 #'
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results per chromosome
@@ -876,9 +873,9 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
   
   # Set plot title
   if(!is.null(plotTitle)){
-    mainTitle1 <- paste(plotTitle,sep=' - ') # title ChrBarPlot
-    mainTitle2 <- paste(plotTitle,sep=' - ') # title ChrBoxPlot
-    mainTitle3 <- paste(plotTitle,sep=' - ') # title FrohBoxPlot
+    mainTitle1 <- paste(plotTitle,sep='') # title ChrBarPlot
+    mainTitle2 <- paste(plotTitle,sep='') # title ChrBoxPlot
+    mainTitle3 <- paste(plotTitle,sep='') # title FrohBoxPlot
   }
   
   # Set output file name
@@ -915,7 +912,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g1 <- g1 +  geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 +  scale_x_discrete(labels=list_chr)  
     g1 <- g1 +  xlab("Inbreeding by Chromosome") + ylab("Froh")
-    if(!is.null(plotTitle)) { g1 <- g1 +  ggtitle(mainTitle1) }
+    if(!is.null(plotTitle)) { g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5)) }
     if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }     # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
@@ -927,7 +924,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g2 <- g2 + geom_boxplot() 
     g2 <- g2 + scale_x_discrete(labels=list_chr)  
     g2 <- g2 + xlab("Inbreeding by Chromosome") + ylab("Froh")
-    if(!is.null(plotTitle)) { g2 <- g2 +  ggtitle(mainTitle2) }
+    if(!is.null(plotTitle)) { g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5)) }
     if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
@@ -939,8 +936,189 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g3 <- g3 + geom_violin(aes(fill=group))  
     g3 <- g3 + geom_boxplot(width=0.1)
     g3 <- g3  + ylab("Froh") # +xlab("group")
-    if(!is.null(plotTitle)) { g3 <- g3 +  ggtitle(mainTitle3) }
+    if(!is.null(plotTitle)) { g3 <- g3 +  ggtitle(mainTitle3) + theme(plot.title = element_text(hjust = 0.5)) }
     if (savePlots){ ggsave(filename = fileNameOutput3 , plot = g3, device = "pdf") } else { print(g3) }
   }
 
 }
+
+
+
+#' Plot Distribution Runs
+#'
+#' The function report a plot with the distribution by chromosome by population
+#'
+#' @param mapFile Plink map file (for SNP position)
+#' @param runs R object (dataframe) with results per chromosome
+#' @param groupSplit plots split by group
+#' @param style type of plot: MeanClass, MeanChr, RunsPCT, RunsPCT_Chr, All (all plots)
+#' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#' 
+#' @param plotTitle title in plot (default NULL)
+#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
+#' 
+#' @return plot Distribution Runs
+#' @export
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+#' colClasses = colClasses)
+#'
+#' plot_InbreedingChr(runs = runs, mapFile = mapFile, style='All')
+#'
+
+plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") , 
+                              savePlots=FALSE, outputName=NULL, plotTitle=NULL, Class=2){
+  # check method
+  method <- match.arg(style)
+  
+  # avoid warnings
+  group =NULL ; CLASS=NULL ; MB=NULL ; chrom=NULL ; value=NULL
+  
+  # Set plot title
+  if(!is.null(plotTitle)){
+    mainTitle1 <- paste(plotTitle,'Mean Length (Mb) by Class',sep=' - ')      # title MeanClass
+    mainTitle2 <- paste(plotTitle,'Mean Length (Mb) by Chromosome',sep=' - ') # title MeanChr
+    mainTitle3 <- paste(plotTitle,'Percentage Runs by Class',sep=' - ')       # title RunsPCT
+    mainTitle4 <- paste(plotTitle,'Percentage Runs by Chromosome',sep=' - ')  # title RunsPCT_Chr
+  }else{
+    mainTitle1 <- paste('Mean Length (Mb) by Class',sep=' - ')        # title MeanClass
+    mainTitle2 <- paste('Mean Length (Mb) by Chromosome',sep=' - ')   # title MeanChr
+    mainTitle3 <- paste('Percentage Runs by Class',sep=' - ')         # title RunsPCT
+    mainTitle4 <- paste('Percentage Runs by Chromosome',sep=' - ')    # title RunsPCT_Chr
+  }
+  
+  # Set output file name
+  if(!is.null(outputName) ){
+    fileNameOutput1 <- paste(outputName,'_MeanClass.pdf',sep='')      # title MeanClass
+    fileNameOutput2 <- paste(outputName,'_MeanChr.pdf',sep='')        # title MeanChr
+    fileNameOutput3 <- paste(outputName,'_RunsPCT.pdf',sep='')        # title RunsPCT
+    fileNameOutput4 <- paste(outputName,'_RunsPCT_Chr.pdf',sep='')    # title RunsPCT_Chr
+  }else{
+    fileNameOutput1 <- paste('MeanClass','.pdf',sep='')     # title MeanClass
+    fileNameOutput2 <- paste('MeanChr','.pdf',sep='')       # title MeanChr
+    fileNameOutput3 <- paste('RunsPercentage','.pdf',sep='')       # title RunsPCT
+    fileNameOutput4 <- paste('RunsPercentage_Chr','.pdf',sep='')   # title RunsPCT_Chr
+  }
+  
+  
+  step_value=Class
+  range_mb=c(0,0,0,0,0,99999)
+  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
+    range_mb[i]=step_value
+    step_value=step_value*2
+  }
+  
+  #range_mb
+  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
+               paste(range_mb[2],"-",range_mb[3],sep=''),
+               paste(range_mb[3],"-",range_mb[4],sep=''),
+               paste(range_mb[4],"-",range_mb[5],sep=''),
+               paste(">",range_mb[5],sep=''),
+               paste(">",range_mb[6],sep=''))
+  
+  # Creating the data frame
+  runs$MB <- runs$lengthBps/1000000
+  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
+  levels(runs$CLASS) = name_CLASS
+  runs$CLASS=factor(runs$CLASS)
+  
+  head(runs)
+  
+  #RESULTS!!!!!
+  summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
+  summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
+  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
+  
+  
+  #RESULTS!!!!!
+  summary_ROH_mean_chr1 = ddply(runs,.(group,chrom),summarize,sum=mean(MB))
+  summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,chrom ~ group ,value.var = "sum"))
+  
+  
+  #RESULTS!!!!!
+  summary_ROH_count =  ddply(runs,.(CLASS,group),nrow)
+  summary_ROH_count1=dcast(summary_ROH_count, CLASS ~ group , value.var = "V1")
+  rownames(summary_ROH_count1)=summary_ROH_count1$CLASS
+  summary_ROH_count1$CLASS=NULL
+  summary_ROH_count=summary_ROH_count1
+  summary_ROH_percentage= as.data.frame(t(as.data.frame( t(summary_ROH_count)/colSums(summary_ROH_count,na.rm=TRUE))))
+  summary_ROH_percentage$CLASS=row.names(summary_ROH_percentage)
+  
+  
+  #RESULTS!!!!!
+  summary_ROH_count_chr =  ddply(runs,.(chrom,group),nrow)
+  summary_ROH_count_chr1=dcast(summary_ROH_count_chr, chrom ~ group , value.var = "V1")
+  rownames(summary_ROH_count_chr1)=summary_ROH_count_chr1$chrom
+  summary_ROH_count_chr1$chrom=NULL
+  summary_ROH_count_chr=summary_ROH_count_chr1
+  summary_ROH_percentage_chr= as.data.frame(t(as.data.frame( t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr,na.rm=TRUE))))
+  summary_ROH_percentage_chr$chrom=row.names(summary_ROH_percentage_chr)
+  
+  
+  ########
+  # Plot MeanClass, MeanChr, RunsPCT, RunsPCT_Chr
+  # Runs mean by class
+  if (style == "MeanClass" | style == "All") {
+    long_DF=melt(summary_ROH_mean_class,id.vars = c("CLASS"))
+    colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
+    g1 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group)) 
+    g1 <- g1 + geom_bar(stat="identity", position=position_dodge()) 
+    g1 <- g1 + xlab("Class Length Category") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
+    g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5))
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
+  }
+  
+  # Runs Mean by Chromosome
+  if (style == "MeanChr" | style == "All") {
+    summary_ROH_mean_chr=reorderDF(summary_ROH_mean_chr)
+    long_DF=melt(summary_ROH_mean_chr,id.vars = c("chrom"))
+    colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
+    g2 <- ggplot(data=long_DF, aes(x=chrom, y=value, fill=group)) 
+    g2 <- g2 + geom_bar(stat="identity", position=position_dodge()) 
+    g2 <- g2 + xlab("Chromosome") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
+    g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5))
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
+  }
+  
+  # Runs percentage by Class
+  if (style == "RunsPCT" | style == "All") {
+    long_DF=melt(summary_ROH_percentage,id.vars = c("CLASS"))
+    colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
+    g3 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group)) 
+    g3 <- g3 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$CLASS))
+    g3 <- g3 + xlab("Class Length Category") + ylab("Frequency")
+    g3 <- g3 +  ggtitle(mainTitle3) + theme(plot.title = element_text(hjust = 0.5))
+    if (groupSplit) { g3 <- g3 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput3 , plot = g3, device = "pdf") } else { print(g3) }
+  }
+  
+  # Runs percentage by Chromosome
+  if (style == "RunsPCT_Chr" | style == "All") {
+    summary_ROH_percentage_chr = reorderDF(summary_ROH_percentage_chr)
+    long_DF=melt(summary_ROH_percentage_chr,id.vars = c("chrom"))
+    colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
+    g4 <- ggplot(data=long_DF, aes(x=chrom, y=value, fill=group)) 
+    g4 <- g4 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$chrom))
+    g4 <- g4 + xlab("Chromosome") + ylab("Frequency")
+    g4 <- g4 +  ggtitle(mainTitle4) + theme(plot.title = element_text(hjust = 0.5))
+    if (groupSplit) { g4 <- g4 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (savePlots){ ggsave(filename = fileNameOutput4 , plot = g4, device = "pdf") } else { print(g4) }
+  }
+}
+

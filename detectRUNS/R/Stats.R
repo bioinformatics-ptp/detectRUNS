@@ -337,10 +337,14 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,chrom ~ group ,value.var = "sum"))
 
   #RESULTS!!!!!
-  summary_ROH_count = ddply(runs,.(CLASS,group),nrow)
-  names(summary_ROH_count)[3] <- "nRuns"
-  summary_ROH_percentage <- summary_ROH_count[,c(1,2)]
-  summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
+  summary_ROH_count =  ddply(runs,.(CLASS,group),nrow)
+  summary_ROH_count1=dcast(summary_ROH_count, CLASS ~ group , value.var = "V1")
+  rownames(summary_ROH_count1)=summary_ROH_count1$CLASS
+  summary_ROH_count1$CLASS=NULL
+  summary_ROH_count=summary_ROH_count1
+  summary_ROH_percentage= as.data.frame(t(as.data.frame( t(summary_ROH_count)/colSums(summary_ROH_count,na.rm=TRUE))))
+  summary_ROH_percentage$CLASS=row.names(summary_ROH_percentage)
+  summary_ROH_percentage
 
   #RESULTS!!!!!
   summary_ROH_count_chr =  ddply(runs,.(chrom,group),nrow)
