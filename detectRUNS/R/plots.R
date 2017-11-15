@@ -16,8 +16,8 @@
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
 #' @param savePlots should plots be saved out to files (one pdf file for all chromosomes) or plotted in the graphical terminal (default)?
 #' @param separatePlots should plots for each individual chromosome be saved out to separate files?
-#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
-#'
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
+#' 
 #' @return plot of runs by chromosome (pdf files)
 #' @export
 #'
@@ -42,10 +42,10 @@
 #' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
-#' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, title_prefix="ROHom")
+#' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, outputName="ROHom")
 #'
 
-plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
+plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
   # avoid notes
   chrom <- NULL
@@ -98,49 +98,31 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = from, y = id, xend = to,
                                                      yend = id,colour=as.factor(group)),alpha=alfa, size=grosse)
-    p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome:',chromosome))
-    p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
+    p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome ',chromosome))
+    p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps") 
+    p <- p + theme(plot.title = element_text(hjust = 0.5)) 
     p <- p + optionen
 
-    if(savePlots) {
-      plot_list[[chromosome]] <- p
-    } else print(p)
+    
+    if(savePlots & separatePlots) {
+      if (! is.null(outputName)) {
+        fileNameOutput <- paste(outputName, "Chr", chromosome, '.pdf', sep="_")
+      } else { fileNameOutput <- paste("Chr", chromosome, '.pdf',sep="_") }
+      ggsave(filename = fileNameOutput , plot = p, device = "pdf")
+    } else if (savePlots) { plot_list[[chromosome]] <- p 
+    } else { print(p)}
+    
   }
 
-  # if (! is.null(title_prefix)) {
-  #   titel <- paste(title_prefix, "chromosome", chromosome, sep="_")
-  # } else {
-  #   titel <- paste("chromosome", chromosome, sep="_")
-  # }
+  if(savePlots & !separatePlots) {
 
-  if(savePlots) {
-
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "all_chromosomes", sep="_")
+    if (! is.null(outputName)) {
+      fileNameOutput <- paste(outputName, "AllChromosomes.pdf", sep="_")
     } else {
-      titel <- "all_chromosomes"
+      fileNameOutput <- "Runs_AllChromosome.pdf"
     }
-      pdf(paste(titel,".pdf",sep=""))
-
-      for(p in plot_list) {
-        print(p)
-      }
-
-      dev.off()
-
-  }
-
-  if(savePlots & separatePlots) {
-    for(chromosome in names(plot_list)) {
-      if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "chromosome", chromosome, sep="_")
-      } else {
-        titel <- paste("chromosome", chromosome, sep="_")
-      }
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chromosome]])
-      dev.off()
-    }
+      plot_list_final <- gridExtra::marrangeGrob(plot_list, nrow=1, ncol=1)
+      ggsave(filename = fileNameOutput , plot = plot_list_final, device = "pdf")
   }
 }
 
@@ -153,7 +135,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param separatePlots should plots for each individual chromosome be saved out to separate files?
-#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of stacked runs by population and by chromosome (pdf files)
 #' @export
@@ -179,10 +161,10 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
-#' plot_StackedRuns(runs, savePlots=FALSE, title_prefix="ROHom")
+#' plot_StackedRuns(runs, savePlots=FALSE, outputName="ROHom")
 #'
 
-plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
+plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
   # avoid notes
   chrom <- NULL
@@ -246,55 +228,33 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
       krom$ypos <- ypos;
       utils::head(krom)
 
-      if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "chr", chromosome, rasse, "stacked", sep="_")
-      } else {
-        titel <- paste("chr", chromosome, rasse, "stacked", sep="_")
-      }
-
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
       p <- p + ggplot2::geom_segment(data=krom, aes(x = from/(10^6), y = ypos, xend = to/(10^6), yend = ypos),
                                      colour="lightcoral", alpha=1, size=0.75)
       p <- p + xlim(0, max(krom$to/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
-      p <- p + ggplot2::ggtitle(paste("POPULATION: ",rasse,'\nChromosome:',chromosome))
+      p <- p + ggplot2::ggtitle(paste("Group: ",rasse,'\nChromosome:',chromosome))
+      p <- p + theme(plot.title = element_text(hjust = 0.5))
 
-      if(savePlots) {
-        plot_list[[paste(rasse,chromosome,sep="_")]] <- p
-      } else print(p)
-
+      
+      # Save plots by Chromosome
+      if(savePlots & separatePlots) {
+        if (! is.null(outputName)) { fileNameOutput <- paste(outputName, "Chr", chromosome, rasse, "Stacked", sep="_")
+        } else { fileNameOutput <- paste("Runs_StackedChr", chromosome, rasse,sep="_") }        
+        ggsave(filename = paste(fileNameOutput,'.pdf',sep='') , plot = p, device = "pdf")
+      } else if (savePlots) { plot_list[[chromosome]] <- p 
+      } else { print(p) }
     }
-  }
-  if(savePlots) {
-
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "all_chromosomes_stacked", sep="_")
-    } else {
-      titel <- "all_chromosomes_stacked"
+    
+    # Save plot all Chromosome
+    if(savePlots & !separatePlots) {
+      if (! is.null(outputName)) { fileNameOutput <- paste(outputName, rasse ,"StackedAllChr.pdf", sep="_") 
+      } else { fileNameOutput <- paste("Runs_StackedAllChr",rasse,".pdf",sep='_') }
+      plot_list_final <- gridExtra::marrangeGrob(plot_list, nrow=1, ncol=1)
+      ggsave(filename = fileNameOutput , plot = plot_list_final, device = "pdf")
     }
-      pdf(paste(titel,".pdf",sep=""))
-
-      for(p in plot_list) {
-        print(p)
-      }
-
-      dev.off()
-
-  }
-
-  if(savePlots & separatePlots) {
-    for(chromosome in names(plot_list)) {
-      if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "stacked_chromosome", chromosome, sep="_")
-      } else {
-        titel <- paste("stacked_chromosome", chromosome, sep="_")
-      }
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chromosome]])
-      dev.off()
-    }
-  }
+  }      
 }
 
 
@@ -308,7 +268,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
 #' @param mapFile map file (.map) file location
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param separatePlots should plots for each individual chromosome be saved out to separate files?
-#' @param title_prefix title prefix (the base name of graph, if savePlots is TRUE)
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
 #' @export
@@ -333,9 +293,9 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, title_p
 #' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE, colClasses = colClasses)
 #'
 #' # plot runs per animal (interactive)
-#' plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots=FALSE, title_prefix="ROHom")
+#' plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots=FALSE, outputName="ROHom")
 
-plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, title_prefix=NULL) {
+plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
@@ -373,51 +333,30 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
     krom <- subset(snpInRuns,CHR==chromosome)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
-    p <- p + geom_line() +  ggtitle(paste('chr', chromosome, sep=' '))
+    p <- p + geom_line() +  ggtitle(paste('Chromosome', chromosome, sep=' '))
     p <- p + scale_y_continuous(limits = c(-0, 100)) + xlab("Mbps")
     p <- p + scale_x_continuous(limits = c(-0, max(snpInRuns$POSITION/(10^6))+1))
+    p <- p + theme(plot.title = element_text(hjust = 0.5))
 
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "chr", chromosome, "SNP", sep="_")
-    } else {
-      titel <- paste("chr", chromosome, "SNP", sep="_")
-    }
-
-    if(savePlots) {
-      plot_list[[chromosome]] <- p
-    } else print(p)
-
-  }
-  if(savePlots) {
-
-    if (! is.null(title_prefix)) {
-      titel <- paste(title_prefix, "all_chromosomes_snpInRun", sep="_")
-    } else {
-      titel <- "all_chromosomes_snpInRun"
-    }
-      pdf(paste(titel,".pdf",sep=""))
-
-      for(p in plot_list) {
-        print(p)
-      }
-
-      dev.off()
-
+    
+    # Save plots by Chromosome
+    if(savePlots & separatePlots) {
+      if (! is.null(outputName)) { fileNameOutput <- paste(outputName, "Chr", chromosome, "SNPinRuns", sep="_")
+      } else { fileNameOutput <- paste("Runs_SNPinRunsChr", chromosome, sep="_") }
+      ggsave(filename = paste(fileNameOutput,'.pdf',sep='') , plot = p, device = "pdf")
+    } else if (savePlots) { plot_list[[chromosome]] <- p
+    } else { print(p) }
   }
 
-  if(savePlots & separatePlots) {
-    for(chromosome in names(plot_list)) {
-      if (! is.null(title_prefix)) {
-        titel <- paste(title_prefix, "snpInRun_chromosome", chromosome, sep="_")
-      } else {
-        titel <- paste("snpInRun_chromosome", chromosome, sep="_")
-      }
-      pdf(paste(titel,".pdf",sep=""),height=8,width=10)
-      print(plot_list[[chromosome]])
-      dev.off()
-    }
+  # Save plot all Chromosome
+  if(savePlots & !separatePlots) {
+    if (! is.null(outputName)) { fileNameOutput <- paste(outputName,"SNPinRunsAllChr.pdf", sep="_")
+    } else { fileNameOutput <- paste("SNPinRunsAllChr.pdf",sep='') }
+    plot_list_final <- gridExtra::marrangeGrob(plot_list, nrow=1, ncol=1)
+    ggsave(filename = fileNameOutput , plot = plot_list_final, device = "pdf")
   }
 }
+    
 
 
 #' READ ROH OUTPUT FILE FROM PLINK
