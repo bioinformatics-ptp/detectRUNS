@@ -356,8 +356,6 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
     ggsave(filename = fileNameOutput , plot = plot_list_final, device = "pdf")
   }
 }
-    
-
 
 #' READ ROH OUTPUT FILE FROM PLINK
 #' Function to read in the output file from ROH analysis with Plink
@@ -398,25 +396,28 @@ readFromPlink <- function(plinkFile="plink.hom") {
 #' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
 #' @export
 #'
-#' @examples #not yet
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
+#' # calculating runs of Homozygosity
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#'                    ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
+#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
+#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt')
+#' 
 
 readRunsFromFile <- function(runsFile) {
 
-  runs <- read.table(
-    textConnection(
-      gsub("[,\\; \t]", "\t", readLines(runsFile))
-    ),
-    header=TRUE,
-    stringsAsFactors = FALSE
-  )
+  runs <- read.table(textConnection(gsub("[,\\; \t]", "\t", readLines(runsFile))),
+                     header=TRUE,stringsAsFactors = FALSE,
+                     colClasses = c("character", "character", "character", "integer",
+                                    "integer", "integer", "integer"))
 
   if(ncol(runs)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(runs),sep=" "))
-
-  #rename columns
-  names(runs) <- c("group","id","chrom","nSNP","from","to","lengthBps")
-
+  
   return(runs)
 }
 
@@ -564,7 +565,6 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
     p <- p + theme_bw(base_size=11) + theme(legend.position='none') 
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
-    #p <- p + geom_hline(yintercept=4.08, linetype=1, col='red', lwd=0.5)  #linea significativa ?? #FILIPPO
     roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs') + theme(plot.title = element_text(hjust = 0.5))
 
     #create a title for manhattan plot
@@ -585,7 +585,6 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
   }
 
 }
-
 
 #' Plot N. of ROH by sum/mean
 #'
