@@ -906,7 +906,7 @@ std::map <std::string, int> Runs::countSnpbyBreed(
   std::string ras;
 
   // initialize
-  for (int i=0; i<unique_breeds.size(); i++) {
+  for (unsigned int i=0; i<unique_breeds.size(); i++) {
     ras = unique_breeds[i];
     counts[ras] = 0;
   }
@@ -1044,7 +1044,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // runs.dumpRuns();
 
   // cicle among single breeds and find breed numbers
-  for (int i=0; i<unique_breeds.size(); i++) {
+  for (unsigned int i=0; i<unique_breeds.size(); i++) {
     ras = unique_breeds[i];
 
     // get total if individuals by breed
@@ -1053,7 +1053,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   }
 
   // iterate over position. Update single values
-  for (int j=0; j<POSITIONS.size(); j++) {
+  for (unsigned int j=0; j<POSITIONS.size(); j++) {
     // get a snp position
     pos = POSITIONS[j];
 
@@ -1061,7 +1061,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
     snpCounts = runs.countSnpbyBreed(pos, unique_breeds);
 
     // update results by breed
-    for (int i=0; i<unique_breeds.size(); i++) {
+    for (unsigned int i=0; i<unique_breeds.size(); i++) {
       // get a breed
       ras = unique_breeds[i];
 
