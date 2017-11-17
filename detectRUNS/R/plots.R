@@ -350,73 +350,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   }
 }
 
-<<<<<<< HEAD
-=======
-#' READ ROH OUTPUT FILE FROM PLINK
-#' Function to read in the output file from ROH analysis with Plink
-#' Relevant columns are selected, converted and renamed
-#'
-#' @param plinkFile name of output file from Plink ROH analysis #defaults to plink.hom
-#'
-#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
-#' @export
-#'
-#' @examples #not yet
-#'
-#'
 
-readFromPlink <- function(plinkFile="plink.hom") {
-
-  plinkDatei <- read.table(file=plinkFile, header=TRUE,
-                           colClasses = c("character","character","character","character","character",
-                                          "character","numeric","numeric","numeric","numeric","character","character","character" ))
-  plinkDatei <- plinkDatei[,c("FID","IID","CHR","NSNP","POS1","POS2","KB")]
-
-  #convert kbps to bps
-  plinkDatei$KB <- (plinkDatei$KB*1000)
-
-  #rename columns
-  names(plinkDatei) <- c("group","id","chrom","nSNP","from","to","lengthBps")
-
-  return(plinkDatei)
-}
-
-#' Read Runs from written-out text file
-#'
-#' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
-#' The file must contain the exact same information as the data.frame obtained from detectRUNS
-#'
-#' @param runsFile name of file where results from detectRUNS have been written to
-#'
-#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
-#' @export
-#'
-#' @examples
-#' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
-#' # calculating runs of Homozygosity
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#'                    ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-#'
-#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
-#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt')
-#'
-
-readRunsFromFile <- function(runsFile) {
-
-  runs <- read.table(textConnection(gsub("[,\\; \t]", "\t", readLines(runsFile))),
-                     header=TRUE,stringsAsFactors = FALSE,
-                     colClasses = c("character", "character", "character", "integer",
-                                    "integer", "integer", "integer"))
-
-  if(ncol(runs)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(runs),sep=" "))
-
-  return(runs)
-}
-
->>>>>>> c84da7aea9ae46438adbf026d7db68011aadcc40
 #' Plot N. of times SNP is in runs - MANHATTAN PLOT
 #'
 #' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
@@ -543,12 +477,6 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     }
 
     #create a title for manhattan plot
-<<<<<<< HEAD
-=======
-    # if (plotTitle == 'none') {
-    #   main_title <- paste(group,sep = '') # only the group
-    # }else
->>>>>>> c84da7aea9ae46438adbf026d7db68011aadcc40
     if (! is.null(plotTitle)) {
       main_title <- paste(plotTitle,group,sep = ' - ') # title + group
     } else {
