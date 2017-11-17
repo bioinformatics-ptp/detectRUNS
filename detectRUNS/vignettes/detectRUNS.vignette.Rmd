@@ -60,7 +60,7 @@ The input files for **detectRUNS** are *Plink* **ped/map** files. If one wishes 
 ## Sample data
 
 To illustrate the functionalities of **detectRUNS**, we use data on sheep (*Ovis aries*) SNP genotypes from the work by Kijas et al. (2016), available on-line through "Dryad" (https://goo.gl/sfAy8k). 
-A subset with two breeds ("Jacobs" and "Navajo-Churro", 160 animals) and three chromosomes ($6\,263$ SNPs from OAA 2, 10 and 24) was used.
+A subset with two breeds ("Jacobs" and "Navajo-Churro", 100 animals) and two chromosomes ($4\,841$ SNPs from OAA 2 and 24) was used.
 
 ```{r}
 genotypeFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
@@ -84,18 +84,18 @@ Run-related parameters are: *maxGap* (maximum gap between consecutive SNPs, in b
 
 *ROHet* controls whether runs of homozygosity (ROH/ROHom) or of heterozygosity (heterozygosity-rich regions, ROHet) will be detected. It defaults to **FALSE** (ROH/ROHom).
 
-```{r}
+```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
 slidingRuns <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
                                mapFile = mapFilePath, 
-                               windowSize = 15, 
+                               windowSize = 10, 
                                threshold = 0.05,
-                               minSNP = 3, 
+                               minSNP = 7, 
                                ROHet = FALSE, 
                                maxOppWindow = 1, 
                                maxMissWindow = 1,
                                maxGap = 10^6, 
                                minLengthBps = 1000, 
-                               minDensity = 1/10, # SNP/kbps
+                               minDensity = 1/10^6, # SNP/kbps
                                maxOppRun = NULL,
                                maxMissRun = NULL
 ) 
@@ -103,11 +103,11 @@ slidingRuns <- slidingRUNS.run(genotypeFile = genotypeFilePath,
 
 The function *consecutiveRUNS.run()* has a similar structure, obviously without the sliding-window parameters.  
 
-```{r}
+```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
 consecutiveRuns <- consecutiveRUNS.run(
                                       genotypeFile =genotypeFilePath,
                                       mapFile = mapFilePath,
-                                      minSNP = 3,
+                                      minSNP = 7,
                                       ROHet = FALSE,
                                       maxGap = 10^6,
                                       minLengthBps = 1000,
@@ -116,15 +116,53 @@ consecutiveRuns <- consecutiveRUNS.run(
 )
 ```
 
-*slidingRUNS.run()* detected **`r nrow(slidingRuns)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns)`** ROH
+*slidingRUNS.run()* detected **`r nrow(slidingRuns)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns)`** ROH.
+
+#### "Runs of heterozygosity" (a.k.a. heterozygosity-rich regions)
+
+By setting **ROHet=TRUE**, runs of heterozygosity (a.k.a. heterozygosity-rich genomic regions) are detected instead. Again, the usert can choose whether to use the sliding-window or the consecutive method.
+
+```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
+slidingRuns_het <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
+                               mapFile = mapFilePath, 
+                               windowSize = 10, 
+                               threshold = 0.05,
+                               minSNP = 7, 
+                               ROHet = TRUE, 
+                               maxOppWindow = 1, 
+                               maxMissWindow = 1,
+                               maxGap = 10^6, 
+                               minLengthBps = 1000, 
+                               minDensity = 1/10^6, # SNP/kbps
+                               maxOppRun = NULL,
+                               maxMissRun = NULL
+) 
+```
+
+```{r,results='hide',message=FALSE, cache=FALSE}
+consecutiveRuns_het <- consecutiveRUNS.run(
+                                      genotypeFile =genotypeFilePath,
+                                      mapFile = mapFilePath,
+                                      minSNP = 7,
+                                      ROHet = TRUE,
+                                      maxGap = 10^6,
+                                      minLengthBps = 1000,
+                                      maxOppRun = 1,
+                                      maxMissRun = 1
+)
+```
+
+## Summary of Runs
+
+
 
 ## Plots
 
 The figure sizes have been customised so that you can easily put two images side-by-side. 
 
 ```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+plot_Runs(runs = slidingRuns)
+plot_Runs(runs = consecutiveRuns)
 ```
 
 You can enable figure captions by `fig_caption: yes` in YAML:
