@@ -2,33 +2,6 @@
 ## STATISTIC FOR RUNS
 #####################
 
-#' Function to reorder data frames by CHROMOSOME
-#'
-#' The data frame will be reordered according to chromosome:
-#' from 1 to n, then X, Y, XY, MT
-#' The data frame needs to have a column with name "CHROMOSOME"
-#'
-#' @param dfx data frame to be reordered (with column "CHROMOSOME")
-#'
-#' @details
-#' Reorder results based on chromosome
-#'
-#' @return A reordered data frame by chromosome
-#' @export
-#'
-
-reorderDF <- function(dfx) {
-
-  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
-  list_chr <- unique(dfx$chrom)
-  chr_order <- chr_order[chr_order %in% list_chr]
-  #order
-  ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
-
-  return(ordered_dfx)
-}
-
-
 #' Function to found max position for each chromosome
 #'
 #'
@@ -107,12 +80,10 @@ chromosomeLength <- function(mapFile){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' Froh_inbreeding(runs, mapFile)
-#' Froh_inbreeding(runs, mapFile, genome_wide=FALSE)
+#' Froh_inbreeding(runs = runsDF, mapFile = mapFile)
+#' Froh_inbreeding(runs = runsDF, mapFile = mapFile, genome_wide=FALSE)
 #'
 
 Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
@@ -184,11 +155,9 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' Froh_inbreedingClass(runs, mapFile, Class=2)
+#' Froh_inbreedingClass(runs = runsDF, mapFile = mapFile, Class = 2)
 #'
 
 Froh_inbreedingClass <- function(runs, mapFile, Class=2){
@@ -273,11 +242,9 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' summaryRuns(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE)
+#' summaryRuns(runs = runsDF, mapFile = mapFile, genotypeFile = genotypeFile, Class = 2, snpInRuns = FALSE)
 #'
 
 summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
@@ -444,11 +411,9 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF = readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' tableRuns(runs=runs, genotypeFile= genotypeFile, mapFile= mapFile, threshold = 0.5)
+#' tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 #'
 
 tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold = 0.5) {
@@ -501,14 +466,10 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
     }
     close(pb)
     message("Calculation % SNP in ROH finish") #FILIPPO
-
-  }
-  else if (is.null(runs) & !is.null(SnpInRuns)) {
+  } else if (is.null(runs) & !is.null(SnpInRuns)) {
     message('I found only SNPinRuns data frame. GOOD!')
     all_SNPinROH=SnpInRuns
-
-  }
-  else{
+  } else{
     stop('You gave me Runs and SNPinRuns! Please choose one!')
   }
 
@@ -549,9 +510,6 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
       diff=new_pos-old_pos
 
       if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
-        #print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
-        #print(paste("x=",x,"diff",diff,group_subset[x-1,3],group_subset[x-1,1],"lunghezza:",length(rownames(group_subset))))
-        
         if (x==length(rownames(group_subset))){
           end_SNP=group_subset[x,1]
           TO=group_subset[x,3]

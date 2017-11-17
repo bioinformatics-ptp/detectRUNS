@@ -792,3 +792,98 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
   return(res)
 }
 
+#' READ RUNS FROM EXTERNAL FILE
+#'
+#' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
+#' The file must contain the exact same information as the data.frame obtained from detectRUNS
+#'
+#' @param inputFile name of file where results from detectRUNS have been written to
+#' @param program name of output file 
+#' 
+#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
+#' @export
+#'
+#' @examples
+#' # getting map and ped paths
+#' \dontrun{
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#'                    ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#'
+#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
+#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' }
+#' 
+
+readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
+  
+  # check method
+  method <- match.arg(program)
+  message(paste("Loading file from", method))
+
+  # detectRUNS
+  if (method == "detectRUNS"){
+    FinalRuns <- read.table(textConnection(gsub("[,\\; \t]", "\t", readLines(inputFile))),
+                            header=TRUE,stringsAsFactors = FALSE,
+                            colClasses = c(rep("character", 3), rep("numeric", 4)))
+    
+    if(ncol(FinalRuns)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(FinalRuns),sep=" "))
+  }
+  
+  # plink 
+  if (method == "plink"){
+    plinkDatei <- read.table(file=inputFile, header=TRUE,
+                             colClasses = c(rep("character", 6), rep("numeric", 4),rep("character", 3)),
+                             col.names =c("group","id","PHE","chrom","SNP1","SNP2","from","to","lengthBps","nSNP","DENSITY","PHOM","PHET"))
+    # Subset
+    FinalRuns <- plinkDatei[,c("group","id","chrom","nSNP","from","to","lengthBps")]
+    
+    #convert kbps to bps
+    FinalRuns$lengthBps <- (FinalRuns$lengthBps*1000)
+  }
+  
+  # BCFtools
+  if (method == "BCFtools"){
+    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = F,value = T)
+    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = F,
+                           #colClasses = c("character","character","character","numeric","numeric","numeric","numeric"),
+                           colClasses = c(rep("character", 3), rep("numeric", 4)),
+                           col.names=c("group","id","chrom","from","to","lengthBps","nSNP","Quality")   )
+    BCFfinal$chrom <- gsub("Chr", "",BCFfinal$chrom)
+    
+    # Final File
+    FinalRuns = BCFfinal[,c("group","id","chrom","nSNP","from","to","lengthBps")]
+  }
+
+  return(FinalRuns)
+}
+
+
+#' Function to reorder data frames by CHROMOSOME
+#'
+#' The data frame will be reordered according to chromosome:
+#' from 1 to n, then X, Y, XY, MT
+#' The data frame needs to have a column with name "CHROMOSOME"
+#'
+#' @param dfx data frame to be reordered (with column "CHROMOSOME")
+#'
+#' @details
+#' Reorder results based on chromosome
+#'
+#' @return A reordered data frame by chromosome
+#' @export
+#'
+
+reorderDF <- function(dfx) {
+  
+  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
+  list_chr <- unique(dfx$chrom)
+  chr_order <- chr_order[chr_order %in% list_chr]
+  #order
+  ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
+  
+  return(ordered_dfx)
+}

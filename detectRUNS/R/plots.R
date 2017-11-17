@@ -37,21 +37,16 @@
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
 #' # plot runs per animal (interactive)
-#' plot_Runs(runs, suppressInds=FALSE, savePlots=FALSE, outputName="ROHom")
+#' plot_Runs(runs = runsDF, suppressInds = FALSE, savePlots = FALSE, outputName = "ROHom")
 #'
 
 plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
   # avoid notes
-  chrom <- NULL
-  from <- NULL
-  to <- NULL
-  group <- NULL
+  chrom <- NULL ; from <- NULL ; to <- NULL ; group <- NULL
 
   chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$chrom)
@@ -156,12 +151,10 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
 #' # plot runs per animal (interactive)
-#' plot_StackedRuns(runs, savePlots=FALSE, outputName="ROHom")
+#' plot_StackedRuns(runs = runsDF, savePlots = FALSE, outputName = "ROHom")
 #'
 
 plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
@@ -289,11 +282,11 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE, colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
 #' # plot runs per animal (interactive)
-#' plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots=FALSE, outputName="ROHom")
+#' plot_SnpsInRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, outputName = "ROHom")
+#' 
 
 plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
@@ -357,70 +350,6 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   }
 }
 
-#' READ ROH OUTPUT FILE FROM PLINK
-#' Function to read in the output file from ROH analysis with Plink
-#' Relevant columns are selected, converted and renamed
-#'
-#' @param plinkFile name of output file from Plink ROH analysis #defaults to plink.hom
-#'
-#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
-#' @export
-#'
-#' @examples #not yet
-#'
-#'
-
-readFromPlink <- function(plinkFile="plink.hom") {
-
-  plinkDatei <- read.table(file=plinkFile, header=TRUE,
-                           colClasses = c("character","character","character","character","character",
-                                          "character","numeric","numeric","numeric","numeric","character","character","character" ))
-  plinkDatei <- plinkDatei[,c("FID","IID","CHR","NSNP","POS1","POS2","KB")]
-
-  #convert kbps to bps
-  plinkDatei$KB <- (plinkDatei$KB*1000)
-
-  #rename columns
-  names(plinkDatei) <- c("group","id","chrom","nSNP","from","to","lengthBps")
-
-  return(plinkDatei)
-}
-
-#' READ RUNS FROM FILE
-#'
-#' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
-#' The file must contain the exact same information as the data.frame obtained from detectRUNS
-#'
-#' @param runsFile name of file where results from detectRUNS have been written to
-#'
-#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
-#' @export
-#'
-#' @examples
-#' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
-#' # calculating runs of Homozygosity
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#'                    ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-#'
-#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
-#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt')
-#' 
-
-readRunsFromFile <- function(runsFile) {
-
-  runs <- read.table(textConnection(gsub("[,\\; \t]", "\t", readLines(runsFile))),
-                     header=TRUE,stringsAsFactors = FALSE,
-                     colClasses = c("character", "character", "character", "integer",
-                                    "integer", "integer", "integer"))
-
-  if(ncol(runs)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(runs),sep=" "))
-  
-  return(runs)
-}
-
 #' Plot N. of times SNP is in runs - MANHATTAN PLOT
 #'
 #' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
@@ -453,12 +382,10 @@ readRunsFromFile <- function(runsFile) {
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
-#'
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
+#' 
 #' # plot runs per animal (interactive)
-#' plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots=FALSE, plotTitle="ROHom")
+#' plot_manhattanRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, plotTitle = "ROHom")
 #'
 
 plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, outputName=NULL, plotTitle=NULL) {
@@ -549,9 +476,6 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     }
     
     #create a title for manhattan plot
-    # if (plotTitle == 'none') {
-    #   main_title <- paste(group,sep = '') # only the group
-    # }else 
     if (! is.null(plotTitle)) {
       main_title <- paste(plotTitle,group,sep = ' - ') # title + group
     } else { 
@@ -618,12 +542,10 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_PatternRuns(runs, mapFile, method='sum')
-#' plot_PatternRuns(runs, mapFile, method='mean')
+#' plot_PatternRuns(runs = runsDF, mapFile = mapFile, method = 'sum')
+#' plot_PatternRuns(runs = runsDF, mapFile = mapFile, method = 'mean')
 #'
 
 plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = NULL , savePlots = FALSE, plotTitle = NULL){
@@ -712,12 +634,10 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_ViolinRuns(runs, method="sum")
-#' plot_ViolinRuns(runs, method="mean")
+#' plot_ViolinRuns(runs = runsDF, method = "sum" , savePlots = FALSE)
+#' plot_ViolinRuns(runs = runsDF, method = "mean" , savePlots = FALSE)
 #'
 
 plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plotTitle = NULL , savePlots = FALSE) {
@@ -789,11 +709,9 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_InbreedingChr(runs = runs, mapFile = mapFile, style='All')
+#' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
 plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPlot","ChrBoxPlot","FrohBoxPlot","All"), 
@@ -911,11 +829,9 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_InbreedingChr(runs = runs, mapFile = mapFile, style='All')
+#' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
 plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") , 
