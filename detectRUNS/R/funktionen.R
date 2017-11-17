@@ -642,7 +642,6 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
                     "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
 
   ##########################################################################################
-  #PAOLO (c++)
   for (i in seq_along(indGeno)) {
     # Check for Chromosome
     currentChrom <- mapFile$Chrom[i]
