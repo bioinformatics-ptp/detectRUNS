@@ -400,7 +400,8 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results per chromosome
 #' @param threshold value 0 to 1 (default 0.7)
-#' @param SnpInRuns dataframe for SNP inside Runs
+#' @param SnpInRuns dataframe with proportion of times SNP fall inside runs
+#' (output )
 #'
 #' @details
 #' Table
