@@ -11,13 +11,13 @@
 #' Create a data frame with the max position in map file (plink format)
 #'
 #' @return A data frame with the max position for chromosome
-#' @export
 #'
 #' @examples
+#' \dontrun{
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' chromosomeLength(mapFile)
-#'
+#' }
 
 chromosomeLength <- function(mapFile){
 
@@ -52,19 +52,29 @@ chromosomeLength <- function(mapFile){
 
 
 #' Function to calculated Froh genome-wide or chromosome-wide
-#' Froh = (sum of all ROH for individual) / (Genome length covered by SNP)
 #'
+#' This function calculates the individual inbreeding coefficients based on runs of
+#' homozygosity (ROH), either per-chromosome (chromosome-wide) or based on the
+#' entire genome (genome-wide). See details of calculations below
 #'
-#' @param runs R object (dataframe) with results per chromosome
-#' @param mapFile Plink map file (for SNP position)
-#' @param genome_wide vector of TRUE/FALSE (Analisys genome-wide)
+#' @param runs R object (dataframe) with results on runs
+#' @param mapFile Plink map file (to retrieve SNP position)
+#' @param genome_wide vector of TRUE/FALSE (genome-wide or chromosome-wide;
+#' defaults to TRUE/genome-wide)
 #'
 #' @details
-#' Create a data frame with the max position in map file (plink format)
+#' Froh is calculated as:
+#'
+#' \eqn{ F_{ROH} = \frac{\sum ROH_{length}}{Length_{genome}} }
+#'
+#' Depending on whether genome-wide or chromosome-wide calculations are required,
+#' the terms in the numerator and denominator will refer to the entire genome
+#' or will be restricted to specific chromosomes.
 #'
 #' @import reshape2
 #'
-#' @return A data frame with the max position for chromosome
+#' @return A data frame with the inbreeding coefficients of each individual sample
+#'
 #' @export
 #'
 #' @examples
@@ -112,7 +122,7 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
     Froh_temp$Froh =  Froh_temp$sum/Froh_temp$CHR_LENGTH
 
     Froh=reshape2::dcast(Froh_temp,id ~ chrom ,value.var = "Froh")
-    
+
     chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
     list_chr=unique(Froh_temp$chrom)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
@@ -196,7 +206,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
   Froh_Class=unique(runs[c('group','id')])
   for (i in range_mb[1:5]){
     print(paste("Class used: >",i,sep=''))
-  
+
     # subset ROHom/ROHet
     subset_roh <- runs[runs$MB >= i,]
 
@@ -475,7 +485,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
   #consecutive number
   all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
-  
+
   #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
                             "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
@@ -489,9 +499,9 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
     #create subset for group/thresold
     group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-  
+
     #print(group_subset)
-    
+
     #variable
     old_pos=group_subset[1,7]
     snp_pos1=group_subset[1,3]
@@ -517,7 +527,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
           end_SNP=group_subset[x-1,1]
           TO=group_subset[x-1,3]
         }
-        
+
         final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5],
                                                                            "Start_SNP"=Start_SNP,
                                                                            "End_SNP"=end_SNP,

@@ -1,10 +1,11 @@
 ---
 title: "detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes"
-author: "Filippo Biscarini, Paolo Cozzi, Gabriele Marras"
+author: "Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     toc: true
+    fig_caption: yes
 vignette: >
   %\VignetteIndexEntry{detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes}
   %\VignetteEngine{knitr::rmarkdown}
@@ -74,7 +75,9 @@ For the detection of genomic runs, **detectRUNS** uses two main functions:
 1. **slidingRUNS.run**: for sliding-window-based detection
 2. **consecutiveRUNS.run**: for consecutive-SNP-based detection
 
-Input files can equivalently be paths to files (e.g. /home/Documents/experiment/file.ped/map), or dataframes from reading ped/map files into *R*.
+Input files are to be passed as paths to files (e.g. /home/Documents/experiment/file.ped/map).
+
+### sliding-window-based run detection
 
 The function *slidingRUNS.run()* accepts in input several parameters: besides the paths (or names) of ped/map files, there are parameters related to the sliding window and parameters related to the genomic runs.
 
@@ -87,19 +90,21 @@ Run-related parameters are: *maxGap* (maximum gap between consecutive SNPs, in b
 ```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
 slidingRuns <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
                                mapFile = mapFilePath, 
-                               windowSize = 10, 
+                               windowSize = 15, 
                                threshold = 0.05,
-                               minSNP = 7, 
+                               minSNP = 20, 
                                ROHet = FALSE, 
                                maxOppWindow = 1, 
                                maxMissWindow = 1,
                                maxGap = 10^6, 
-                               minLengthBps = 1000, 
-                               minDensity = 1/10^6, # SNP/kbps
+                               minLengthBps = 250000, 
+                               minDensity = 1/10^3, # SNP/kbps
                                maxOppRun = NULL,
                                maxMissRun = NULL
 ) 
 ```
+
+### consecutive SNP-based run detection
 
 The function *consecutiveRUNS.run()* has a similar structure, obviously without the sliding-window parameters.  
 
@@ -107,10 +112,10 @@ The function *consecutiveRUNS.run()* has a similar structure, obviously without 
 consecutiveRuns <- consecutiveRUNS.run(
                                       genotypeFile =genotypeFilePath,
                                       mapFile = mapFilePath,
-                                      minSNP = 7,
+                                      minSNP = 20,
                                       ROHet = FALSE,
                                       maxGap = 10^6,
-                                      minLengthBps = 1000,
+                                      minLengthBps = 250000,
                                       maxOppRun = 1,
                                       maxMissRun = 1
 )
@@ -127,12 +132,12 @@ slidingRuns_het <- slidingRUNS.run(genotypeFile = genotypeFilePath,
                                mapFile = mapFilePath, 
                                windowSize = 10, 
                                threshold = 0.05,
-                               minSNP = 7, 
+                               minSNP = 10, 
                                ROHet = TRUE, 
-                               maxOppWindow = 1, 
+                               maxOppWindow = 2, 
                                maxMissWindow = 1,
                                maxGap = 10^6, 
-                               minLengthBps = 1000, 
+                               minLengthBps = 10000, 
                                minDensity = 1/10^6, # SNP/kbps
                                maxOppRun = NULL,
                                maxMissRun = NULL
@@ -143,35 +148,66 @@ slidingRuns_het <- slidingRUNS.run(genotypeFile = genotypeFilePath,
 consecutiveRuns_het <- consecutiveRUNS.run(
                                       genotypeFile =genotypeFilePath,
                                       mapFile = mapFilePath,
-                                      minSNP = 7,
+                                      minSNP = 10,
                                       ROHet = TRUE,
                                       maxGap = 10^6,
-                                      minLengthBps = 1000,
-                                      maxOppRun = 1,
+                                      minLengthBps = 10000,
+                                      maxOppRun = 2,
                                       maxMissRun = 1
 )
 ```
+*slidingRUNS.run()* detected **`r nrow(slidingRuns_het)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns_het)`** ROHet.
 
-## Summary of Runs
+Runs of homozygosity (ROH) detected using the sliding-windows method (output from *slidingRUNS.run()*) will be used to illustrate summary statistics, plots and inbreeding calculations.
 
+## Summary statistics on detected runs
 
+The function *summaryRuns()* takes in input the dataframe with results from runs detection and calculates a number of basic descriptive statistics on runs. Additional necessary parameters are the paths to the *Plink* ped and map files. `Class` and `snpInRuns` are optional arguments.
+
+```{r, results='hide',message=FALSE, cache=FALSE}
+summaryList <- summaryRuns(runs = slidingRuns, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+```
+The returned list includes the following dataframes: 
+
+`r names(summaryList)`
+
+We can, for instance, have a look at the number of runs per class-size (Mbps) in the two breeds: we see that in Jacobs sheep there are `r summaryList$summary_ROH_count[1,1]` ROH with size up to 6 Mbps.
+
+```{r}
+summaryList$summary_ROH_count
+```
+
+Or, the average number of ROH per chromosome and per breed can be obtained.
+
+```{r}
+summaryList$summary_ROH_mean_chr
+```
+
+The dataframe "SNPinRun" contains, for each SNP, the proportion of times it falls inside a run in any given population/group:
+
+```{r}
+head(summaryList$SNPinRun)
+```
+
+The summary information included in the list returned from *summaryRuns()* is conveniently organized in data.frames, so that it can easily be visualized, manipulated and written out to text files (e.g. .csv files).
 
 ## Plots
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+**detectRUNS** produces a number of plots from the dataframe with runs (results from sliding-window or consecutive scans of the genome for ROH/ROHet).
+The basic plot, produced by the function *plot_Runs()*
 
-```{r, fig.show='hold'}
+```{r, fig.show='hold', fig.cap="Plot runs per individual"}
+slidingRuns[slidingRuns$group=="Navajo-Churro","group"] <- "NC" #rename Navajo_Churro to NC (for plotting convenience)
 plot_Runs(runs = slidingRuns)
-plot_Runs(runs = consecutiveRuns)
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+```{r, fig.show='hold', fig.cap="Plot runs per individual"}
+plot_StackedRuns(runs = slidingRuns)
+```
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+```{r, fig.show='hold', fig.cap="Plot runs per individual"}
+plot_SnpsInRuns(runs = slidingRuns, genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+```
 
 ## $F_{ROH}$: ROH-based inbreeding
 
