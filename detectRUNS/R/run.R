@@ -5,41 +5,57 @@
 
 #' Main function to detect RUNS (ROHom/ROHet) using sliding windows (a la Plink)
 #'
-#' This is the main function of detectRUNS and is used to detect runs (of homozygosity or heterozygosity)
-#' in the genome. All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
+#' This is one of the main function of detectRUNS and is used to detect runs
+#' (of homozygosity or heterozygosity)
+#' in the genome (diploid) with the sliding-window method.
+#' All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
 #' max n. of opposite genotypes etc.) are specified here.
-#' Input data are in the ped/map Plink format
+#' Input data are in the ped/map
+#' Plink format (https://www.cog-genomics.org/plink/1.9/input#ped)
 #'
-#' @param genotypeFile genotype (.ped) file location
-#' @param mapFile map file (.map) file location
-#' @param windowSize the size of sliding window (only for the slidingWindow method)
-#' @param threshold the threshold of overlapping windows of the same state (homozygous/heterozygous) to call a SNP in a RUN
-#' (only for the slidingWindow method)
-#' @param minSNP minimum n. of SNP in a RUN
-#' @param ROHet should we look for ROHet or ROHom?
-#' @param maxOppWindow max n. of homozygous/heterozygous SNP in the sliding window
-#' @param maxMissWindow max. n. of missing SNP in the sliding window
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param genotypeFile genotype (.ped) file path
+#' @param mapFile map file (.map) file path
+#' @param windowSize the size of sliding window (number of SNP loci) (default = 15)
+#' @param threshold the threshold of overlapping windows of the same state
+#' (homozygous/heterozygous) to call a SNP in a RUN (default = 0.05)
+#' @param minSNP minimum n. of SNP in a RUN (default = 3)
+#' @param ROHet should we look for ROHet or ROHom? (default = FALSE)
+#' @param maxOppWindow max n. of homozygous/heterozygous SNP in the
+#' sliding window (default = 1)
+#' @param maxMissWindow max. n. of missing SNP in the sliding window (default = 1)
+#' @param maxGap max distance between consecutive SNP to be stil considered a
+#' potential run (default = 10^6 bps)
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
-#' (only for the slidingWindow method)
 #' @param maxOppRun max n. of opposite genotype SNPs in the run (optional)
 #' @param maxMissRun max n. of missing SNPs in the run (optional)
 #'
 #' @details
-#' This function is a wrapper for many component functions that handle the input data (ped/map files), performs internal conversions,
-#' accepts parameters specifications, selects the statistical method to detect runs (sliding windows, consecutive loci) and whether
-#' runs of homozygosity (RoHom) or of heterozygosity (RoHet) are looked for.
+#' This function scans the genome (diploid) for runs using the sliding-window method.
+#' This is a wrapper function for many component functions that handle the input data
+#' (ped/map files), perform internal conversions, accept parameters specifications,
+#' select whether runs of homozygosity (RoHom) or of heterozygosity (RoHet)
+#' are looked for.
 #'
-#' In the ped file, the groups samples belong to can be specified (first column). This is important if comparisons between
-#' human ethnic groups or between animal breeds or plant varieties or biological populations are to be performed.
-#' Also, if cases and controls are to be compared, this is the place where this information needs to be specified.
+#' In the ped file, the groups samples belong to can be specified (first column).
+#' This is important if comparisons between human ethnic groups or between animal breeds
+#' or plant varieties or biological populations are to be performed.
+#' Also, if cases and controls are to be compared, this is the place where this
+#' information needs to be specified.
 #'
-#' This function returns a data frame with all runs detected in the dataset. This data frame can then be written out to a csv file.
-#' The data frame is, in turn, the input for other functions of the detectRUNS package that create plots and produce statistics
-#' of the results (see plot and statistic functions in this manual, and/or refer to the vignette of detectRUNS).
+#' This function returns a data frame with all runs detected in the dataset.
+#' This data frame can then be written out to a csv file.
+#' The data frame is, in turn, the input for other functions of the detectRUNS package
+#' that create plots and produce statistics from the results
+#' (see plots and statistics functions in this manual,
+#' and/or refer to the detectRUNS vignette).
 #'
-#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset
+#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset.
+#' The returned dataframe contains the following seven columns: "group", "id", "chrom",
+#' "nSNP", "from", "to", "lengthBps" (group: population, breed, case/control etc.;
+#' id: individual identifier; chrom: chromosome on which the run is located;
+#' nSNP: number of SNPs in the run; from: starting position of the run, in bps;
+#' to: end position of the run, in bps; lengthBps: size of the run)
 #' @export
 #'
 #' @import plyr
@@ -150,16 +166,18 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
 }
 
 
-#' Main function to detect genomic RUNS (ROHom/ROHet) using the consecutive method (Marras et al. 2014)
+#' Main function to detect genomic RUNS (ROHom/ROHet) using the consecutive method
 #'
-#' This is the main function of detectRUNS using the consecutive method and is used to detect runs (of homozygosity or heterozygosity)
-#' in the genome. All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
+#' This is the main detectRUNS function to scan the genome for runs (of homozygosity or heterozygosity)
+#' using the consecutive method (Marras et al. 2015, Animal Genetics 46(2):110-121).
+#' All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
 #' max n. of opposite genotypes etc.) are specified here.
-#' Input data are in the ped/map Plink format
+#' Input data are in the ped/map
+#' Plink format (https://www.cog-genomics.org/plink/1.9/input#ped)
 #'
-#' @param genotypeFile genotype (.ped) file location
-#' @param mapFile map file (.map) file location
-#' @param ROHet should we look for ROHet or ROHom?
+#' @param genotypeFile genotype (.ped) file path
+#' @param mapFile map file (.map) file path
+#' @param ROHet should we look for ROHet or ROHom? (default = FALSE)
 #' @param maxOppRun max n. of opposite genotype SNPs in the run (default = 0)
 #' @param maxMissRun max n. of missing SNPs in the run (default = 0)
 #' @param minSNP minimum n. of SNP in a RUN (default = 15)
@@ -167,7 +185,8 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
 #' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run (defaults to 10^6)
 #'
 #' @details
-#' This function is a wrapper for many component functions that handle the input data (ped/map files), performs internal conversions,
+#' This function scans the genome (diploid) for runs using the consecutive method.
+#' This is a wrapper function for many component functions that handle the input data (ped/map files), performs internal conversions,
 #' accepts parameters specifications, selects the statistical method to detect runs (sliding windows, consecutive loci) and whether
 #' runs of homozygosity (RoHom) or of heterozygosity (RoHet) are looked for.
 #'
@@ -179,7 +198,12 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
 #' The data frame is, in turn, the input for other functions of the detectRUNS package that create plots and produce statistics
 #' of the results (see plot and statistic functions in this manual, and/or refer to the vignette of detectRUNS).
 #'
-#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset
+#' @return A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset.
+#' The returned dataframe contains the following seven columns: "group", "id", "chrom",
+#' "nSNP", "from", "to", "lengthBps" (group: population, breed, case/control etc.;
+#' id: individual identifier; chrom: chromosome on which the run is located;
+#' nSNP: number of SNPs in the run; from: starting position of the run, in bps;
+#' to: end position of the run, in bps; lengthBps: size of the run)
 #' @export
 #'
 #' @import plyr
