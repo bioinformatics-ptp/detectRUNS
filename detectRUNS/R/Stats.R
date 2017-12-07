@@ -11,7 +11,7 @@
 #' Create a data frame with the max position in map file (plink format)
 #'
 #' @return A data frame with the max position for chromosome
-#'
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
@@ -142,14 +142,20 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 
 #' Function to calculated Froh using a ROH-class
 #'
-#' @param runs R object (dataframe) with results per chromosome
+#' This function calculates the individual inbreeding coefficients based on runs of
+#' homozygosity (ROH) using only ROH of specific size classes.
+#' The parameter \code{class} specify the size interval to split up calculations.
+#' For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 80-16, >16 Mbps long
+#' will be calculated.
+#'
+#' @param runs R object (dataframe) with ROH results
 #' @param mapFile Plink map file (for SNP position)
-#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)
 #'
-#' @details
-#' Create a data frame with the max position in map file (plink format)
 #'
-#' @return A data frame with the max position for chromosome
+#' @return A data frame with individual inbreeding coefficients based on ROH-length of
+#' specific size. The sum of ROH-length of specific size in each individual is
+#' reported alongside
 #' @export
 #'
 #' @examples
@@ -224,19 +230,33 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 }
 
 
-#' Summary for Runs file
-#' Report a list data frame for all analisys
+#' Summary statistics on detected runs
+#'
+#' This function processes the results from \code{slidingRUNS.run} and
+#' \code{consecutiveRUNS.run} and produces a number of interesting descriptives
+#' statistics on results.
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
+#' @param runs R object (dataframe) with results on detected runs
 #' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
-#' @param snpInRuns function to create a dataframe for SNP inside Runs
+#' @param snpInRuns TRUE/FALSE (default): should the function \code{snpInsideRuns} be
+#' called to compute the proportion of times each SNP falls inside a run in the
+#' group/population?
 #'
 #' @details
-#' Report a list data frame for all analisys
+#' \code{summaryRuns} calculates: i) the number of runs per chromosome and group/population;
+#' ii) the percent distribution of runs per chromosome and goup; iii) the number of
+#' runs per size-class and group; iv) the percent distribution of runs per size-class
+#' and group; v) the mean length of runs per chromosome and group; vi) the mean
+#' length of runs per size-class and group; vii) individual inbreeding coefficient
+#' estimated from ROH; viii) individual inbreeding coefficient estimated from ROH
+#' per chromosome; ix) individual inbreeding coefficient estimated from ROH per
+#' size-class
 #'
-#' @return FILIPPO
+#' @return A list of dataframes containing the most relevant descriptives
+#' statistics on detected runs. The list conveniently contains 9 dataframes that can
+#' be used for further processing and visualization, or can be written out to text files
 #' @export
 #'
 #' @examples
@@ -393,20 +413,26 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 }
 
 
-#' Summary table  for Runs file
-#' Report a list data frame for all analisys
+#' Function to retrieve most common runs in the population
+#'
+#' This function takes in input either the run results or the output from
+#' the function \code{snpInsideRuns} (proportion of times a SNP is inside a run)
+#' in the population/group, and returns a subset of the runs most commonly
+#' found in the group/population. The parameter \code{threshold} controls the definition
+#' of "most common" (e.g. in at least 50%, 70% etc. of the sampled individuals)
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
-#' @param threshold value 0 to 1 (default 0.7)
-#' @param SnpInRuns dataframe with proportion of times SNP fall inside runs
-#' (output )
+#' @param runs R object (dataframe) with results on detected runs
+#' @param threshold value from 0 to 1 (default 0.7) that controls the desired
+#' proportino of individuals carrying that run (e.g. 70%)
+#' @param SnpInRuns dataframe with the proportion of times each SNP falls inside a
+#' run in the population (output from \code{snpInsideRuns})
 #'
-#' @details
-#' Table
 #'
-#' @return FILIPPO
+#' @return A dataframe with the most common runs detected in the sampled individuals
+#' (the group/population, start and end position of the run, chromosome and number of SNP
+#' included in the run are reported in the output dataframe)
 #' @export
 #'
 #' @examples

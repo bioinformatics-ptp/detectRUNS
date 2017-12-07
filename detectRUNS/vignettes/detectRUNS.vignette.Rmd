@@ -194,35 +194,77 @@ The summary information included in the list returned from *summaryRuns()* is co
 ## Plots
 
 **detectRUNS** produces a number of plots from the dataframe with runs (results from sliding-window or consecutive scans of the genome for ROH/ROHet).
-The basic plot, produced by the function *plot_Runs()*
+
+The basic plot, produced by the function *plot_Runs()*, plots directly all runs detected in each individual against their position along the chromosome. Separate plots per chromosome are produced, and different groups/populations are coloured differently to visualize contrasting patterns.
 
 ```{r, fig.show='hold', fig.cap="Plot runs per individual"}
-slidingRuns[slidingRuns$group=="Navajo-Churro","group"] <- "NC" #rename Navajo_Churro to NC (for plotting convenience)
 plot_Runs(runs = slidingRuns)
 ```
 
-```{r, fig.show='hold', fig.cap="Plot runs per individual"}
+Alternatively, runs can still be plotted against their position along the chromosome, but stacked on top of each other: this way, regions of the genome with an excesse of runs can easily be identified. In this case, separate plots per chromosome and per group/population are produced. 
+
+```{r, fig.show='hold', fig.cap="Plot runs per individual", message=FALSE, cache=FALSE, warning=FALSE, results='hide'}
 plot_StackedRuns(runs = slidingRuns)
 ```
 
-```{r, fig.show='hold', fig.cap="Plot runs per individual"}
-plot_SnpsInRuns(runs = slidingRuns, genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+Finally, the proportion of times each SNP falls inside a run in any given population/group can be plotted against their position along the chromosome, separately per group. The function *plot_SnpsInRuns()* requires as arguments, besides the dataframe with detected runs, also the paths to the original ped (for information on groups) and map (for SNP positions) files.
+
+```{r, fig.show='hold', message=FALSE, cache=FALSE, warning=FALSE, results='hide',fig.width=6,fig.height=4}
+plot_SnpsInRuns(runs = slidingRuns[slidingRuns$chrom==2,], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+```
+
+```{r, fig.show='hold', message=FALSE, cache=FALSE, warning=FALSE, results='hide',fig.width=6,fig.height=4}
+plot_SnpsInRuns(runs = slidingRuns[slidingRuns$chrom==24,], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+```
+
+We can see from the plots above, that in the Jacob sheep breed a region with a "peakk"" of ROH can be spotted approximately halfway on chromosome 2 (OAR2) in the Jacob breed. This corresponds to the strong GWAS signals found by Kijas et al. (2016) on OAR2 associated with the four-horns phenotype.
+
+To identify the position of a runs (ROH in this case) peak, e.g. from *plot_SnpsInRuns()*, one can conveniently use the function *detectRUNS::tableRuns()*: this requests as input, besides the runs dataframe, also the paths to the original ped/map files, and the threshold above which we want information on such "peaks" (e.g. only peaks where SNP are inside runs in more than 70% of the individuals in that population/group).  
+
+```{r,message=FALSE, cache=FALSE, results='hide'}
+tableRuns(slidingRuns,genotypeFile = genotypeFilePath, mapFile = mapFilePath, threshold = 0.7)
 ```
 
 ## $F_{ROH}$: ROH-based inbreeding
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+From runs of homozygosity (ROH), individual inbreeding/consanguinity coefficients can be calculated as:
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+$$
+F_{ROH} = \frac{\sum L_{ROH}}{L_{genome}}
+$$
+
+where $\sum L_{ROH}$ is the sum of the length of all ROH detected in an individual, and $L_{genome}$ is the total length of the genome that was used.
+
+**detectRUNS** provide functions to calculate individual inbreeding/consanguinity
+
+```{r, echo=FALSE, message=FALSE, cache=FALSE}
+head(Froh_inbreeding(runs = slidingRuns,mapFile = mapFilePath,genome_wide = TRUE))
 ```
 
-Also a quote using `>`:
+The parameter "genome_wide" (which defaults to TRUE) can be used to obtain inbreeding/consanguinity estimates on a per-chromosome basis (by setting "genome_wide=FALSE")
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+Inbreeding levels can be plotted by group, for example:
 
-## Importing data from *Plink*
+```{r, echo=FALSE, message=FALSE, cache=FALSE, fig.width=5, fig.height=4}
+plot_InbreedingChr(runs = slidingRuns, mapFile = mapFilePath, style = "FrohBoxPlot")
+```
+
+## Importing data from external files
+
+Results on runs (typically ROH) from external software can be imported into **detectRUNS** to produce plots, tables and summary statistics. 
+Current options include:
+
+- ROH from **Plink** (.hom file from `--homozyg`)
+- ROH from **BCFtools** (output from the `roh` option)
+- runs dataframes from **detctRUNS** written out to files
+
+Through the parameter `program` the user can select from which source the output file is coming. As an illustration, we read in results from *detectRUNS* saved out to a .csv file:
+
+```{r, message=FALSE}
+savedRunFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+runs <- readExternalRuns(inputFile = savedRunFile, program = "detectRUNS")
+head(runs)
+```
 
 ## References
 
