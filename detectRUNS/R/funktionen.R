@@ -533,7 +533,7 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 #' NOTE: this methos is intented to not be exported
 #'
 #' @return A data frame of runs per individual sample
-#' @export
+#' @keywords internal
 #'
 
 slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE) {
@@ -793,15 +793,20 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
   return(res)
 }
 
-#' READ RUNS FROM EXTERNAL FILE
+#' Read runs from external files
 #'
-#' Function to read in the output of detectRUNS saved out to a file (e.g. write.table)
-#' The file must contain the exact same information as the data.frame obtained from detectRUNS
+#' Function to read in, from external files, the output of software for ROH:
+#' \enumerate{
+#' \item \code{detectRUNS}: output saved out to a file (e.g. write.table)
+#' \item \code{Plink}: ouput from the \code{--homozyg} option (\code{.hom} files)
+#' \item \code{BCFtools}: output from the \code{roh} option
+#' }
 #'
-#' @param inputFile name of file where results from detectRUNS have been written to
-#' @param program name of output file
+#' @param inputFile name of (path to) external file
+#' @param program source program that produced the ROH file (one of \code{detectRUNS},
+#' \code{Plink}, \code{BCFtools})
 #'
-#' @return data frame formatted to be used with plot and statistics functions (package detectRUNS)
+#' @return dataframe in the correct format to be used with plots and statistics functions from \code{detectRUNS}
 #' @export
 #'
 #' @examples
