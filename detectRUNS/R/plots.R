@@ -3,22 +3,24 @@
 ####################################
 
 # three functions for three different plots:
-# i) Runs per animal (animals on the y-axis)
-# ii) stacked runs per animal
+# i) Runs per individual sample (samples on the y-axis)
+# ii) stacked runs per sample
 # iii) n. of times a SNP is in a run in the population
 
-#' Function to plot runs per animal
+#' Function to plot runs per individual
 #'
-#' Function to plot runs per animal (see Williams et al. 2016, Animal Genetics)
-#' IDs on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
+#' Function to plot runs per individual (see Williams et al. 2016, Animal Genetics,
+#' for an example with animal data)
+#' Individual IDs on the y-axis, bps on the x-axis (position along the chromosome)
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
 #' @param suppressInds shall we suppress individual IDs on the y-axis? (defaults to FALSE)
-#' @param savePlots should plots be saved out to files (one pdf file for all chromosomes) or plotted in the graphical terminal (default)?
-#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
+#' @param savePlots should plots be saved out to files (one pdf file for all chromosomes)
+#' or plotted in the graphical terminal (default)?
+#' @param separatePlots should plots for each chromosome be saved out to separate files?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #'
-#' @return plot of runs by chromosome (pdf files)
+#' @return plot of runs by chromosome
 #' @export
 #'
 #' @import utils
@@ -124,12 +126,14 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 
 #' Plot stacked runs
 #'
-#' Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs)
-#' Counts on the y-axis, bps on the x-axis: plots run (TRUE) / no run (FALSE)
+#' Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs
+#' in specific regions of a chromosome)
+#' Counts on the y-axis, bps on the x-axis (position along the chromosome)
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
-#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
+#' @param savePlots should plots be saved out in files (default) or plotted in
+#' the graphical terminal?
+#' @param separatePlots should plots for chromosomes be saved out to separate files?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #'
 #' @return plot of stacked runs by population and by chromosome (pdf files)
@@ -251,19 +255,21 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 }
 
 
-#' Plot N. of times SNP is in runs
+#' Plot the number of times each SNP falls inside runs
 #'
-#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
+#' Function to plot the number of times/percentage each SNP is inside a run
+#' (population-specific signals) against the SNP positions in the genome.
 #' Proportions on the y-axis, bps on the x-axis
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param genotypeFile genotype (.ped) file location
-#' @param mapFile map file (.map) file location
-#' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
-#' @param separatePlots should plots for each individual chromosome be saved out to separate files?
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
+#' @param genotypeFile genotype (.ped) file path
+#' @param mapFile map file (.map) file path
+#' @param savePlots should plots be saved out in files (default) or plotted in
+#' the graphical terminal?
+#' @param separatePlots should plots for each chromosome be saved out to separate files?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #'
-#' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files)
+#' @return plot number of times a SNP is in a run by chromosome and population (pdf files)
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -286,7 +292,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #'
 #' # plot runs per animal (interactive)
 #' plot_SnpsInRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, outputName = "ROHom")
-#' 
+#'
 
 plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
 
@@ -351,19 +357,22 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 }
 
 
-#' Plot N. of times SNP is in runs - MANHATTAN PLOT
+#' Plot the proportion of times SNPs are inside runs - MANHATTAN PLOT
 #'
-#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
-#' Proportions on the y-axis, bps on the x-axis
+#' Function to plot the proportion of times/percentage each SNP in inside a run
+#' (population-specific signals) against SNP position in all chromosomes together
+#' Proportions on the y-axis, bps on the x-axis for all analysed chromosomes
+#' This is similar to the familiar GWAS Manhattan plot
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param genotypeFile genotype (.ped) file location
-#' @param mapFile map file (.map) file location
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
+#' @param genotypeFile genotype (.ped) file path
+#' @param mapFile map file (.map) file path
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default)
 #'
-#' @return plot of n. of times a SNP is in a run by chromosome and population (pdf files) using manhattan
+#' @return Manhattan plots of proportion of times SNPs are inside runs,
+#' per population (pdf files)
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -384,7 +393,7 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
-#' 
+#'
 #' # plot runs per animal (interactive)
 #' plot_manhattanRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, plotTitle = "ROHom")
 #'
@@ -511,19 +520,21 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
 
 }
 
-#' Plot N. of ROH by sum/mean
+#' Plot sum of run-lengths (or average run-lengths) against the number of runs per individual
 #'
-#' Function to plot the number of times/percentage a SNP in in a run (population-specific signals)
-#' Proportions on the y-axis, bps on the x-axis
+#' Function to plot the sum of run lengths (or the average run length) per individual
+#' against the average number of runs per individual. Points can be differentially
+#' coloured by group/population. This plot can be useful to identify patterns in
+#' the distribution of runs in different groups (e.g. few long runs vs many short runs)
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param mapFile map file (.map) file location
-#' @param method "sum" or "mean" for single individual
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
+#' @param mapFile map file (.map) file path
+#' @param method "sum" or "mean" of run lenghts per individual sample
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
 #'
-#' @return plot of n. of ROH by sum/mean
+#' @return plot of number of runs vs run-lenght sum/mean per individual sample
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -605,17 +616,19 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 }
 
 
-#' Violin plot sum/mean ROH
+#' Violin plot of run lenght per individual (either sum or mean)
 #'
-#' Function to plot violin plot
+#' Function to produce violin plots of the distribution of runs lengths per group
+#' The sum of run lengths, or its average, per individual sample is used to
+#' characterize the distribution of runs
 #'
-#' @param runs a data.frame with runs per animal (breed, id, chrom, nSNP, start, end, length)
-#' @param method "sum" or "mean" for single individual
+#' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
+#' @param method "sum" or "mean" of run lengths per individual samples
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
-#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default NULL)
 #'
-#' @return Violin plot of n. of ROH by sum/mean
+#' @return Violin plot of the distribution of runs-lenghts (sum or mean)
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -682,19 +695,21 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 }
 
 
-#' Plot Inbreeding by Chromosome
+#' Plot Froh-based inbreeding coefficients by group
 #'
-#' The function report a plot with the level fo Froh by chromosome by population
+#' The function plots the distribution of inbreeding/consanguinity coefficients
+#' per chromosome and/or group. Three types of plots can be produces: barplots, boxplots,
+#' violin plots. With \code{style="All"} all three plots are produced.
 #'
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
-#' @param groupSplit plots split by group
+#' @param runs R object (dataframe) with results on detected runs
+#' @param groupSplit plots split by group (defaults to TRUE)
 #' @param style type of plot: ChrBarPlot, ChrBoxPlot, FrohBoxPlot, All (all plots)
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
-#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
+#' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default NULL)
 #'
-#' @return plot Inbreeding by chromosome
+#' @return plots of the distribution of inbreeding by chromosome and group
 #' @export
 #'
 #' @examples
@@ -800,14 +815,16 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 }
 
 
-
-#' Plot Distribution Runs
+#' Plot Distribution of runs
 #'
-#' The function report a plot with the distribution by chromosome by population
+#' This function the distribution of runs per group. The average run length per size-class,
+#' the average run length per chromosome (and group), the percent distribution of runs
+#' per size-class and group, and the proportion of runs per chromosome are plotted.
+#' With \code{style="All"} all three plots are produced.
 #'
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
-#' @param groupSplit plots split by group
+#' @param runs R object (dataframe) with results on detected runs
+#' @param groupSplit plots split by group (defaults to TRUE)
 #' @param style type of plot: MeanClass, MeanChr, RunsPCT, RunsPCT_Chr, All (all plots)
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'

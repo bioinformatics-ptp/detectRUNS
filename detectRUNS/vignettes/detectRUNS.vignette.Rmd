@@ -222,7 +222,13 @@ We can see from the plots above, that in the Jacob sheep breed a region with a "
 To identify the position of a runs (ROH in this case) peak, e.g. from *plot_SnpsInRuns()*, one can conveniently use the function *detectRUNS::tableRuns()*: this requests as input, besides the runs dataframe, also the paths to the original ped/map files, and the threshold above which we want information on such "peaks" (e.g. only peaks where SNP are inside runs in more than 70% of the individuals in that population/group).  
 
 ```{r,message=FALSE, cache=FALSE, results='hide'}
-tableRuns(slidingRuns,genotypeFile = genotypeFilePath, mapFile = mapFilePath, threshold = 0.7)
+tableRuns(runs =  slidingRuns, genotypeFile = genotypeFilePath, mapFile = mapFilePath, threshold = 0.7)
+```
+
+The information on the proportion of times each SNP falls inside a run, can also be plotted against SNP positions in all chromosomes together, similarly to the familiar GWAS **Manhattan plots**:
+
+```{r, message=FALSE, cache=FALSE, results='hide', fig.width=6,fig.height=4}
+plot_manhattanRuns(runs = slidingRuns[slidingRuns$group=="Jacobs",], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
 ```
 
 ## $F_{ROH}$: ROH-based inbreeding

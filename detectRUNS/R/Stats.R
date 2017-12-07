@@ -239,7 +239,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results on detected runs
-#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
 #' @param snpInRuns TRUE/FALSE (default): should the function \code{snpInsideRuns} be
 #' called to compute the proportion of times each SNP falls inside a run in the
 #' group/population?
@@ -419,16 +419,15 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' the function \code{snpInsideRuns} (proportion of times a SNP is inside a run)
 #' in the population/group, and returns a subset of the runs most commonly
 #' found in the group/population. The parameter \code{threshold} controls the definition
-#' of "most common" (e.g. in at least 50%, 70% etc. of the sampled individuals)
+#' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results on detected runs
 #' @param threshold value from 0 to 1 (default 0.7) that controls the desired
-#' proportino of individuals carrying that run (e.g. 70%)
+#' proportion of individuals carrying that run (e.g. 70\%)
 #' @param SnpInRuns dataframe with the proportion of times each SNP falls inside a
 #' run in the population (output from \code{snpInsideRuns})
-#'
 #'
 #' @return A dataframe with the most common runs detected in the sampled individuals
 #' (the group/population, start and end position of the run, chromosome and number of SNP
