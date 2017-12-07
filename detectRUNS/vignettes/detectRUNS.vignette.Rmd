@@ -123,7 +123,7 @@ consecutiveRuns <- consecutiveRUNS.run(
 
 *slidingRUNS.run()* detected **`r nrow(slidingRuns)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns)`** ROH.
 
-#### "Runs of heterozygosity" (a.k.a. heterozygosity-rich regions)
+### "Runs of heterozygosity" (a.k.a. heterozygosity-rich regions)
 
 By setting **ROHet=TRUE**, runs of heterozygosity (a.k.a. heterozygosity-rich genomic regions) are detected instead. Again, the usert can choose whether to use the sliding-window or the consecutive method.
 
@@ -156,7 +156,7 @@ consecutiveRuns_het <- consecutiveRUNS.run(
                                       maxMissRun = 1
 )
 ```
-*slidingRUNS.run()* detected **`r nrow(slidingRuns_het)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns_het)`** ROHet.
+*slidingRUNS.run()* detected **`r nrow(slidingRuns_het)`** ROHet; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns_het)`** ROHet.
 
 Runs of homozygosity (ROH) detected using the sliding-windows method (output from *slidingRUNS.run()*) will be used to illustrate summary statistics, plots and inbreeding calculations.
 
