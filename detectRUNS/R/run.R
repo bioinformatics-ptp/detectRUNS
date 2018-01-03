@@ -72,7 +72,7 @@
 #' \dontrun{
 #' # skipping runs calculation
 #' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
-#' minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1, maxGap=10^6,
+#' minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
 #' minLengthBps = 100000,  minDensity = 1/10000)
 #' }
 #' # loading pre-calculated data
