@@ -291,7 +291,8 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
 #' # plot runs per animal (interactive)
-#' plot_SnpsInRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, outputName = "ROHom")
+#' plot_SnpsInRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile,
+#' savePlots = FALSE, outputName = "ROHom")
 #'
 
 plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
@@ -395,7 +396,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
 #' # plot runs per animal (interactive)
-#' plot_manhattanRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, savePlots = FALSE, plotTitle = "ROHom")
+#' plot_manhattanRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile,
+#' savePlots = FALSE, plotTitle = "ROHom")
 #'
 
 plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, outputName=NULL, plotTitle=NULL) {

@@ -274,7 +274,8 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' summaryRuns(runs = runsDF, mapFile = mapFile, genotypeFile = genotypeFile, Class = 2, snpInRuns = FALSE)
+#' summaryRuns(runs = runsDF, mapFile = mapFile, genotypeFile = genotypeFile, Class = 2,
+#' snpInRuns = FALSE)
 #'
 
 summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
