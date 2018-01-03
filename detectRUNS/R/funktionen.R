@@ -817,7 +817,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #'
 #' # calculating runs of Homozygosity
 #' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#'                    ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
 #' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
 #' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
