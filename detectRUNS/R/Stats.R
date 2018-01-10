@@ -2,33 +2,6 @@
 ## STATISTIC FOR RUNS
 #####################
 
-#' Function to reorder data frames by CHROMOSOME
-#'
-#' The data frame will be reordered according to chromosome:
-#' from 1 to n, then X, Y, XY, MT
-#' The data frame needs to have a column with name "CHROMOSOME"
-#'
-#' @param dfx data frame to be reordered (with column "CHROMOSOME")
-#'
-#' @details
-#' Reorder results based on chromosome
-#'
-#' @return A reordered data frame by chromosome
-#' @export
-#'
-
-reorderDF <- function(dfx) {
-
-  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
-  list_chr <- unique(dfx$chrom)
-  chr_order <- chr_order[chr_order %in% list_chr]
-  #order
-  ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
-
-  return(ordered_dfx)
-}
-
-
 #' Function to found max position for each chromosome
 #'
 #'
@@ -38,13 +11,13 @@ reorderDF <- function(dfx) {
 #' Create a data frame with the max position in map file (plink format)
 #'
 #' @return A data frame with the max position for chromosome
-#' @export
-#'
+#' @keywords internal
 #' @examples
+#' \dontrun{
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' chromosomeLength(mapFile)
-#'
+#' }
 
 chromosomeLength <- function(mapFile){
 
@@ -79,19 +52,29 @@ chromosomeLength <- function(mapFile){
 
 
 #' Function to calculated Froh genome-wide or chromosome-wide
-#' Froh = (sum of all ROH for individual) / (Genome length covered by SNP)
 #'
+#' This function calculates the individual inbreeding coefficients based on runs of
+#' homozygosity (ROH), either per-chromosome (chromosome-wide) or based on the
+#' entire genome (genome-wide). See details of calculations below
 #'
-#' @param runs R object (dataframe) with results per chromosome
-#' @param mapFile Plink map file (for SNP position)
-#' @param genome_wide vector of TRUE/FALSE (Analisys genome-wide)
+#' @param runs R object (dataframe) with results on runs
+#' @param mapFile Plink map file (to retrieve SNP position)
+#' @param genome_wide vector of TRUE/FALSE (genome-wide or chromosome-wide;
+#' defaults to TRUE/genome-wide)
 #'
 #' @details
-#' Create a data frame with the max position in map file (plink format)
+#' Froh is calculated as:
+#'
+#' \eqn{ F_{ROH} = \frac{\sum ROH_{length}}{Length_{genome}} }
+#'
+#' Depending on whether genome-wide or chromosome-wide calculations are required,
+#' the terms in the numerator and denominator will refer to the entire genome
+#' or will be restricted to specific chromosomes.
 #'
 #' @import reshape2
 #'
-#' @return A data frame with the max position for chromosome
+#' @return A data frame with the inbreeding coefficients of each individual sample
+#'
 #' @export
 #'
 #' @examples
@@ -107,12 +90,10 @@ chromosomeLength <- function(mapFile){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' Froh_inbreeding(runs, mapFile)
-#' Froh_inbreeding(runs, mapFile, genome_wide=FALSE)
+#' Froh_inbreeding(runs = runsDF, mapFile = mapFile)
+#' Froh_inbreeding(runs = runsDF, mapFile = mapFile, genome_wide=FALSE)
 #'
 
 Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
@@ -141,7 +122,7 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
     Froh_temp$Froh =  Froh_temp$sum/Froh_temp$CHR_LENGTH
 
     Froh=reshape2::dcast(Froh_temp,id ~ chrom ,value.var = "Froh")
-    
+
     chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
     list_chr=unique(Froh_temp$chrom)
     new_list_chr=as.vector(sort(factor(list_chr,levels=chr_order, ordered=TRUE)))
@@ -161,14 +142,20 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 
 #' Function to calculated Froh using a ROH-class
 #'
-#' @param runs R object (dataframe) with results per chromosome
+#' This function calculates the individual inbreeding coefficients based on runs of
+#' homozygosity (ROH) using only ROH of specific size classes.
+#' The parameter \code{class} specify the size interval to split up calculations.
+#' For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 80-16, >16 Mbps long
+#' will be calculated.
+#'
+#' @param runs R object (dataframe) with ROH results
 #' @param mapFile Plink map file (for SNP position)
-#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)
 #'
-#' @details
-#' Create a data frame with the max position in map file (plink format)
 #'
-#' @return A data frame with the max position for chromosome
+#' @return A data frame with individual inbreeding coefficients based on ROH-length of
+#' specific size. The sum of ROH-length of specific size in each individual is
+#' reported alongside
 #' @export
 #'
 #' @examples
@@ -184,11 +171,9 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' Froh_inbreedingClass(runs, mapFile, Class=2)
+#' Froh_inbreedingClass(runs = runsDF, mapFile = mapFile, Class = 2)
 #'
 
 Froh_inbreedingClass <- function(runs, mapFile, Class=2){
@@ -227,7 +212,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
   Froh_Class=unique(runs[c('group','id')])
   for (i in range_mb[1:5]){
     print(paste("Class used: >",i,sep=''))
-  
+
     # subset ROHom/ROHet
     subset_roh <- runs[runs$MB >= i,]
 
@@ -245,19 +230,33 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 }
 
 
-#' Summary for Runs file
-#' Report a list data frame for all analisys
+#' Summary statistics on detected runs
+#'
+#' This function processes the results from \code{slidingRUNS.run} and
+#' \code{consecutiveRUNS.run} and produces a number of interesting descriptives
+#' statistics on results.
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
-#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
-#' @param snpInRuns function to create a dataframe for SNP inside Runs
+#' @param runs R object (dataframe) with results on detected runs
+#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param snpInRuns TRUE/FALSE (default): should the function \code{snpInsideRuns} be
+#' called to compute the proportion of times each SNP falls inside a run in the
+#' group/population?
 #'
 #' @details
-#' Report a list data frame for all analisys
+#' \code{summaryRuns} calculates: i) the number of runs per chromosome and group/population;
+#' ii) the percent distribution of runs per chromosome and goup; iii) the number of
+#' runs per size-class and group; iv) the percent distribution of runs per size-class
+#' and group; v) the mean length of runs per chromosome and group; vi) the mean
+#' length of runs per size-class and group; vii) individual inbreeding coefficient
+#' estimated from ROH; viii) individual inbreeding coefficient estimated from ROH
+#' per chromosome; ix) individual inbreeding coefficient estimated from ROH per
+#' size-class
 #'
-#' @return FILIPPO
+#' @return A list of dataframes containing the most relevant descriptives
+#' statistics on detected runs. The list conveniently contains 9 dataframes that can
+#' be used for further processing and visualization, or can be written out to text files
 #' @export
 #'
 #' @examples
@@ -273,11 +272,10 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' summaryRuns(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE)
+#' summaryRuns(runs = runsDF, mapFile = mapFile, genotypeFile = genotypeFile, Class = 2,
+#' snpInRuns = FALSE)
 #'
 
 summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
@@ -337,10 +335,14 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,chrom ~ group ,value.var = "sum"))
 
   #RESULTS!!!!!
-  summary_ROH_count = ddply(runs,.(CLASS,group),nrow)
-  names(summary_ROH_count)[3] <- "nRuns"
-  summary_ROH_percentage <- summary_ROH_count[,c(1,2)]
-  summary_ROH_percentage$pctRuns <- summary_ROH_count$nRuns/sum(summary_ROH_count$nRuns)
+  summary_ROH_count =  ddply(runs,.(CLASS,group),nrow)
+  summary_ROH_count1=dcast(summary_ROH_count, CLASS ~ group , value.var = "V1")
+  rownames(summary_ROH_count1)=summary_ROH_count1$CLASS
+  summary_ROH_count1$CLASS=NULL
+  summary_ROH_count=summary_ROH_count1
+  summary_ROH_percentage= as.data.frame(t(as.data.frame( t(summary_ROH_count)/colSums(summary_ROH_count,na.rm=TRUE))))
+  summary_ROH_percentage$CLASS=row.names(summary_ROH_percentage)
+  summary_ROH_percentage
 
   #RESULTS!!!!!
   summary_ROH_count_chr =  ddply(runs,.(chrom,group),nrow)
@@ -412,19 +414,25 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 }
 
 
-#' Summary table  for Runs file
-#' Report a list data frame for all analisys
+#' Function to retrieve most common runs in the population
+#'
+#' This function takes in input either the run results or the output from
+#' the function \code{snpInsideRuns} (proportion of times a SNP is inside a run)
+#' in the population/group, and returns a subset of the runs most commonly
+#' found in the group/population. The parameter \code{threshold} controls the definition
+#' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
-#' @param runs R object (dataframe) with results per chromosome
-#' @param threshold value 0 to 1 (default 0.7)
-#' @param SnpInRuns dataframe for SNP inside Runs
+#' @param runs R object (dataframe) with results on detected runs
+#' @param threshold value from 0 to 1 (default 0.7) that controls the desired
+#' proportion of individuals carrying that run (e.g. 70\%)
+#' @param SnpInRuns dataframe with the proportion of times each SNP falls inside a
+#' run in the population (output from \code{snpInsideRuns})
 #'
-#' @details
-#' Table
-#'
-#' @return FILIPPO
+#' @return A dataframe with the most common runs detected in the sampled individuals
+#' (the group/population, start and end position of the run, chromosome and number of SNP
+#' included in the run are reported in the output dataframe)
 #' @export
 #'
 #' @examples
@@ -440,11 +448,9 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
+#' runsDF = readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' tableRuns(runs=runs, genotypeFile= genotypeFile, mapFile= mapFile, threshold = 0.5)
+#' tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 #'
 
 tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold = 0.5) {
@@ -497,20 +503,16 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
     }
     close(pb)
     message("Calculation % SNP in ROH finish") #FILIPPO
-
-  }
-  else if (is.null(runs) & !is.null(SnpInRuns)) {
+  } else if (is.null(runs) & !is.null(SnpInRuns)) {
     message('I found only SNPinRuns data frame. GOOD!')
     all_SNPinROH=SnpInRuns
-
-  }
-  else{
+  } else{
     stop('You gave me Runs and SNPinRuns! Please choose one!')
   }
 
   #consecutive number
   all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
-  
+
   #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
                             "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
@@ -524,9 +526,9 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
     #create subset for group/thresold
     group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-  
+
     #print(group_subset)
-    
+
     #variable
     old_pos=group_subset[1,7]
     snp_pos1=group_subset[1,3]
@@ -545,9 +547,6 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
       diff=new_pos-old_pos
 
       if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
-        #print(paste("Group:",grp,'- Chr:',chr_old,'- n SNP in Runs:',snp_count)) #FILIPPO
-        #print(paste("x=",x,"diff",diff,group_subset[x-1,3],group_subset[x-1,1],"lunghezza:",length(rownames(group_subset))))
-        
         if (x==length(rownames(group_subset))){
           end_SNP=group_subset[x,1]
           TO=group_subset[x,3]
@@ -555,7 +554,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
           end_SNP=group_subset[x-1,1]
           TO=group_subset[x-1,3]
         }
-        
+
         final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5],
                                                                            "Start_SNP"=Start_SNP,
                                                                            "End_SNP"=end_SNP,

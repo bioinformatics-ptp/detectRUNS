@@ -33,9 +33,10 @@ genoConvert <- function(x) {
 #' @param windowSize size of window (n. of SNP)
 #'
 #' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
-#' @export
 #'
 #' @examples
+#'
+#'\dontrun{
 #' maxHet <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
@@ -46,6 +47,7 @@ genoConvert <- function(x) {
 #'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
 #' windowSize <- length(x)
 #' test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
+#' }
 #' # test
 #' # $windowStatus
 #' # [1] TRUE
@@ -71,7 +73,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 
 #' Function to check whether a window is (loosely) heterozygous or not
 #'
-#' This is a core function. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
+#' This is a core function within the sliding-window workflow. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
 #'
 #' @param x vector of 0/1 genotypes (from genoConvert())
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
@@ -82,9 +84,9 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #' @param windowSize size of window (n. of SNP)
 #'
 #' @return a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of "opposite and missing" genotype
-#' @export
 #'
 #' @examples
+#' \dontrun{
 #' maxHom <- 1
 #' maxMiss <- 1
 #' maxGap <- 10^6
@@ -95,6 +97,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 #' windowSize <- length(x)
 #' test <- heteroZygotTest(x, gaps, maxHom, maxMiss, maxGap,i,windowSize)
+#' }
 #' # test
 #' # $windowStatus
 #' # [1] FALSE
@@ -131,9 +134,9 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' @param maxMiss max. n. of missing SNP
 #'
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
-#' @export
 #'
 #' @examples
+#' \dontrun{
 #' windowSize <- 5
 #' step= 1
 #' maxOppositeGenotype <- 1
@@ -145,6 +148,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 #' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
 #'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
 #' test <- slidingWindow(x, gaps, windowSize, step, maxGap, ROHet, maxOppositeGenotype, maxMiss)
+#' }
 #' # test is
 #' # $windowStatus
 #' # [1] FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
@@ -208,7 +212,6 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
 #' @param threshold threshold to call a SNP in a RUN
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
-#' @export
 #'
 #' @examples #not yet
 #'
@@ -258,7 +261,6 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @param maxMissRun max n. of missing SNPs in the run (not in the window!)
 #'
 #' @return a data.frame with RUNS per animal
-#' @export
 #'
 #' @import utils
 #' @import itertools
@@ -380,7 +382,6 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 #' @param group group (factor): population, breed, ethnicity, case/control etc.
 #'
 #' @return TRUE/FALSE if RUNS are written out or not
-#' @export
 #'
 #' @import utils
 #'
@@ -532,7 +533,7 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 #' NOTE: this methos is intented to not be exported
 #'
 #' @return A data frame of runs per individual sample
-#' @export
+#' @keywords internal
 #'
 
 slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE) {
@@ -600,7 +601,8 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
 #' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
 #'
 #' @return A data frame of runs per individual sample
-#' @export
+#'
+#' @keywords internal
 #'
 
 consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
@@ -642,7 +644,6 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
                     "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
 
   ##########################################################################################
-  #PAOLO (c++)
   for (i in seq_along(indGeno)) {
     # Check for Chromosome
     currentChrom <- mapFile$Chrom[i]
@@ -792,3 +793,103 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
   return(res)
 }
 
+#' Read runs from external files
+#'
+#' Function to read in, from external files, the output of software for ROH:
+#' \enumerate{
+#' \item \code{detectRUNS}: output saved out to a file (e.g. write.table)
+#' \item \code{Plink}: ouput from the \code{--homozyg} option (\code{.hom} files)
+#' \item \code{BCFtools}: output from the \code{roh} option
+#' }
+#'
+#' @param inputFile name of (path to) external file
+#' @param program source program that produced the ROH file (one of \code{detectRUNS},
+#' \code{Plink}, \code{BCFtools})
+#'
+#' @return dataframe in the correct format to be used with plots and statistics functions from \code{detectRUNS}
+#' @export
+#'
+#' @examples
+#' # getting map and ped paths
+#' \dontrun{
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
+#' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#'
+#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
+#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' }
+#'
+
+readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
+
+  # check method
+  method <- match.arg(program)
+  message(paste("Loading file from", method))
+
+  # detectRUNS
+  if (method == "detectRUNS"){
+    FinalRuns <- read.table(textConnection(gsub("[,\\; \t]", "\t", readLines(inputFile))),
+                            header=TRUE,stringsAsFactors = FALSE,
+                            colClasses = c(rep("character", 3), rep("numeric", 4)))
+
+    if(ncol(FinalRuns)!=7) stop(paste("Number of colums must be 7! Current n. of cols:",ncol(FinalRuns),sep=" "))
+  }
+
+  # plink
+  if (method == "plink"){
+    plinkDatei <- read.table(file=inputFile, header=TRUE,
+                             colClasses = c(rep("character", 6), rep("numeric", 4),rep("character", 3)),
+                             col.names =c("group","id","PHE","chrom","SNP1","SNP2","from","to","lengthBps","nSNP","DENSITY","PHOM","PHET"))
+    # Subset
+    FinalRuns <- plinkDatei[,c("group","id","chrom","nSNP","from","to","lengthBps")]
+
+    #convert kbps to bps
+    FinalRuns$lengthBps <- (FinalRuns$lengthBps*1000)
+  }
+
+  # BCFtools
+  if (method == "BCFtools"){
+    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = F,value = T)
+    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = F,
+                           #colClasses = c("character","character","character","numeric","numeric","numeric","numeric"),
+                           colClasses = c(rep("character", 3), rep("numeric", 4)),
+                           col.names=c("group","id","chrom","from","to","lengthBps","nSNP","Quality")   )
+    BCFfinal$chrom <- gsub("Chr", "",BCFfinal$chrom)
+
+    # Final File
+    FinalRuns = BCFfinal[,c("group","id","chrom","nSNP","from","to","lengthBps")]
+  }
+
+  return(FinalRuns)
+}
+
+
+#' Function to reorder data frames by CHROMOSOME
+#'
+#' The data frame will be reordered according to chromosome:
+#' from 1 to n, then X, Y, XY, MT
+#' The data frame needs to have a column with name "CHROMOSOME"
+#'
+#' @param dfx data frame to be reordered (with column "CHROMOSOME")
+#'
+#' @details
+#' Reorder results based on chromosome
+#'
+#' @return A reordered data frame by chromosome
+#' @export
+#'
+
+reorderDF <- function(dfx) {
+
+  chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
+  list_chr <- unique(dfx$chrom)
+  chr_order <- chr_order[chr_order %in% list_chr]
+  #order
+  ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
+
+  return(ordered_dfx)
+}
