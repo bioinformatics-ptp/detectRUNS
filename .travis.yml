@@ -1,19 +1,18 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
 language: r
+
 sudo: required
 
-before_install:
-  - sudo add-apt-repository ppa:marutter/rrutter -y
-  - sudo apt-get update -q
-  - sudo apt-get install r-cran-rjags -y
-  - cd detectRUNS
-
-r_packages:
-  - covr
-
 r:
+  - oldrel
   - release
   - devel
-  - oldrel
+
+cache: packages
+
+before_install:
+  - cd detectRUNS
 
 after_success:
-  - Rscript -e 'library(covr);codecov()'
+  - Rscript -e 'covr::codecov()'
