@@ -1,9 +1,15 @@
 ---
 title: "detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes"
-author: "Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras"
+author:
+- name: Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras
+  affiliation: 
+  - IBBA-CNR, PTP, Università degli Studi di Sassari, University of Guelph
+  email: filippo.biscarini@ibba.cnr.it
 date: "`r Sys.Date()`"
-output: 
-  rmarkdown::html_vignette:
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
     toc: true
     fig_caption: yes
 vignette: >
@@ -28,7 +34,7 @@ And *then* rebuild the package, so it updates the doc.
 library("detectRUNS")
 ```
 
-## Overview
+# Overview
 
 **detectRUNS** is a R package for the detection of **runs of homozygosity** (**ROH/ROHom**) and of **heterozygosity** (**ROHet**, a.k.a. "**heterozygosity-rich regions**") in diploid genomes.
 **ROH/ROHom** were first studied in humans (e.g. McQuillan et al. 2008) and rapidly found applications not only in human genetics abut also in animal genetics (e.g. Ferencakovic et al., 2011, in *Bos taurus*). More recently, the idea of looking also at "runs of heterozygosity" (**ROHet** or, more appropriately, "heterozygosity-rich regions") has been proposed (Wiliams et al. 2016).
@@ -58,17 +64,19 @@ The input files for **detectRUNS** are *Plink* **ped/map** files. If one wishes 
 
 **detectRUNS** can be used with genotype data from any diploid organisms: humans, animals or plants.
 
-## Sample data
+# Sample data
 
 To illustrate the functionalities of **detectRUNS**, we use data on sheep (*Ovis aries*) SNP genotypes from the work by Kijas et al. (2016), available on-line through "Dryad" (https://goo.gl/sfAy8k). 
 A subset with two breeds ("Jacobs" and "Navajo-Churro", 100 animals) and two chromosomes ($4\,841$ SNPs from OAA 2 and 24) was used.
 
 ```{r}
-genotypeFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
-mapFilePath <- system.file("extdata", "Kijas2016_Sheep_subset.map", package="detectRUNS")
+genotypeFilePath <- system.file(
+  "extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
+mapFilePath <- system.file(
+  "extdata", "Kijas2016_Sheep_subset.map", package="detectRUNS")
 ```
 
-## Detect runs
+# Detect runs
 
 For the detection of genomic runs, **detectRUNS** uses two main functions:
 
@@ -77,7 +85,7 @@ For the detection of genomic runs, **detectRUNS** uses two main functions:
 
 Input files are to be passed as paths to files (e.g. /home/Documents/experiment/file.ped/map).
 
-### sliding-window-based run detection
+## sliding-window-based run detection
 
 The function *slidingRUNS.run()* accepts in input several parameters: besides the paths (or names) of ped/map files, there are parameters related to the sliding window and parameters related to the genomic runs.
 
@@ -88,84 +96,88 @@ Run-related parameters are: *maxGap* (maximum gap between consecutive SNPs, in b
 *ROHet* controls whether runs of homozygosity (ROH/ROHom) or of heterozygosity (heterozygosity-rich regions, ROHet) will be detected. It defaults to **FALSE** (ROH/ROHom).
 
 ```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
-slidingRuns <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
-                               mapFile = mapFilePath, 
-                               windowSize = 15, 
-                               threshold = 0.05,
-                               minSNP = 20, 
-                               ROHet = FALSE, 
-                               maxOppWindow = 1, 
-                               maxMissWindow = 1,
-                               maxGap = 10^6, 
-                               minLengthBps = 250000, 
-                               minDensity = 1/10^3, # SNP/kbps
-                               maxOppRun = NULL,
-                               maxMissRun = NULL
+slidingRuns <- slidingRUNS.run(
+  genotypeFile = genotypeFilePath, 
+  mapFile = mapFilePath, 
+  windowSize = 15, 
+  threshold = 0.05,
+  minSNP = 20, 
+  ROHet = FALSE, 
+  maxOppWindow = 1, 
+  maxMissWindow = 1,
+  maxGap = 10^6, 
+  minLengthBps = 250000, 
+  minDensity = 1/10^3, # SNP/kbps
+  maxOppRun = NULL,
+  maxMissRun = NULL
 ) 
 ```
 
-### consecutive SNP-based run detection
+## consecutive SNP-based run detection
 
 The function *consecutiveRUNS.run()* has a similar structure, obviously without the sliding-window parameters.  
 
 ```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
 consecutiveRuns <- consecutiveRUNS.run(
-                                      genotypeFile =genotypeFilePath,
-                                      mapFile = mapFilePath,
-                                      minSNP = 20,
-                                      ROHet = FALSE,
-                                      maxGap = 10^6,
-                                      minLengthBps = 250000,
-                                      maxOppRun = 1,
-                                      maxMissRun = 1
+  genotypeFile =genotypeFilePath,
+  mapFile = mapFilePath,
+  minSNP = 20,
+  ROHet = FALSE,
+  maxGap = 10^6,
+  minLengthBps = 250000,
+  maxOppRun = 1,
+  maxMissRun = 1
 )
 ```
 
 *slidingRUNS.run()* detected **`r nrow(slidingRuns)`** ROH; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns)`** ROH.
 
-### "Runs of heterozygosity" (a.k.a. heterozygosity-rich regions)
+## "Runs of heterozygosity" (a.k.a. heterozygosity-rich regions)
 
 By setting **ROHet=TRUE**, runs of heterozygosity (a.k.a. heterozygosity-rich genomic regions) are detected instead. Again, the usert can choose whether to use the sliding-window or the consecutive method.
 
 ```{r,results='hide',message=FALSE, cache=FALSE, warning=FALSE}
-slidingRuns_het <- slidingRUNS.run(genotypeFile = genotypeFilePath, 
-                               mapFile = mapFilePath, 
-                               windowSize = 10, 
-                               threshold = 0.05,
-                               minSNP = 10, 
-                               ROHet = TRUE, 
-                               maxOppWindow = 2, 
-                               maxMissWindow = 1,
-                               maxGap = 10^6, 
-                               minLengthBps = 10000, 
-                               minDensity = 1/10^6, # SNP/kbps
-                               maxOppRun = NULL,
-                               maxMissRun = NULL
+slidingRuns_het <- slidingRUNS.run(
+  genotypeFile = genotypeFilePath, 
+  mapFile = mapFilePath, 
+  windowSize = 10, 
+  threshold = 0.05,
+  minSNP = 10, 
+  ROHet = TRUE, 
+  maxOppWindow = 2, 
+  maxMissWindow = 1,
+  maxGap = 10^6, 
+  minLengthBps = 10000, 
+  minDensity = 1/10^6, # SNP/kbps
+  maxOppRun = NULL,
+  maxMissRun = NULL
 ) 
 ```
 
 ```{r,results='hide',message=FALSE, cache=FALSE}
 consecutiveRuns_het <- consecutiveRUNS.run(
-                                      genotypeFile =genotypeFilePath,
-                                      mapFile = mapFilePath,
-                                      minSNP = 10,
-                                      ROHet = TRUE,
-                                      maxGap = 10^6,
-                                      minLengthBps = 10000,
-                                      maxOppRun = 2,
-                                      maxMissRun = 1
+  genotypeFile =genotypeFilePath,
+  mapFile = mapFilePath,
+  minSNP = 10,
+  ROHet = TRUE,
+  maxGap = 10^6,
+  minLengthBps = 10000,
+  maxOppRun = 2,
+  maxMissRun = 1
 )
 ```
 *slidingRUNS.run()* detected **`r nrow(slidingRuns_het)`** ROHet; *consecutiveRUNS.run()* detected **`r nrow(consecutiveRuns_het)`** ROHet.
 
 Runs of homozygosity (ROH) detected using the sliding-windows method (output from *slidingRUNS.run()*) will be used to illustrate summary statistics, plots and inbreeding calculations.
 
-## Summary statistics on detected runs
+# Summary statistics on detected runs
 
 The function *summaryRuns()* takes in input the dataframe with results from runs detection and calculates a number of basic descriptive statistics on runs. Additional necessary parameters are the paths to the *Plink* ped and map files. `Class` and `snpInRuns` are optional arguments.
 
 ```{r, results='hide',message=FALSE, cache=FALSE}
-summaryList <- summaryRuns(runs = slidingRuns, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+summaryList <- summaryRuns(
+  runs = slidingRuns, mapFile = mapFilePath, genotypeFile = genotypeFilePath, 
+  Class = 6, snpInRuns = TRUE)
 ```
 The returned list includes the following dataframes: 
 
@@ -191,7 +203,7 @@ head(summaryList$SNPinRun)
 
 The summary information included in the list returned from *summaryRuns()* is conveniently organized in data.frames, so that it can easily be visualized, manipulated and written out to text files (e.g. .csv files).
 
-## Plots
+# Plots
 
 **detectRUNS** produces a number of plots from the dataframe with runs (results from sliding-window or consecutive scans of the genome for ROH/ROHet).
 
@@ -210,11 +222,15 @@ plot_StackedRuns(runs = slidingRuns)
 Finally, the proportion of times each SNP falls inside a run in any given population/group can be plotted against their position along the chromosome, separately per group. The function *plot_SnpsInRuns()* requires as arguments, besides the dataframe with detected runs, also the paths to the original ped (for information on groups) and map (for SNP positions) files.
 
 ```{r, fig.show='hold', message=FALSE, cache=FALSE, warning=FALSE, results='hide',fig.width=6,fig.height=4}
-plot_SnpsInRuns(runs = slidingRuns[slidingRuns$chrom==2,], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+plot_SnpsInRuns(
+  runs = slidingRuns[slidingRuns$chrom==2,], genotypeFile = genotypeFilePath, 
+  mapFile = mapFilePath)
 ```
 
 ```{r, fig.show='hold', message=FALSE, cache=FALSE, warning=FALSE, results='hide',fig.width=6,fig.height=4}
-plot_SnpsInRuns(runs = slidingRuns[slidingRuns$chrom==24,], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+plot_SnpsInRuns(
+  runs = slidingRuns[slidingRuns$chrom==24,], genotypeFile = genotypeFilePath, 
+  mapFile = mapFilePath)
 ```
 
 We can see from the plots above, that in the Jacob sheep breed a region with a "peakk"" of ROH can be spotted approximately halfway on chromosome 2 (OAR2) in the Jacob breed. This corresponds to the strong GWAS signals found by Kijas et al. (2016) on OAR2 associated with the four-horns phenotype.
@@ -222,7 +238,9 @@ We can see from the plots above, that in the Jacob sheep breed a region with a "
 To identify the position of a runs (ROH in this case) peak, e.g. from *plot_SnpsInRuns()*, one can conveniently use the function *detectRUNS::tableRuns()*: this requests as input, besides the runs dataframe, also the paths to the original ped/map files, and the threshold above which we want information on such "peaks" (e.g. only peaks where SNP are inside runs in more than 70% of the individuals in that population/group).  
 
 ```{r,message=FALSE, cache=FALSE, results='hide'}
-topRuns <- tableRuns(runs =  slidingRuns, genotypeFile = genotypeFilePath, mapFile = mapFilePath, threshold = 0.7)
+topRuns <- tableRuns(
+  runs =  slidingRuns, genotypeFile = genotypeFilePath, mapFile = mapFilePath, 
+  threshold = 0.7)
 ```
 
 ```{r,echo=FALSE}
@@ -232,10 +250,12 @@ print(topRuns)
 The information on the proportion of times each SNP falls inside a run, can also be plotted against SNP positions in all chromosomes together, similarly to the familiar GWAS **Manhattan plots**:
 
 ```{r, message=FALSE, cache=FALSE, results='hide', fig.width=6,fig.height=4}
-plot_manhattanRuns(runs = slidingRuns[slidingRuns$group=="Jacobs",], genotypeFile = genotypeFilePath, mapFile = mapFilePath)
+plot_manhattanRuns(
+  runs = slidingRuns[slidingRuns$group=="Jacobs",], 
+  genotypeFile = genotypeFilePath, mapFile = mapFilePath)
 ```
 
-## $F_{ROH}$: ROH-based inbreeding
+# $F_{ROH}$: ROH-based inbreeding
 
 From runs of homozygosity (ROH), individual inbreeding/consanguinity coefficients can be calculated as:
 
@@ -248,7 +268,8 @@ where $\sum L_{ROH}$ is the sum of the length of all ROH detected in an individu
 **detectRUNS** provide functions to calculate individual inbreeding/consanguinity
 
 ```{r, echo=FALSE, message=FALSE, cache=FALSE}
-head(Froh_inbreeding(runs = slidingRuns,mapFile = mapFilePath,genome_wide = TRUE))
+head(
+  Froh_inbreeding(runs = slidingRuns,mapFile = mapFilePath,genome_wide = TRUE))
 ```
 
 The parameter "genome_wide" (which defaults to TRUE) can be used to obtain inbreeding/consanguinity estimates on a per-chromosome basis (by setting "genome_wide=FALSE")
@@ -256,10 +277,11 @@ The parameter "genome_wide" (which defaults to TRUE) can be used to obtain inbre
 Inbreeding levels can be plotted by group, for example:
 
 ```{r, echo=FALSE, message=FALSE, cache=FALSE, fig.width=5, fig.height=4}
-plot_InbreedingChr(runs = slidingRuns, mapFile = mapFilePath, style = "FrohBoxPlot")
+plot_InbreedingChr(
+  runs = slidingRuns, mapFile = mapFilePath, style = "FrohBoxPlot")
 ```
 
-## Importing data from external files
+# Importing data from external files
 
 Results on runs (typically ROH) from external software can be imported into **detectRUNS** to produce plots, tables and summary statistics. 
 Current options include:
@@ -271,12 +293,13 @@ Current options include:
 Through the parameter `program` the user can select from which source the output file is coming. As an illustration, we read in results from *detectRUNS* saved out to a .csv file:
 
 ```{r, message=FALSE}
-savedRunFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+savedRunFile <- system.file(
+  "extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 runs <- readExternalRuns(inputFile = savedRunFile, program = "detectRUNS")
 head(runs)
 ```
 
-## References
+# References
 
 - Bjelland, D. W., K. A. Weigel, N. Vukasinovic, and J. D. Nkrumah. "Evaluation of inbreeding depression in Holstein cattle using whole-genome SNP markers and alternative measures of genomic inbreeding." journal of dairy Science 96, no. 7 (2013): 4697-4706.
 - Ferencakovic, Maja, Edin Hamzic, Birgit Gredler, Ino Curik, and Johann Sölkner. "Runs of homozygosity reveal genome-wide autozygosity in the Austrian Fleckvieh cattle." Agriculturae Conspectus Scientificus (ACS) 76, no. 4 (2011): 325-329.

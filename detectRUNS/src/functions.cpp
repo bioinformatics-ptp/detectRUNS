@@ -170,7 +170,7 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param maxHet max n. of heterozygous SNP in a homozygous window
 //' @param maxMiss max n. of missing in a window
-//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 //'
 //' @return TRUE/FALSE (whether a window is homozygous or NOT)
 //'
@@ -221,7 +221,7 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param maxHom max n. of homozygous SNP in a heterozygous window
 //' @param maxMiss max n. of missing in a window
-//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 //'
 //' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 //' @export
@@ -348,13 +348,13 @@ StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
 
 //' Function to slide a window over a vector (individual's genotypes)
 //'
-//' This is a core function. The functions to detect RUNS are slidden over the genome
+//' This is a core function. The functions to detect RUNS are slid over the genome
 //'
 //' @param data vector of 0/1/2 genotypes
 //' @param gaps vector of differences between consecutive positions (gaps) in bps
 //' @param windowSize size of window (n. of SNP)
-//' @param step by which (how many SNP) is the window slidden
-//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//' @param step by which (how many SNP) is the window slid
+//' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 //' @param ROHet shall we detect ROHet or ROHom?
 //' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 //' @param maxMiss max. n. of missing SNP
@@ -634,7 +634,7 @@ void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVec
 //' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 //' @param maxMiss max. n. of missing SNP
 //' @param minLengthBps min length of a run in bps
-//' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+//' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 //'
 //' @details
 //' The consecutive method detect runs by consecutively scanning SNP loci along the genome.

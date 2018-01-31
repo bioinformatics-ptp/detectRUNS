@@ -1,16 +1,17 @@
 Package: detectRUNS
 Type: Package
-Title: Detect Runs of Homozygosity (RoHom) and Runs of Heterozygosity (RoHet) in
-    diploid genomes
+Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
+    Diploid Genomes
 Version: 0.9.2
 Date: 2018-01-03
-Authors@R: as.person(c(
-    "Filippo Biscarini <filippo.biscarini@ibba.cnr.it> [aut, cre]",
-    "Gabriele Marras <gabriele.marras@ptp.it> [aut]",
-    "Paolo Cozzi <paolo.cozzi@ptp.it> [ctb]"
-  ))
-Description: Detection of Runs of Homozygosity (RoHom) and of
-    Heterozygosity (RoHet) in diploid genomes using two methods (sliding windows
+Authors@R: c(
+    person("Filippo","Biscarini", email="filippo.biscarini@gmail.com", role=c("aut", "cre")),
+    person("Paolo","Cozzi", email="paolo.cozzi@ptp.it", role="aut"),
+    person("Giustino","Gaspa", email="gigaspa@uniss.it", role="aut"),
+    person("Gabriele","Marras", email="gmarras@uoguelph.ca", role="aut")
+  )
+Description: Detection of runs of homozygosity and of heterozygosity
+    in diploid genomes using two methods (sliding windows
     and consecutive runs).
 Depends:
     R (>= 3.0.0)
@@ -29,6 +30,7 @@ RoxygenNote: 6.0.1
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    prettydoc
 LinkingTo: Rcpp
 VignetteBuilder: knitr
