@@ -34,3 +34,4 @@ Suggests:
     prettydoc
 LinkingTo: Rcpp
 VignetteBuilder: knitr
+URL: https://github.com/bioinformatics-ptp/detectRUNS/tree/master/detectRUNS
