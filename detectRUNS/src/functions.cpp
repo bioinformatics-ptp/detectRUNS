@@ -60,12 +60,13 @@ SEXP fast_factor( SEXP x ) {
 //' @return converted vector of genotypes (0/1)
 //'
 //' @examples
-//' geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-//' geno01 <- genoConvertCpp(geno012)
+//' \dontrun{
+//'   geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
+//'   geno01 <- genoConvertCpp(geno012)
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 IntegerVector genoConvertCpp(IntegerVector genotype) {
@@ -102,12 +103,13 @@ IntegerVector genoConvertCpp(IntegerVector genotype) {
 //' @return converted vector of genotypes (0/1)
 //'
 //' @examples
-//' ped <- c("A", "A", "A", "B", "5", "5")
-//' geno01 <- pedConvertCpp(ped)
+//' \dontrun{
+//'   ped <- c("A", "A", "A", "B", "5", "5")
+//'   geno01 <- pedConvertCpp(ped)
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 IntegerVector pedConvertCpp(CharacterVector genotype) {
@@ -175,19 +177,20 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //' @return TRUE/FALSE (whether a window is homozygous or NOT)
 //'
 //' @examples
-//' maxHet <- 1
-//' maxMiss <- 1
-//' maxGap <- 10^6
-//' x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
-//'        0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-//' gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
-//'           9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-//' test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
-//' # test is TRUE
+//' \dontrun{
+//'   maxHet <- 1
+//'   maxMiss <- 1
+//'   maxGap <- 10^6
+//'   x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
+//'          0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+//'   gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
+//'             9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
+//'   test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
+//'   # test is TRUE
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap) {
@@ -224,22 +227,22 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 //'
 //' @return TRUE/FALSE (whether a window is heterozygous or NOT)
-//' @export
 //'
 //' @examples
-//' maxHom <- 1
-//' maxMiss <- 1
-//' maxGap <- 10^6
-//' x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
-//'        1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
-//' gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
-//'           4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
-//' test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-//' # test is FALSE
+//' \dontrun{
+//'   maxHom <- 1
+//'   maxMiss <- 1
+//'   maxGap <- 10^6
+//'   x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
+//'          1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
+//'   gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
+//'             4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
+//'   test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
+//'   # test is FALSE
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int maxMiss, int maxGap) {
@@ -276,12 +279,13 @@ bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int max
 //' snps are found in data array
 //'
 //' @examples
-//' data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
-//' oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
+//' \dontrun{
+//'   data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
+//'   oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
@@ -365,7 +369,6 @@ StringVector findOppositeAndMissing(IntegerVector data, bool ROHet=true) {
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
@@ -450,7 +453,6 @@ List slidingWindowCpp(IntegerVector data, IntegerVector gaps, int windowSize,
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const float threshold) {
@@ -534,12 +536,13 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
 //' @return a dataframe of POP, ID
 //'
 //' @examples
-//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-//' pops <- readPOPCpp(genotypeFile)
+//' \dontrun{
+//'   genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//'   pops <- readPOPCpp(genotypeFile)
+//' }
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 DataFrame readPOPCpp(std::string genotypeFile) {
@@ -646,7 +649,6 @@ void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVec
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,
@@ -963,43 +965,42 @@ void Runs::dumpRuns() {
 //' @param genotypeFile genotype (.ped) file location
 //'
 //' @return dataframe with counts per SNP in runs (per population)
-//' @export
 //'
 //' @import utils
 //'
 //' @examples
-//' # getting map and ped paths
-//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-//' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-//'
-//' # defining mapChrom
-//' mappa <- data.table::fread(mapFile, header = FALSE)
-//' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-//' mappa$x <- NULL
-//' chrom <- "24"
-//' mapChrom <- mappa[mappa$CHR==chrom, ]
-//'
-//' # calculating runs of Homozygosity
 //' \dontrun{
-//' # skipping runs calculation
-//' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-//' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+//'   # getting map and ped paths
+//'   genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//'   mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+//'
+//'   # defining mapChrom
+//'   mappa <- data.table::fread(mapFile, header = FALSE)
+//'   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+//'   mappa$x <- NULL
+//'   chrom <- "24"
+//'   mapChrom <- mappa[mappa$CHR==chrom, ]
+//'
+//'   # calculating runs of Homozygosity
+//'   runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
+//'   minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,
+//'   minLengthBps = 100000,  minDensity = 1/10000)
+//'
+//'   # loading pre-calculated data
+//'   runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+//'   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+//'   runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+//'   colClasses = colClasses)
+//'
+//'   # fix column names and define runsChrom
+//'   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+//'   runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+//'
+//'   snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
 //' }
-//' # loading pre-calculated data
-//' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-//' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-//' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-//' colClasses = colClasses)
-//'
-//' # fix column names and define runsChrom
-//' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-//' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
-//'
-//' snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
 //'
 //' @useDynLib detectRUNS
 //' @importFrom Rcpp sourceCpp
-//' @export
 //'
 // [[Rcpp::export]]
 DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
