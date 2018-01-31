@@ -17,12 +17,13 @@ cache: packages
 before_install:
   - cd detectRUNS
 
+# install dependencies
 r_packages:
   - devtools
 
-# install dependencies
+# then load devtools and install my package
 install:
-- R -e 'devtools::install_deps(dep = T)'
+- R -e 'library(devtools); devtools::install_deps(dep = T)'
 
 script:
 - R CMD build .
