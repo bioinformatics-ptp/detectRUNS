@@ -1,0 +1,26 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+
+# testing against different R version
+r:
+  - oldrel
+  - release
+  - devel
+
+sudo: false
+
+# Switch to package directory
+before_install:
+  - cd detectRUNS
+
+# use pre-downloaded packages
+cache: packages
+
+# install dependencies
+install:
+- R -e 'devtools::install_deps(dep = T)'
+
+script:
+- R CMD build .
+- R CMD check *tar.gz
