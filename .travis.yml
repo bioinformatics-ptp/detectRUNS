@@ -8,7 +8,7 @@ r:
   - devel
 
 # install like a user
-sudo: false
+# sudo: false
 
 # use pre-downloaded packages
 cache: packages
