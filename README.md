@@ -1,9 +1,9 @@
 
-Detect Runs of Homozygosity (RoHom) and Runs of Heterozygosity (RoHet) in diploid genomes
+Detect Runs of Homozygosity and Runs of Heterozygosity in diploid genomes
 =========================================================================================
 
-This repository contains the source code for `detectRUNS` R package and its
-`performance` tests. Here is the directory content:
+This repository contains the source code for the R package `detectRUNS` and related
+`performance` tests. Here's the directory content:
 
 ```
 ├── detectRUNS
@@ -12,8 +12,8 @@ This repository contains the source code for `detectRUNS` R package and its
 └── TODO
 ```
 
-`detectRUNS` implements two approaches:
-- one sequential (e.g. Zanardi);
-- one by overlapping sliding windows (à la Plink)
+`detectRUNS` implements two statistical approaches to runs' detection:
+- a sequential approach (consecutive runs, as described in Marras et al. 2015, and implemented in the software package Zanardi: https://github.com/bioinformatics-ptp/Zanardi);
+- an approach based on overlapping sliding windows (à la Plink: Purcell et al. 2007)
 
 More info in the Google Doc (https://goo.gl/yXR7iA)
