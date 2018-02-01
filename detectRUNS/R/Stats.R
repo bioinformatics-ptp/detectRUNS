@@ -246,7 +246,7 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #'
 #' @details
 #' \code{summaryRuns} calculates: i) the number of runs per chromosome and group/population;
-#' ii) the percent distribution of runs per chromosome and goup; iii) the number of
+#' ii) the percent distribution of runs per chromosome and group; iii) the number of
 #' runs per size-class and group; iv) the percent distribution of runs per size-class
 #' and group; v) the mean length of runs per chromosome and group; vi) the mean
 #' length of runs per size-class and group; vii) individual inbreeding coefficient

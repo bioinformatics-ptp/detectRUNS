@@ -23,7 +23,7 @@
 #' @param maxOppWindow max n. of homozygous/heterozygous SNP in the
 #' sliding window (default = 1)
 #' @param maxMissWindow max. n. of missing SNP in the sliding window (default = 1)
-#' @param maxGap max distance between consecutive SNP to be stil considered a
+#' @param maxGap max distance between consecutive SNP to be still considered a
 #' potential run (default = 10^6 bps)
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
@@ -182,7 +182,7 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
 #' @param maxMissRun max n. of missing SNPs in the run (default = 0)
 #' @param minSNP minimum n. of SNP in a RUN (default = 15)
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run (defaults to 10^6)
+#' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run (defaults to 10^6)
 #'
 #' @details
 #' This function scans the genome (diploid) for runs using the consecutive method.

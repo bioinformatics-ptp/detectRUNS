@@ -28,7 +28,7 @@ genoConvert <- function(x) {
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHet max n. of heterozygous SNP in a homozygous window
 #' @param maxMiss max n. of missing in a window
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 #' @param i index along the genome (genome-vector for each individual)
 #' @param windowSize size of window (n. of SNP)
 #'
@@ -79,7 +79,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param maxHom max n. of homozygous SNP in a heterozygous window
 #' @param maxMiss max n. of missing in a window
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 #' @param i index along the genome (genome-vector for each individual)
 #' @param windowSize size of window (n. of SNP)
 #'
@@ -122,13 +122,13 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
 
 #' Function to slide a window over a vector (individual's genotypes)
 #'
-#' This is a core function. The functions to detect RUNS are slidden over the genome
+#' This is a core function. The functions to detect RUNS are slid over the genome
 #'
 #' @param data vector of 0/1/2 genotypes
 #' @param gaps vector of differences between consecutive positions (gaps) in bps
 #' @param windowSize size of window (n. of SNP)
-#' @param step by which (how many SNP) is the window slidden
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param step by which (how many SNP) is the window slid
+#' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
@@ -253,7 +253,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #'
 #' @param snpRun vector of TRUE/FALSE (is the SNP in a RUN?)
 #' @param mapFile Plink-like map file (data.frame)
-#' @param minSNP minimun n. of SNP to call a RUN
+#' @param minSNP minimum n. of SNP to call a RUN
 #' @param minLengthBps minimum length of run in bps (defaults to 1000 bps = 1 kbps)
 #' @param minDensity minimum n. of SNP per kbps (defaults to 0.1 = 1 SNP every 10 kbps)
 #' @param oppositeAndMissingSNP indexed array of missing and opposite genotypes (SNP order in the genome is the index)
@@ -527,10 +527,10 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 #' @param cpp use cpp functions or not (DEBUG)
 #'
 #' @details
-#' This method uses slidingg windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
+#' This method uses sliding windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
 #' max gap between adjacent loci and minimum length of the run are implemented (as in the sliding window method).
 #' Both runs of homozygosity (RoHom) and of heterozygosity (RoHet) can be search for (option ROHet: TRUE/FALSE)
-#' NOTE: this methos is intented to not be exported
+#' NOTE: this methods is intended to not be exported
 #'
 #' @return A data frame of runs per individual sample
 #' @keywords internal
@@ -592,7 +592,7 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
 #' @param maxOppositeGenotype max n. of homozygous/heterozygous SNP
 #' @param maxMiss max. n. of missing SNP
 #' @param minLengthBps min length of a run in bps
-#' @param maxGap max distance between consecutive SNP in a window to be stil considered a potential run
+#' @param maxGap max distance between consecutive SNP in a window to be still considered a potential run
 #'
 #' @details
 #' The consecutive method detect runs by consecutively scanning SNP loci along the genome.
@@ -798,7 +798,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' Function to read in, from external files, the output of software for ROH:
 #' \enumerate{
 #' \item \code{detectRUNS}: output saved out to a file (e.g. write.table)
-#' \item \code{Plink}: ouput from the \code{--homozyg} option (\code{.hom} files)
+#' \item \code{Plink}: output from the \code{--homozyg} option (\code{.hom} files)
 #' \item \code{BCFtools}: output from the \code{roh} option
 #' }
 #'
