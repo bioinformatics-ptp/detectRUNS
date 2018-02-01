@@ -126,7 +126,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 
 #' Plot stacked runs
 #'
-#' Function to plot stacked runs along the chromosome (signalling presence of large numbers of runs
+#' Function to plot stacked runs along the chromosome (signaling presence of large numbers of runs
 #' in specific regions of a chromosome)
 #' Counts on the y-axis, bps on the x-axis (position along the chromosome)
 #'
@@ -531,12 +531,12 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
 #'
 #' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
 #' @param mapFile map file (.map) file path
-#' @param method "sum" or "mean" of run lenghts per individual sample
+#' @param method "sum" or "mean" of run lengths per individual sample
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
 #'
-#' @return plot of number of runs vs run-lenght sum/mean per individual sample
+#' @return plot of number of runs vs run-length sum/mean per individual sample
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -618,7 +618,7 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 }
 
 
-#' Violin plot of run lenght per individual (either sum or mean)
+#' Violin plot of run length per individual (either sum or mean)
 #'
 #' Function to produce violin plots of the distribution of runs lengths per group
 #' The sum of run lengths, or its average, per individual sample is used to
@@ -630,7 +630,7 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default NULL)
 #'
-#' @return Violin plot of the distribution of runs-lenghts (sum or mean)
+#' @return Violin plot of the distribution of runs-lengths (sum or mean)
 #' @export
 #'
 #' @importFrom grDevices dev.off pdf
@@ -831,7 +831,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
-#' @param Class group of length (in Mbps) by class (defaul: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
 #'
 #' @return plot Distribution Runs
 #' @export
