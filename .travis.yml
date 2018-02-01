@@ -11,6 +11,9 @@ r:
 
 cache: packages
 
+r_packages:
+  - devtools
+
 before_install:
   - cd detectRUNS
 
