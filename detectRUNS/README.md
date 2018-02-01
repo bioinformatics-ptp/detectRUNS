@@ -1,19 +1,48 @@
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+detectRUNS
+==========
 
-The goal of the README.md is to answer the following questions about your package:
+detectRUNS is a R package for the detection of runs of homozygosity (ROH/ROHom) and of heterozygosity (ROHet, a.k.a. "heterozygosity-rich regions") in diploid genomes. Besides runs detection, it implements several functions to summarize and plot results.
 
-Why should I use it?
-How do I use it?
-How do I get it?
-On GitHub, the README.md will be rendered as HTML and displayed on the repository home page.
+Installation
+------------
 
-I normally structure my README as follows:
+detectRUNS is installed as a standard R package. Some core functions are written in C++ to increase efficieny of calculations: this makes use of the R library Rcpp. detectRUNS uses other R packages for data manipulation and plots. These packages are set as *Imports*, and detectRUNS will try to install any missing packages upon installation.
 
-A paragraph that describes the high-level purpose of the package.
+Dependencies
+------------
 
-An example that shows how to use the package to solve a simple problem.
+detectRUNS imports: plyr, iterators, itertools, ggplot2, reshape2, Rcpp, gridExtra, data.table detectRUNS suggests: testthat, knitr, rmarkdown, prettydoc
 
-Installation instructions, giving code that can be copied and pasted into R.
+Documentation
+-------------
 
-An overview that describes the main components of the package. For more complex packages, this will point to vignettes for more details.
+Please see the package vignette for a complete tutorial. What follows is a minimal working example to give the gist of the tool.
 
-More details [here](http://r-pkgs.had.co.nz/release.html#important-files)
+Example
+-------
+
+This is a basic example which shows you how to detect runs of homozygosity (ROH):
+
+``` r
+#1) detectRUNS (sliding-windows method)
+genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+# calculating runs with sliding window approach
+\dontrun{
+ # skipping runs calculation
+ runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
+ minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
+ minLengthBps = 100000,  minDensity = 1/10000)
+}
+# loading pre-calculated data
+runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
+colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,  colClasses = colClasses)
+
+#2) summarise results
+summaryList <- summaryRuns(runs = runs, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+
+#3) plot results
+plot_Runs(runs = runs)
+```
