@@ -2,7 +2,7 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
-Version: 0.9.2
+Version: 0.9.3
 Date: 2018-01-03
 Authors@R: c(
     person("Filippo","Biscarini", email="filippo.biscarini@gmail.com", role=c("aut", "cre")),
@@ -34,3 +34,5 @@ Suggests:
     prettydoc
 LinkingTo: Rcpp
 VignetteBuilder: knitr
+URL: https://github.com/bioinformatics-ptp/detectRUNS/tree/master/detectRUNS
+BugReports: https://github.com/bioinformatics-ptp/detectRUNS/issues

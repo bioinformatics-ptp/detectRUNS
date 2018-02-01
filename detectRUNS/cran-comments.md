@@ -1,7 +1,10 @@
 
 ## test environments
-* Debian 8, R 3.3.1
-* Windows 7, R 3.3.2
+* Local Debian 8, R 3.3.1
+* Local Windows 7, R 3.3.2
+* ubuntu 14.04 (on travis-ci), R 3.3.3
+* ubuntu 14.04 (on travis-ci), R version 3.4.2
+* ubuntu 14.04 (on travis-ci), R Under development (unstable) (2018-02-01 r74190)
 
 ## R CMD check results
 0 errors | 0 warnings | 0 notes
