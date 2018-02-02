@@ -4,7 +4,7 @@ author:
 - name: Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras
   affiliation: 
   - IBBA-CNR, PTP, Università degli Studi di Sassari, University of Guelph
-  email: filippo.biscarini@ibba.cnr.it
+  email: filippo.biscarini@ibba.cnr.it, gmarras@uoguelph.ca
 date: "`r Sys.Date()`"
 output:
   prettydoc::html_pretty:

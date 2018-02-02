@@ -7,7 +7,7 @@
 writeRUN(ind, dRUN, ROHet = TRUE, group)
 }
 \arguments{
-\item{ind}{ID of animal}
+\item{ind}{ID of animals}
 
 \item{dRUN}{data.frame with RUNS per animal}
 
