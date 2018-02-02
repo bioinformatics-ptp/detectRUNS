@@ -376,7 +376,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 #' Function to write out RUNS per individual animal
 #'
 #'
-#' @param ind ID of animal
+#' @param ind ID of animals
 #' @param dRUN data.frame with RUNS per animal
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param group group (factor): population, breed, ethnicity, case/control etc.
