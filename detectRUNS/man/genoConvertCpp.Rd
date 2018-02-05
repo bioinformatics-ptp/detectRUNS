@@ -16,10 +16,3 @@ converted vector of genotypes (0/1)
 This is a utility function, that convert 0/1/2 genotypes (AA/AB/BB) into 0/1
 (either homozygous/heterozygous)
 }
-\examples{
-\dontrun{
-  geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-  geno01 <- genoConvertCpp(geno012)
-}
-
-}
