@@ -23,17 +23,3 @@ TRUE/FALSE (whether a window is homozygous or NOT)
 \description{
 This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
 }
-\examples{
-\dontrun{
-  maxHet <- 1
-  maxMiss <- 1
-  maxGap <- 10^6
-  x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-  gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
-            9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-  test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
-  # test is TRUE
-}
-
-}

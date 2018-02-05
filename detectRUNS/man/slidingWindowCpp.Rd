@@ -30,7 +30,3 @@ vector of TRUE/FALSE (whether a window is homozygous or NOT)
 \description{
 This is a core function. The functions to detect RUNS are slid over the genome
 }
-\examples{
-#not yet
-
-}

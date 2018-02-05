@@ -35,7 +35,3 @@ Function to create a dataframe of RUNS per individual animal
 Requires a map file (other filename to read or R object)
 Parameters on maximum number of missing and opposite genotypes in the run (not the window) are implemented here
 }
-\examples{
-#not yet
-
-}

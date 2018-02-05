@@ -14,12 +14,6 @@ fast_factor <- function(x) {
 #'
 #' @return converted vector of genotypes (0/1)
 #'
-#' @examples
-#' \dontrun{
-#'   geno012 <- c(1, 2, 0, 1, NA, 2, 0, NA)
-#'   geno01 <- genoConvertCpp(geno012)
-#' }
-#'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
@@ -35,12 +29,6 @@ genoConvertCpp <- function(genotype) {
 #' @param genotype vector of pair of genotypes (01, AA, AG)
 #'
 #' @return converted vector of genotypes (0/1)
-#'
-#' @examples
-#' \dontrun{
-#'   ped <- c("A", "A", "A", "B", "5", "5")
-#'   geno01 <- pedConvertCpp(ped)
-#' }
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
@@ -61,19 +49,6 @@ pedConvertCpp <- function(genotype) {
 #'
 #' @return TRUE/FALSE (whether a window is homozygous or NOT)
 #'
-#' @examples
-#' \dontrun{
-#'   maxHet <- 1
-#'   maxMiss <- 1
-#'   maxGap <- 10^6
-#'   x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
-#'          0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-#'   gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
-#'             9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-#'   test <- homoZygotTestCpp(x, gaps, maxHet, maxMiss, maxGap)
-#'   # test is TRUE
-#' }
-#'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
@@ -93,19 +68,6 @@ homoZygotTestCpp <- function(x, gaps, maxHet, maxMiss, maxGap) {
 #'
 #' @return TRUE/FALSE (whether a window is heterozygous or NOT)
 #'
-#' @examples
-#' \dontrun{
-#'   maxHom <- 1
-#'   maxMiss <- 1
-#'   maxGap <- 10^6
-#'   x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
-#'          1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
-#'   gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
-#'             4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
-#'   test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-#'   # test is FALSE
-#' }
-#'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
@@ -122,12 +84,6 @@ heteroZygotTestCpp <- function(x, gaps, maxHom, maxMiss, maxGap) {
 #'
 #' @return character array; names will be index in which opposite and missing
 #' snps are found in data array
-#'
-#' @examples
-#' \dontrun{
-#'   data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
-#'   oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
-#' }
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
@@ -151,8 +107,6 @@ findOppositeAndMissing <- function(data, ROHet = TRUE) {
 #'
 #' @return vector of TRUE/FALSE (whether a window is homozygous or NOT)
 #'
-#' @examples #not yet
-#'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
@@ -171,8 +125,6 @@ slidingWindowCpp <- function(data, gaps, windowSize, step, maxGap, ROHet = TRUE,
 #'
 #' @return vector of TRUE/FALSE (whether a SNP is in a RUN or NOT)
 #'
-#' @examples #not yet
-#'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
@@ -188,12 +140,6 @@ snpInRunCpp <- function(RunVector, windowSize, threshold) {
 #' @param genotypeFile genotype (.ped) file location
 #'
 #' @return a dataframe of POP, ID
-#'
-#' @examples
-#' \dontrun{
-#'   genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#'   pops <- readPOPCpp(genotypeFile)
-#' }
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
@@ -242,37 +188,6 @@ consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSN
 #' @return dataframe with counts per SNP in runs (per population)
 #'
 #' @import utils
-#'
-#' @examples
-#' \dontrun{
-#'   # getting map and ped paths
-#'   genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#'   mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
-#'   # defining mapChrom
-#'   mappa <- data.table::fread(mapFile, header = FALSE)
-#'   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-#'   mappa$x <- NULL
-#'   chrom <- "24"
-#'   mapChrom <- mappa[mappa$CHR==chrom, ]
-#'
-#'   # calculating runs of Homozygosity
-#'   runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
-#'   minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,
-#'   minLengthBps = 100000,  minDensity = 1/10000)
-#'
-#'   # loading pre-calculated data
-#'   runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#'   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#'   runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#'   colClasses = colClasses)
-#'
-#'   # fix column names and define runsChrom
-#'   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-#'   runsChrom <- runs[runs$CHROMOSOME==chrom, ]
-#'
-#'   snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
-#' }
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp

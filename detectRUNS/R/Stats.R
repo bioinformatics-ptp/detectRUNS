@@ -12,12 +12,7 @@
 #'
 #' @return A data frame with the max position for chromosome
 #' @keywords internal
-#' @examples
-#' \dontrun{
-#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
-#' chromosomeLength(mapFile)
-#' }
 
 chromosomeLength <- function(mapFile){
 

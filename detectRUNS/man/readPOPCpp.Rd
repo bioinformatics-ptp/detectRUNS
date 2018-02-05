@@ -16,10 +16,3 @@ a dataframe of POP, ID
 This is a core function. Read PED file and returns a data.frame with the first two
 columns
 }
-\examples{
-\dontrun{
-  genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-  pops <- readPOPCpp(genotypeFile)
-}
-
-}

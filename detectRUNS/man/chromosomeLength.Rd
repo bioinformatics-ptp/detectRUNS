@@ -18,11 +18,4 @@ Function to found max position for each chromosome
 \details{
 Create a data frame with the max position in map file (plink format)
 }
-\examples{
-\dontrun{
-mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-
-chromosomeLength(mapFile)
-}
-}
 \keyword{internal}

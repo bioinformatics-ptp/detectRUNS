@@ -21,7 +21,3 @@ TRUE/FALSE if RUNS are written out or not
 \description{
 Function to write out RUNS per individual animal
 }
-\examples{
-#not yet
-
-}
