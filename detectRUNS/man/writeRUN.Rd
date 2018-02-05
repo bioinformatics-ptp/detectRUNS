@@ -4,7 +4,7 @@
 \alias{writeRUN}
 \title{Function to write out RUNS per individual animal}
 \usage{
-writeRUN(ind, dRUN, ROHet = TRUE, group)
+writeRUN(ind, dRUN, ROHet = TRUE, group, outputName)
 }
 \arguments{
 \item{ind}{ID of animals}
@@ -14,14 +14,12 @@ writeRUN(ind, dRUN, ROHet = TRUE, group)
 \item{ROHet}{shall we detect ROHet or ROHom?}
 
 \item{group}{group (factor): population, breed, ethnicity, case/control etc.}
+
+\item{outputName}{output filename}
 }
 \value{
 TRUE/FALSE if RUNS are written out or not
 }
 \description{
 Function to write out RUNS per individual animal
-}
-\examples{
-#not yet
-
 }
