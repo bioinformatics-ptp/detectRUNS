@@ -2,8 +2,8 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
-Version: 0.9.3
-Date: 2018-01-03
+Version: 0.9.4
+Date: 2018-02-05
 Authors@R: c(
     person("Filippo","Biscarini", email="filippo.biscarini@gmail.com", role=c("aut", "cre")),
     person("Paolo","Cozzi", email="paolo.cozzi@ptp.it", role="aut"),
@@ -11,8 +11,9 @@ Authors@R: c(
     person("Gabriele","Marras", email="gmarras@uoguelph.ca", role="aut")
   )
 Description: Detection of runs of homozygosity and of heterozygosity
-    in diploid genomes using two methods (sliding windows
-    and consecutive runs).
+    in diploid genomes using two methods: sliding windows (Purcell et al. (2007)
+    <doi:10.1086/519795>) and consecutive runs (Marras et al. (2015) 
+    <doi:10.1111/age.12259>).
 Depends:
     R (>= 3.0.0)
 License: GPL-3
