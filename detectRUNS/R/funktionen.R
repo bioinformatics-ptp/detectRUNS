@@ -311,13 +311,14 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 #' @param dRUN data.frame with RUNS per animal
 #' @param ROHet shall we detect ROHet or ROHom?
 #' @param group group (factor): population, breed, ethnicity, case/control etc.
+#' @param outputName output filename
 #'
 #' @return TRUE/FALSE if RUNS are written out or not
 #'
 #' @import utils
 #'
 
-writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
+writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 
   dRUN$id <- rep(ind,nrow(dRUN))
   dRUN$group <- rep(group,nrow(dRUN))
@@ -330,14 +331,13 @@ writeRUN <- function(ind,dRUN,ROHet=TRUE,group) {
     append = FALSE
     headers = TRUE
 
-    report_filename <- paste("detected",ifelse(ROHet,"ROHet","ROHom"),"csv",sep=".")
-
-    if(file.exists(report_filename)){
+    if(file.exists(outputName)){
+      warning(paste("Appending to", outputName, "..."))
       append = TRUE
       headers = FALSE
     }
     utils::write.table(
-      sep=';', dRUN, file=report_filename, quote=FALSE,
+      sep=';', dRUN, file=outputName, quote=FALSE,
       col.names=headers, row.names=FALSE, append=append
     )
     is_run <- TRUE
