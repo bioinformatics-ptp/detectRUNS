@@ -27,26 +27,3 @@ a list: i) TRUE/FALSE (whether a window is heterozygous or NOT); ii) indexes of 
 \description{
 This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
 }
-\examples{
-
-\dontrun{
-maxHet <- 1
-maxMiss <- 1
-maxGap <- 10^6
-i <- 175
-x <- c(0, 0, 0, NA, 0, 0, 1, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-gaps <- c(3721, 3871, 7059, 4486, 7545, 4796, 3043, 9736, 3495, 5051,
-          9607, 6555, 11934, 6410, 3415, 1302, 3110, 6609, 3292)
-windowSize <- length(x)
-test <- homoZygotTest(x, gaps, maxHet, maxMiss, maxGap, i, windowSize)
-}
-# test
-# $windowStatus
-# [1] TRUE
-#
-# $oppositeAndMissingSNP
-# 178 181
-#   9   0
-
-}

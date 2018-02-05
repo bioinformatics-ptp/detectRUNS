@@ -23,17 +23,3 @@ TRUE/FALSE (whether a window is heterozygous or NOT)
 \description{
 This is a core function. Parameters on how to consider a window heterozygous are here (maxHom, maxMiss)
 }
-\examples{
-\dontrun{
-  maxHom <- 1
-  maxMiss <- 1
-  maxGap <- 10^6
-  x <- c(0, 0, NA, 0, NA, 0, 0, 0, 1, 1,
-         1, 1, 1, 1, 0, 0, 1, 0, 0, 0)
-  gaps <- c(4374, 8744, 5123, 14229, 5344, 690, 8566, 5853, 2369, 3638,
-            4848, 600, 2333, 976, 2466, 2269, 5411, 6021, 4367)
-  test <- heteroZygotTestCpp(x, gaps, maxHom, maxMiss, maxGap)
-  # test is FALSE
-}
-
-}

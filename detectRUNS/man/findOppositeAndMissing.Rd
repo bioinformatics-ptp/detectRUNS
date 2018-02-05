@@ -18,10 +18,3 @@ snps are found in data array
 \description{
 This is an helper function, this will be called by another function
 }
-\examples{
-\dontrun{
-  data <- c(0, 0, 0, 1, 1, 1, 1, 1, 1, NA, NA, 1, 0, 1, NA)
-  oppositeAndMissingGenotypes <- findOppositeAndMissing(data, ROHet=TRUE)
-}
-
-}

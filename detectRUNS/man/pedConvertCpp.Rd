@@ -16,10 +16,3 @@ converted vector of genotypes (0/1)
 This is a utility function, that convert ped genotypes (AA/AB/BB) into 0/1
 (either homozygous/heterozygous)
 }
-\examples{
-\dontrun{
-  ped <- c("A", "A", "A", "B", "5", "5")
-  geno01 <- pedConvertCpp(ped)
-}
-
-}
