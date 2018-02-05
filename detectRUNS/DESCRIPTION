@@ -12,7 +12,7 @@ Authors@R: c(
   )
 Description: Detection of runs of homozygosity and of heterozygosity
     in diploid genomes using two methods: sliding windows (Purcell et al. (2007)
-    <doi:10.1086/519795>) and consecutive runs (Marras et al. (2015) 
+    <doi:10.1086/519795>) and consecutive runs (Marras et al. (2015)
     <doi:10.1111/age.12259>).
 Depends:
     R (>= 3.0.0)
