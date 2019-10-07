@@ -4,10 +4,10 @@
 \alias{slidingRUNS.run}
 \title{Main function to detect RUNS (ROHom/ROHet) using sliding windows (a la Plink)}
 \usage{
-slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.05,
-  minSNP = 3, ROHet = FALSE, maxOppWindow = 1, maxMissWindow = 1,
-  maxGap = 10^6, minLengthBps = 1000, minDensity = 1/1000,
-  maxOppRun = NULL, maxMissRun = NULL)
+slidingRUNS.run(genotypeFile, mapFile, windowSize = 15,
+  threshold = 0.05, minSNP = 3, ROHet = FALSE, maxOppWindow = 1,
+  maxMissWindow = 1, maxGap = 10^6, minLengthBps = 1000,
+  minDensity = 1/1000, maxOppRun = NULL, maxMissRun = NULL)
 }
 \arguments{
 \item{genotypeFile}{genotype (.ped) file path}
