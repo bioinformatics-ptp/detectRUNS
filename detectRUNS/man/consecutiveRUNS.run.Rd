@@ -4,8 +4,9 @@
 \alias{consecutiveRUNS.run}
 \title{Main function to detect genomic RUNS (ROHom/ROHet) using the consecutive method}
 \usage{
-consecutiveRUNS.run(genotypeFile, mapFile, ROHet = FALSE, maxOppRun = 0,
-  maxMissRun = 0, minSNP = 15, minLengthBps = 1000, maxGap = 10^6)
+consecutiveRUNS.run(genotypeFile, mapFile, ROHet = FALSE,
+  maxOppRun = 0, maxMissRun = 0, minSNP = 15, minLengthBps = 1000,
+  maxGap = 10^6)
 }
 \arguments{
 \item{genotypeFile}{genotype (.ped) file path}

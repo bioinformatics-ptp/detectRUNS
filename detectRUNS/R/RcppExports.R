@@ -174,7 +174,7 @@ readPOPCpp <- function(genotypeFile) {
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSNP = 3L, maxOppositeGenotype = 1L, maxMiss = 1L, minLengthBps = 1000L, maxGap = 10^6L) {
+consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSNP = 3L, maxOppositeGenotype = 1L, maxMiss = 1L, minLengthBps = 1000L, maxGap = 10e5L) {
     .Call('_detectRUNS_consecutiveRunsCpp', PACKAGE = 'detectRUNS', indGeno, individual, mapFile, ROHet, minSNP, maxOppositeGenotype, maxMiss, minLengthBps, maxGap)
 }
 

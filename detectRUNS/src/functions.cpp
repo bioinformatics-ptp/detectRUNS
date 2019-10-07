@@ -599,7 +599,7 @@ void updateRUNs(RunData run_data, std::string iid, std::string fid, CharacterVec
 // [[Rcpp::export]]
 DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame mapFile,
                              bool ROHet=true, int minSNP=3, int maxOppositeGenotype=1,
-                             int maxMiss=1, int minLengthBps=1000, int maxGap=10^6) {
+                             int maxMiss=1, int minLengthBps=1000, int maxGap=10e5) {
 
   // Bool to int conversion: ifelse(ROHet,1,0)
   int typ = ROHet;
