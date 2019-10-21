@@ -11,28 +11,17 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Include the steps to reproduce the bug mentioned above
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**detectRUNS version**
+Please indicate the version of `detectRUNS` you are using (with `packageVersion("detectRUNS")`)
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**platform**
+Identify the platform, architecture, and version of R where you found this bug.
+You can retrieve that from within R by typing `R.version`.
 
 **Additional context**
 Add any other context about the problem here.
