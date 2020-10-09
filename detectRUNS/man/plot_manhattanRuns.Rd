@@ -6,7 +6,7 @@
 \usage{
 plot_manhattanRuns(runs, genotypeFile, mapFile, pct_threshold = 0.33,
   x_font_size = 10, savePlots = FALSE, file_type = "pdf",
-  outputName = NULL, plotTitle = NULL)
+  outputName = NULL, plotTitle = NULL, plot_w = 8, plot_h = 6)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}
@@ -26,6 +26,10 @@ plot_manhattanRuns(runs, genotypeFile, mapFile, pct_threshold = 0.33,
 \item{outputName}{title prefix (the base name of graph, if savePlots is TRUE)}
 
 \item{plotTitle}{title in plot (default)}
+
+\item{plot_w}{plot width (if savePlots = TRUE; default is 8)}
+
+\item{plot_h}{plot height (if savePlots = TRUE; default is 6)}
 }
 \value{
 Manhattan plots of proportion of times SNPs are inside runs,
