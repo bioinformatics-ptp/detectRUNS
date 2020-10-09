@@ -374,6 +374,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' @param file_type type of plot file to ba saved (if savePlots is TRUE; default is pdf)
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default)
+#' @param plot_w plot width (if savePlots = TRUE; default is 8)
+#' @param plot_h plot height (if savePlots = TRUE; default is 6)
 #'
 #' @return Manhattan plots of proportion of times SNPs are inside runs,
 #' per population (pdf files)
@@ -404,7 +406,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #'
 
 plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, x_font_size = 10,
-                               savePlots=FALSE, file_type="pdf", outputName=NULL, plotTitle=NULL) {
+                               savePlots=FALSE, file_type="pdf", outputName=NULL, plotTitle=NULL,
+                               plot_w = 8, plot_h = 6) {
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -502,7 +505,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
     p <- ggplot(subset_group)
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
-    p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
+    p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,max(subset_group$P, na.rm=TRUE)+5)
     p <- p + theme_bw(base_size=11) + theme(axis.text.x = element_text(size=x_font_size),
                                             legend.position='none')
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
@@ -520,7 +523,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
     #Save plot
     if (savePlots){
       ggsave(filename = paste(fileNameOutput,"_", group, ".", file_type, sep=""),
-             plot = roh_plot, device = file_type)
+             plot = roh_plot, device = file_type, width = plot_w, height = plot_h)
     } else { print(roh_plot) }
 
     print(paste('Manhattan plot created for ',group)) #FILIPPO
