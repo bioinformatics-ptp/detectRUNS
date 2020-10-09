@@ -368,7 +368,9 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
 #' @param genotypeFile genotype (.ped) file path
 #' @param mapFile map file (.map) file path
+#' @param pct_threshold reference line for significant regions (e.g. 0.5 --> 50\% SNPs in runs; default is 0.33)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param x_font_size fot size for x axis values (chromosome numbers: default = 10)
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default)
 #'
@@ -400,7 +402,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' savePlots = FALSE, plotTitle = "ROHom")
 #'
 
-plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, outputName=NULL, plotTitle=NULL) {
+plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, x_font_size = 10,
+                               savePlots=FALSE, outputName=NULL, plotTitle=NULL) {
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -499,8 +502,10 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
     p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
-    p <- p + theme_bw(base_size=11) + theme(legend.position='none')
+    p <- p + theme_bw(base_size=11) + theme(axis.text.x = element_text(size=x_font_size),
+                                            legend.position='none')
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
+    p <- p + geom_hline(yintercept = pct_threshold*100, linetype="dashed", color="darkgrey")
     roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs') + theme(plot.title = element_text(hjust = 0.5))
 
     #create a title for manhattan plot
