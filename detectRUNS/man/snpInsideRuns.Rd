@@ -28,6 +28,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 mappa <- data.table::fread(mapFile, header = FALSE)
 names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
 mappa$x <- NULL
+
+# select only a chromosome
 chrom <- "24"
 mapChrom <- mappa[mappa$CHR==chrom, ]
 

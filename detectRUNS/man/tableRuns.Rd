@@ -4,8 +4,13 @@
 \alias{tableRuns}
 \title{Function to retrieve most common runs in the population}
 \usage{
-tableRuns(runs = NULL, SnpInRuns = NULL, genotypeFile, mapFile,
-  threshold = 0.5)
+tableRuns(
+  runs = NULL,
+  SnpInRuns = NULL,
+  genotypeFile,
+  mapFile,
+  threshold = 0.5
+)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}

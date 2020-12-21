@@ -4,9 +4,15 @@
 \alias{plot_InbreedingChr}
 \title{Plot Froh-based inbreeding coefficients by group}
 \usage{
-plot_InbreedingChr(runs, mapFile, groupSplit = TRUE,
+plot_InbreedingChr(
+  runs,
+  mapFile,
+  groupSplit = TRUE,
   style = c("ChrBarPlot", "ChrBoxPlot", "FrohBoxPlot", "All"),
-  outputName = NULL, plotTitle = NULL, savePlots = FALSE)
+  outputName = NULL,
+  plotTitle = NULL,
+  savePlots = FALSE
+)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}

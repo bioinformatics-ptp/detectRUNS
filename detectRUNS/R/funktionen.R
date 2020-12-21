@@ -395,7 +395,9 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # defining mapChrom
-#' mappa <- readMapFile(mapFile)
+#' mappa <- data.table::fread(mapFile, header = FALSE)
+#' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+#' mappa$x <- NULL
 #' 
 #' # select only a chromosome
 #' chrom <- "24"
@@ -778,8 +780,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #'
 #' write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 #' }
-#' runsFile -< system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
-#' newData=readExternalRuns(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+#' newData=readExternalRuns(runsFile, program = 'detectRUNS')
 #' 
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
