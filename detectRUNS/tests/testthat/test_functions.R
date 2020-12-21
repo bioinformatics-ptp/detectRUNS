@@ -843,10 +843,8 @@ test_that("Testing consecutiveRunsCpp", {
 })
 
 test_that("Testing snpInsideRuns", {
-  # read mapfile
-  mappa <- data.table::fread(mapFile, header = FALSE)
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read mapfile with custom methods
+  mappa <- readMapFile(mapFile)
   
   # this is the chromosome I want to test
   chrom <- "24"
@@ -876,11 +874,8 @@ test_that("Testing snpInsideRuns", {
 })
 
 test_that("Testing snpInsideRuns with CHR as strings", {
-  # read mapfile. Forcing class types
-  colClasses <- c("character", "character", "character", "numeric")
-  mappa <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read mapfile with custom methods
+  mappa <- readMapFile(mapFile)
   
   # this is the chromosome I want to test
   chrom <- "X"
@@ -912,5 +907,4 @@ test_that("Testing snpInsideRuns with CHR as strings", {
   
   # testing functions
   expect_equivalent(test, reference)
-  
 })
