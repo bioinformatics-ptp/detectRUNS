@@ -418,14 +418,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
   CHR <- NULL
 
   #read map file
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  mappa <- readMapFile(mapFile)
 
   #Start calculation % SNP in ROH
   print("Calculation % SNP in ROH") #FILIPPO
