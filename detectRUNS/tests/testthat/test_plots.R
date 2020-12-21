@@ -11,5 +11,5 @@ test_that("Test plot_manhattanRuns", {
   runs <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 
   # plotting data
-  plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots = F)
+  plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots = TRUE, outputName = tempfile())
 })
