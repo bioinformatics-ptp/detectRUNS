@@ -4,10 +4,16 @@
 \alias{plot_DistributionRuns}
 \title{Plot Distribution of runs}
 \usage{
-plot_DistributionRuns(runs, mapFile, groupSplit = TRUE,
+plot_DistributionRuns(
+  runs,
+  mapFile,
+  groupSplit = TRUE,
   style = c("MeanClass", "MeanChr", "RunsPCT", "RunsPCT_Chr", "All"),
-  savePlots = FALSE, outputName = NULL, plotTitle = NULL,
-  Class = 2)
+  savePlots = FALSE,
+  outputName = NULL,
+  plotTitle = NULL,
+  Class = 2
+)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}
