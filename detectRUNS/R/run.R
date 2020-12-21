@@ -105,15 +105,11 @@ slidingRUNS.run <- function(genotypeFile, mapFile, windowSize = 15, threshold = 
     stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mapFile <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
+  # read mapfile
+  mapFile <- readMapFile(mapFile)
 
-  # setting colnames
-  colnames(mapFile) <- c("Chrom","SNP","cM","bps")
+  # override colnames
+  colnames(mapFile) <- c("Chrom", "SNP", "bps")
 
   # collect all parameters in a variable
   parameters <- list(windowSize=windowSize, threshold=threshold, minSNP=minSNP,
@@ -253,15 +249,11 @@ consecutiveRUNS.run <- function(genotypeFile, mapFile, ROHet = FALSE,
     stop(paste("file", genotypeFile, "doesn't exists"))
   }
 
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mapFile <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-
-  # setting colnames
-  colnames(mapFile) <- c("Chrom","SNP","cM","bps")
+  # read mapfile
+  mapFile <- readMapFile(mapFile)
+  
+  # override colnames
+  colnames(mapFile) <- c("Chrom", "SNP", "bps")
 
   # initialize data.frame of results
   RUNs <- data.frame(group=character(), id=character(), chrom=character(), nSNP=integer(),
