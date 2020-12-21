@@ -830,13 +830,15 @@ test_that("Testing consecutiveRunsCpp", {
 })
 
 test_that("Testing snpInsideRuns", {
-  # defining mapChrom
+  # read mapfile
   mappa <- data.table::fread(mapFile, header = FALSE)
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
+  
+  # this is the chromosome I want to test
   chrom <- "24"
 
-  # subsetting mapChrom
+  # subsetting mapChrom (get x random snps from mapfile)
   set.seed(42)
   mapChrom <- mappa[mappa$CHR==chrom, ]
   mapChrom <- mapChrom[sort(sample(nrow(mapChrom), 10)), ]
@@ -858,4 +860,44 @@ test_that("Testing snpInsideRuns", {
   # testing functions
   expect_equivalent(test, reference)
 
+})
+
+test_that("Testing snpInsideRuns with CHR as strings", {
+  # read mapfile. Forcing class types
+  colClasses <- c("character", "character", "character", "numeric")
+  mappa <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  
+  # this is the chromosome I want to test
+  chrom <- "X"
+  
+  # replacing chromsomes with a string value (which cannot be converted as int)
+  mappa$CHR <- chrom
+  
+  # subsetting mapChrom (get x random snps from mapfile)
+  set.seed(42)
+  mapChrom <- mappa[mappa$CHR==chrom, ]
+  mapChrom <- mapChrom[sort(sample(nrow(mapChrom), 10)), ]
+  
+  # loading pre-calculated data
+  runsFile <- "test.ROHet.sliding.csv"
+  colClasses <- c(rep("character", 3), rep("numeric", 4)  )
+  runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
+                    colClasses = colClasses)
+  
+  # replacing chromsomes with a string value (which cannot be converted as int)
+  runs$chrom <- chrom
+  
+  # fix column names and define runsChrom
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  runsChrom <- runs[runs$CHROMOSOME==chrom, ]
+  
+  # get snps inside runs
+  reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+  
+  # testing functions
+  expect_equivalent(test, reference)
+  
 })
