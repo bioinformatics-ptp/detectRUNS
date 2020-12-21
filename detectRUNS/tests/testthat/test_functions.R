@@ -21,6 +21,19 @@ test_that("Testing genoConvert", {
   expect_equal(test, geno01)
 })
 
+test_that("Test readMapFile", {
+  colClasses <- c("character", "character", "character", "numeric")
+  reference <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
+  names(reference) <- c("CHR","SNP_NAME","x","POSITION")
+  reference$x <- NULL
+  
+  test <- readMapFile(mapFile)
+  expect_equal(reference, test)
+  
+  # test for a non existing file
+  expect_error(readMapFile("does_not_exists.map"), "doesn't exists")
+})
+
 test_that("Testing pedConvert with correct values", {
   # create a PED like genotype
   ped <- c("B", "B", "A", "A", "B", "A", "1", "1", "2", "1", "2", "2", "A", "C", "G", "G", "0", "0", "5", "5", "N", "N", "-", "-")

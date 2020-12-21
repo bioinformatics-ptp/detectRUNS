@@ -20,6 +20,34 @@ genoConvert <- function(x) {
 }
 
 
+#' Read from a .map file locations and return a data.table object
+#' 
+#' This is an utility function which check for file existance, define 
+#' colClasses and then returns the read data.table object
+#' @param mapFile map file (.map) file path
+#' @keywords internal
+#' @return data.table object
+#' 
+
+readMapFile <- function(mapFile) {
+  # define colClasses
+  colClasses <- c("character", "character", "character", "numeric")
+  
+  if(file.exists(mapFile)){
+    # using data.table to read data
+    mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
+  } else {
+    stop(paste("file", mapFile, "doesn't exists"))
+  }
+  
+  # set column names
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  
+  return(mappa)
+}
+
+
 #' Function to check whether a window is (loosely) homozygous or not
 #'
 #' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
