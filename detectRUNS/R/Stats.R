@@ -15,17 +15,9 @@
 #'
 
 chromosomeLength <- function(mapFile){
-
-  # check for file existance
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-
-  name<-c("CHR","SNP_NAME","0","POSITION")
-  colnames(mappa)<-name
+  # read mapfile
+  mappa <- readMapFile(mapFile)
+  
   maps<-mappa[mappa$POSITION != 0, ] #delete chromosome 0
 
   # defining NULL variables to avoid warning messages
@@ -363,15 +355,9 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 
     message("Calculating SNPs inside ROH")
     names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+    
     #read map file
-    if(file.exists(mapFile)){
-      # using data.table to read data
-      mappa <- data.table::fread(mapFile, header = F)
-    } else {
-      stop(paste("file", mapFile, "doesn't exists"))
-    }
-    names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-    mappa$x <- NULL
+    mappa <- readMapFile(mapFile)
 
     #Start calculation % SNP in ROH
     message("Calculation % SNP in ROH") #FILIPPO
@@ -454,16 +440,8 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
   threshold_used=threshold*100
   message(paste('Threshold used:',threshold_used))
 
-  #read map file
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
-
+  # read map file
+  mappa <- readMapFile(mapFile)
 
   if(!is.null(runs) & is.null(SnpInRuns)){
     message('I found only Runs data frame. GOOD!')
