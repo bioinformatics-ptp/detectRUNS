@@ -776,10 +776,11 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
-#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
-#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 #' }
-#'
+#' runsFile -< system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+#' newData=readExternalRuns(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' 
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
 
