@@ -2,6 +2,11 @@
 
 language: r
 
+branches:
+  only:
+  - master
+  - devel
+
 sudo: required
 
 r:
@@ -13,6 +18,9 @@ cache: packages
 
 r_packages:
   - devtools
+  - roxygen2
+  - testthat
+  - knitr
   - covr
 
 before_install:
