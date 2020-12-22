@@ -4,9 +4,17 @@
 \alias{consecutiveRunsCpp}
 \title{Function to detect consecutive runs in a vector (individual's genotypes)}
 \usage{
-consecutiveRunsCpp(indGeno, individual, mapFile, ROHet = TRUE,
-  minSNP = 3L, maxOppositeGenotype = 1L, maxMiss = 1L,
-  minLengthBps = 1000L, maxGap = 1000000L)
+consecutiveRunsCpp(
+  indGeno,
+  individual,
+  mapFile,
+  ROHet = TRUE,
+  minSNP = 3L,
+  maxOppositeGenotype = 1L,
+  maxMiss = 1L,
+  minLengthBps = 1000L,
+  maxGap = 1000000L
+)
 }
 \arguments{
 \item{indGeno}{vector of 0/1/NAs of individual genotypes (0: homozygote; 1: heterozygote)}

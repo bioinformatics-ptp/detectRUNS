@@ -13,8 +13,7 @@ test_that("detected ROHet are identical", {
                          minDensity=1/10000, maxOppRun=NULL, maxMissRun=NULL)
 
   # reading rohet reference: this need to be updated
-  colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-  reference_rohet <- read.csv2("test.ROHet.sliding.csv", header = T, stringsAsFactors = FALSE, colClasses = colClasses)
+  reference_rohet <- readExternalRuns("test.ROHet.sliding.csv", program = "detectRUNS")
 
   # compare rohet table
   expect_equal(test_sliding, reference_rohet, info = "testing sliding window approach")
@@ -25,8 +24,7 @@ test_that("detected ROHet are identical", {
                           maxOppRun=1, maxMissRun=1)
 
   # reading rohet reference: this need to be updated
-  colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-  reference_rohet <- read.csv2("test.ROHet.consecutive.csv", header = T, stringsAsFactors = FALSE, colClasses = colClasses)
+  reference_rohet <- readExternalRuns("test.ROHet.consecutive.csv", program = "detectRUNS")
 
   # compare rohet table
   expect_equal(test_consecutive, reference_rohet, info = "testing consecutive approach")
@@ -50,6 +48,7 @@ test_that("Marker differ in size", {
   # clean up
   file.remove(fake_mapfile)
 })
+
 
 test_that("No file path throws error", {
   # test for errors

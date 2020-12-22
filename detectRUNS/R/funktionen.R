@@ -20,6 +20,34 @@ genoConvert <- function(x) {
 }
 
 
+#' Read from a .map file locations and return a data.table object
+#' 
+#' This is an utility function which check for file existance, define 
+#' colClasses and then returns the read data.table object
+#' @param mapFile map file (.map) file path
+#' @keywords internal
+#' @return data.table object
+#' 
+
+readMapFile <- function(mapFile) {
+  # define colClasses
+  colClasses <- c("character", "character", "character", "numeric")
+  
+  if(file.exists(mapFile)){
+    # using data.table to read data
+    mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
+  } else {
+    stop(paste("file", mapFile, "doesn't exists"))
+  }
+  
+  # set column names
+  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
+  mappa$x <- NULL
+  
+  return(mappa)
+}
+
+
 #' Function to check whether a window is (loosely) homozygous or not
 #'
 #' This is a core function. Parameters on how to consider a window homozygous are here (maxHet, maxMiss)
@@ -349,7 +377,8 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 }
 
 
-#' Function to count number of times a SNP is in a RUN
+#' Function to count number of times a SNP is in a RUN. Need to be called per
+#' chromosome (not using a dataframe with all results on all chromosomes)
 #'
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -357,39 +386,9 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #' @param genotypeFile genotype (.ped) file location
 #'
 #' @return dataframe with counts per SNP in runs (per population)
-#' @export
+#' @keywords internal
 #'
 #' @import utils
-#'
-#' @examples
-#' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
-#' # defining mapChrom
-#' mappa <- data.table::fread(mapFile, header = FALSE)
-#' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-#' mappa$x <- NULL
-#' chrom <- "24"
-#' mapChrom <- mappa[mappa$CHR==chrom, ]
-#'
-#' # calculating runs of Homozygosity
-#' \dontrun{
-#' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-#' }
-#' # loading pre-calculated data
-#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
-#'
-#' # fix column names and define runsChrom
-#' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-#' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
-#'
-#' snpInsideRuns(runsChrom, mapChrom, genotypeFile)
 #'
 
 snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
@@ -748,10 +747,11 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
 #' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 #'
-#' write.table(x= runs,file = 'RunsFileTest.txt', quote=F, row.names = F)
-#' newData=readRunsFromFile(runsFile = 'RunsFileTest.txt', program = 'detectRUNS')
+#' write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 #' }
-#'
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+#' newData=readExternalRuns(runsFile, program = 'detectRUNS')
+#' 
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
 

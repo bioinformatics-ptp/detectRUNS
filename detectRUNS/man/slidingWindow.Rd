@@ -4,8 +4,16 @@
 \alias{slidingWindow}
 \title{Function to slide a window over a vector (individual's genotypes)}
 \usage{
-slidingWindow(data, gaps, windowSize, step, maxGap, ROHet = TRUE,
-  maxOppositeGenotype = 1, maxMiss = 1)
+slidingWindow(
+  data,
+  gaps,
+  windowSize,
+  step,
+  maxGap,
+  ROHet = TRUE,
+  maxOppositeGenotype = 1,
+  maxMiss = 1
+)
 }
 \arguments{
 \item{data}{vector of 0/1/2 genotypes}

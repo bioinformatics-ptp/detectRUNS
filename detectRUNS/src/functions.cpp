@@ -924,7 +924,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // transform R object in Cpp object
   std::vector<int> POSITIONS = as<std::vector<int> >(mapChrom["POSITION"]);
   std::vector<std::string> SNP_NAME = as<std::vector<std::string> >(mapChrom["SNP_NAME"]);
-  std::vector<int> CHR = as<std::vector<int> >(mapChrom["CHR"]);
+  std::vector<std::string> CHR = as<std::vector<std::string> >(mapChrom["CHR"]);
 
   // get unique breeds
   CharacterVector population = runsChrom["POPULATION"];
@@ -943,7 +943,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // the columns of data.frame Defining data types accordingly slinding window
   CharacterVector snp_name(result_size);
-  IntegerVector chrom(result_size); // as defined in R function. What about X?
+  CharacterVector chrom(result_size);
   IntegerVector position(result_size);
   IntegerVector count(result_size);
   CharacterVector breed(result_size);

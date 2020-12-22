@@ -2,7 +2,7 @@
 Detect Runs of Homozygosity and Runs of Heterozygosity in diploid genomes
 =========================================================================
 
-[![Travis-CI Build Status](https://travis-ci.org/bioinformatics-ptp/detectRUNS.svg?branch=master)](https://travis-ci.org/bioinformatics-ptp/detectRUNS)
+[![Travis-CI Build Status](https://travis-ci.com/bioinformatics-ptp/detectRUNS.svg?branch=master)](https://travis-ci.com/bioinformatics-ptp/detectRUNS)
 [![codecov.io](https://codecov.io/github/bioinformatics-ptp/detectRUNS/coverage.svg?branch=master)](https://codecov.io/github/bioinformatics-ptp/detectRUNS?branch=master)
 [![CRAN version](http://www.r-pkg.org/badges/version/detectRUNS)](https://cran.r-project.org/package=detectRUNS)
 

@@ -4,8 +4,14 @@
 \alias{plot_SnpsInRuns}
 \title{Plot the number of times each SNP falls inside runs}
 \usage{
-plot_SnpsInRuns(runs, genotypeFile, mapFile, savePlots = FALSE,
-  separatePlots = FALSE, outputName = NULL)
+plot_SnpsInRuns(
+  runs,
+  genotypeFile,
+  mapFile,
+  savePlots = FALSE,
+  separatePlots = FALSE,
+  outputName = NULL
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}
