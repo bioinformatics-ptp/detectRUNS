@@ -2,6 +2,11 @@
 
 language: r
 
+branches:
+  only:
+  - master
+  - devel
+
 sudo: required
 
 r:
@@ -11,8 +16,13 @@ r:
 
 cache: packages
 
-r_packages:
+# install those packages as binaries: maybe they arent the most recent version,
+# however we hope to solve issues when installing devtools and gert
+r_binary_packages:
   - devtools
+  - roxygen2
+  - testthat
+  - knitr
   - covr
 
 before_install:
