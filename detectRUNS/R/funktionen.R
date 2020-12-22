@@ -377,7 +377,8 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 }
 
 
-#' Function to count number of times a SNP is in a RUN
+#' Function to count number of times a SNP is in a RUN. Need to be called per
+#' chromosome (not using a dataframe with all results on all chromosomes)
 #'
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -385,41 +386,9 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #' @param genotypeFile genotype (.ped) file location
 #'
 #' @return dataframe with counts per SNP in runs (per population)
-#' @export
+#' @keywords internal
 #'
 #' @import utils
-#'
-#' @examples
-#' # getting map and ped paths
-#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-#'
-#' # defining mapChrom
-#' mappa <- data.table::fread(mapFile, header = FALSE)
-#' names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-#' mappa$x <- NULL
-#' 
-#' # select only a chromosome
-#' chrom <- "24"
-#' mapChrom <- mappa[mappa$CHR==chrom, ]
-#'
-#' # calculating runs of Homozygosity
-#' \dontrun{
-#' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
-#' }
-#' # loading pre-calculated data
-#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-#' runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-#' colClasses = colClasses)
-#'
-#' # fix column names and define runsChrom
-#' names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-#' runsChrom <- runs[runs$CHROMOSOME==chrom, ]
-#'
-#' snpInsideRuns(runsChrom, mapChrom, genotypeFile)
 #'
 
 snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
