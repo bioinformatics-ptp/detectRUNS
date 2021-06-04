@@ -4,7 +4,7 @@
 # https://docs.travis-ci.com/user/billing-overview/#partner-queue-solution
 os: linux
 arch:
-  - arm64
+  - s390x
 
 language: r
 
@@ -12,8 +12,6 @@ branches:
   only:
   - master
   - devel
-
-sudo: required
 
 r:
   - oldrel
