@@ -510,7 +510,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
   #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
-                            "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
+                            "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0), "avg_pct"=numeric(0))
 
 
   #vector of breeds
@@ -529,6 +529,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
     snp_pos1=group_subset[1,3]
     Start_SNP=group_subset[1,1]
     snp_count=0
+    sum_pct = 0
 
     x=2
     while(x <= length(rownames(group_subset))) {
@@ -538,6 +539,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
       old_pos=group_subset[x-1,7]
       chr_old=group_subset[x-1,2]
       chr_new =group_subset[x,2]
+      sum_pct = sum_pct + group_subset[x-1,"PERCENTAGE"]
 
       diff=new_pos-old_pos
 
@@ -556,10 +558,12 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
                                                                            "chrom"=group_subset[x-1,2],
                                                                            "nSNP"=snp_count,
                                                                            "from"=snp_pos1,
-                                                                           "to"=TO))
+                                                                           "to"=TO,
+                                                                           "avg_pct"=sum_pct))
 
         #reset variable
         snp_count=0
+        sum_pct=0
         snp_pos1=group_subset[x,3]
         Start_SNP=group_subset[x,1]
       }
@@ -569,6 +573,8 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
 
     }
   }
+
+  final_table$avg_pct = final_table$avg_pct/final_table$nSNP
 
   rownames(final_table) <- seq(1,length(row.names(final_table)))
   return(final_table)
