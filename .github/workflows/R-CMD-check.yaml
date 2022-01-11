@@ -8,12 +8,9 @@ on:
 
 name: R-CMD-check
 
-defaults:
-  run:
-    working-directory: detectRUNS
-
 jobs:
   R-CMD-check:
+
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
@@ -46,6 +43,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
           extra-packages: rcmdcheck
+          working-directory: ./detectRUNS
 
       - uses: r-lib/actions/check-r-package@v1
 
