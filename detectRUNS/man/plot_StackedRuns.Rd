@@ -4,8 +4,12 @@
 \alias{plot_StackedRuns}
 \title{Plot stacked runs}
 \usage{
-plot_StackedRuns(runs, savePlots = FALSE, separatePlots = FALSE,
-  outputName = NULL)
+plot_StackedRuns(
+  runs,
+  savePlots = FALSE,
+  separatePlots = FALSE,
+  outputName = NULL
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}

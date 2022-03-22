@@ -299,15 +299,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read map file
+  mappa <- readMapFile(mapFile)
 
   chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$CHROMOSOME)
@@ -368,9 +361,14 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' @param runs a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)
 #' @param genotypeFile genotype (.ped) file path
 #' @param mapFile map file (.map) file path
+#' @param pct_threshold reference line for significant regions (e.g. 0.5 --> 50\% SNPs in runs; default is 0.33)
+#' @param x_font_size font size for x axis values (chromosome numbers: default = 10)
 #' @param savePlots should plots be saved out in files (default) or plotted in the graphical terminal?
+#' @param file_type type of plot file to ba saved (if savePlots is TRUE; default is pdf)
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)
 #' @param plotTitle title in plot (default)
+#' @param plot_w plot width (if savePlots = TRUE; default is 8)
+#' @param plot_h plot height (if savePlots = TRUE; default is 6)
 #'
 #' @return Manhattan plots of proportion of times SNPs are inside runs,
 #' per population (pdf files)
@@ -400,7 +398,9 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' savePlots = FALSE, plotTitle = "ROHom")
 #'
 
-plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, outputName=NULL, plotTitle=NULL) {
+plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, x_font_size = 10,
+                               savePlots=FALSE, file_type="pdf", outputName=NULL, plotTitle=NULL,
+                               plot_w = 8, plot_h = 6) {
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -410,15 +410,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
   P <- NULL
   CHR <- NULL
 
-  #read map file
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read map file
+  mappa <- readMapFile(mapFile)
 
   #Start calculation % SNP in ROH
   print("Calculation % SNP in ROH") #FILIPPO
@@ -498,9 +491,11 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
     p <- ggplot(subset_group)
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
-    p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,100)
-    p <- p + theme_bw(base_size=11) + theme(legend.position='none')
+    p <- p + scale_size(range = c(0.1, 0.1)) + ylim(0,max(subset_group$P, na.rm=TRUE)+5)
+    p <- p + theme_bw(base_size=11) + theme(axis.text.x = element_text(size=x_font_size),
+                                            legend.position='none')
     p <- p + scale_x_continuous(labels=as.character(chroms), breaks=bpMidVec)
+    p <- p + geom_hline(yintercept = pct_threshold*100, linetype="dashed", color="darkgrey")
     roh_plot <- p + ggtitle(main_title) + xlab('Chromosome') + ylab('% SNP in Runs') + theme(plot.title = element_text(hjust = 0.5))
 
     #create a title for manhattan plot
@@ -513,7 +508,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, out
 
     #Save plot
     if (savePlots){
-      ggsave(filename = paste(fileNameOutput,"_",group,".pdf",sep="") , plot = roh_plot, device = "pdf")
+      ggsave(filename = paste(fileNameOutput,"_", group, ".", file_type, sep=""),
+             plot = roh_plot, device = file_type, width = plot_w, height = plot_h)
     } else { print(roh_plot) }
 
     print(paste('Manhattan plot created for ',group)) #FILIPPO
