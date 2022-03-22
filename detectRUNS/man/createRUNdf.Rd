@@ -6,9 +6,16 @@
 Requires a map file (other filename to read or R object)
 Parameters on maximum number of missing and opposite genotypes in the run (not the window) are implemented here}
 \usage{
-createRUNdf(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
-  minDensity = 1/10, oppositeAndMissingSNP, maxOppRun = NULL,
-  maxMissRun = NULL)
+createRUNdf(
+  snpRun,
+  mapFile,
+  minSNP = 3,
+  minLengthBps = 1000,
+  minDensity = 1/10,
+  oppositeAndMissingSNP,
+  maxOppRun = NULL,
+  maxMissRun = NULL
+)
 }
 \arguments{
 \item{snpRun}{vector of TRUE/FALSE (is the SNP in a RUN?)}

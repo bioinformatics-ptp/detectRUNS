@@ -4,8 +4,16 @@
 \alias{slidingWindowCpp}
 \title{Function to slide a window over a vector (individual's genotypes)}
 \usage{
-slidingWindowCpp(data, gaps, windowSize, step, maxGap, ROHet = TRUE,
-  maxOppositeGenotype = 1L, maxMiss = 1L)
+slidingWindowCpp(
+  data,
+  gaps,
+  windowSize,
+  step,
+  maxGap,
+  ROHet = TRUE,
+  maxOppositeGenotype = 1L,
+  maxMiss = 1L
+)
 }
 \arguments{
 \item{data}{vector of 0/1/2 genotypes}

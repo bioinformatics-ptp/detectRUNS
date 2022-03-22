@@ -4,8 +4,13 @@
 \alias{plot_ViolinRuns}
 \title{Violin plot of run length per individual (either sum or mean)}
 \usage{
-plot_ViolinRuns(runs, method = c("sum", "mean"), outputName = NULL,
-  plotTitle = NULL, savePlots = FALSE)
+plot_ViolinRuns(
+  runs,
+  method = c("sum", "mean"),
+  outputName = NULL,
+  plotTitle = NULL,
+  savePlots = FALSE
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}

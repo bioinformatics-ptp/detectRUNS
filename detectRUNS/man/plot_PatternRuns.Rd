@@ -4,8 +4,14 @@
 \alias{plot_PatternRuns}
 \title{Plot sum of run-lengths (or average run-lengths) against the number of runs per individual}
 \usage{
-plot_PatternRuns(runs, mapFile, method = c("sum", "mean"),
-  outputName = NULL, savePlots = FALSE, plotTitle = NULL)
+plot_PatternRuns(
+  runs,
+  mapFile,
+  method = c("sum", "mean"),
+  outputName = NULL,
+  savePlots = FALSE,
+  plotTitle = NULL
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}

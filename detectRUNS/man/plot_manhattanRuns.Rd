@@ -4,8 +4,19 @@
 \alias{plot_manhattanRuns}
 \title{Plot the proportion of times SNPs are inside runs - MANHATTAN PLOT}
 \usage{
-plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots = FALSE,
-  outputName = NULL, plotTitle = NULL)
+plot_manhattanRuns(
+  runs,
+  genotypeFile,
+  mapFile,
+  pct_threshold = 0.33,
+  x_font_size = 10,
+  savePlots = FALSE,
+  file_type = "pdf",
+  outputName = NULL,
+  plotTitle = NULL,
+  plot_w = 8,
+  plot_h = 6
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}
@@ -14,11 +25,21 @@ plot_manhattanRuns(runs, genotypeFile, mapFile, savePlots = FALSE,
 
 \item{mapFile}{map file (.map) file path}
 
+\item{pct_threshold}{reference line for significant regions (e.g. 0.5 --> 50\% SNPs in runs; default is 0.33)}
+
+\item{x_font_size}{font size for x axis values (chromosome numbers: default = 10)}
+
 \item{savePlots}{should plots be saved out in files (default) or plotted in the graphical terminal?}
+
+\item{file_type}{type of plot file to ba saved (if savePlots is TRUE; default is pdf)}
 
 \item{outputName}{title prefix (the base name of graph, if savePlots is TRUE)}
 
 \item{plotTitle}{title in plot (default)}
+
+\item{plot_w}{plot width (if savePlots = TRUE; default is 8)}
+
+\item{plot_h}{plot height (if savePlots = TRUE; default is 6)}
 }
 \value{
 Manhattan plots of proportion of times SNPs are inside runs,
