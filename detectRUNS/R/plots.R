@@ -299,15 +299,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read map file
+  mappa <- readMapFile(mapFile)
 
   chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$CHROMOSOME)
@@ -417,15 +410,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
   P <- NULL
   CHR <- NULL
 
-  #read map file
-  if(file.exists(mapFile)){
-    # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F)
-  } else {
-    stop(paste("file", mapFile, "doesn't exists"))
-  }
-  names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
-  mappa$x <- NULL
+  # read map file
+  mappa <- readMapFile(mapFile)
 
   #Start calculation % SNP in ROH
   print("Calculation % SNP in ROH") #FILIPPO
