@@ -4,9 +4,19 @@
 \alias{plot_manhattanRuns}
 \title{Plot the proportion of times SNPs are inside runs - MANHATTAN PLOT}
 \usage{
-plot_manhattanRuns(runs, genotypeFile, mapFile, pct_threshold = 0.33,
-  x_font_size = 10, savePlots = FALSE, file_type = "pdf",
-  outputName = NULL, plotTitle = NULL, plot_w = 8, plot_h = 6)
+plot_manhattanRuns(
+  runs,
+  genotypeFile,
+  mapFile,
+  pct_threshold = 0.33,
+  x_font_size = 10,
+  savePlots = FALSE,
+  file_type = "pdf",
+  outputName = NULL,
+  plotTitle = NULL,
+  plot_w = 8,
+  plot_h = 6
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}

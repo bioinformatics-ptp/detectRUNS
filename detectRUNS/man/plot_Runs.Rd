@@ -4,8 +4,13 @@
 \alias{plot_Runs}
 \title{Function to plot runs per individual}
 \usage{
-plot_Runs(runs, suppressInds = FALSE, savePlots = FALSE,
-  separatePlots = FALSE, outputName = NULL)
+plot_Runs(
+  runs,
+  suppressInds = FALSE,
+  savePlots = FALSE,
+  separatePlots = FALSE,
+  outputName = NULL
+)
 }
 \arguments{
 \item{runs}{a data.frame with runs per individual (group, id, chrom, nSNP, start, end, length)}
