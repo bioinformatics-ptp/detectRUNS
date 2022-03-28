@@ -397,8 +397,8 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 
 #' Function to retrieve most common runs in the population
 #'
-#' This function takes in input either the run results and returns a subset of 
-#' the runs most commonly found in the group/population. The parameter 
+#' This function takes in input either the run results and returns a subset of
+#' the runs most commonly found in the group/population. The parameter
 #' \code{threshold} controls the definition
 #' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 #'
@@ -422,129 +422,126 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- slidingRUNS.run(genotypeFile, mapFile,
+#'   windowSize = 15, threshold = 0.1, minSNP = 15,
+#'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+#' )
 #' }
 #' # loading pre-calculated data
-#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-#' runsDF = readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 #'
 #' tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 #'
+tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
 
-tableRuns <- function(runs=NULL, genotypeFile, mapFile, threshold = 0.5) {
-
-  #set a threshold
-  threshold_used=threshold*100
-  message(paste('Threshold used:',threshold_used))
+  # set a threshold
+  threshold_used <- threshold * 100
+  message(paste("Threshold used:", threshold_used))
 
   # read map file
   mappa <- readMapFile(mapFile)
 
-  #change colnames in runs file
-  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  # change colnames in runs file
+  names(runs) <- c("POPULATION", "IND", "CHROMOSOME", "COUNT", "START", "END", "LENGTH")
 
-  #Start calculation % SNP in ROH
-  message("Calculation % SNP in ROH") #FILIPPO
-  all_SNPinROH <- data.frame("SNP_NAME"=character(),
-                             "CHR"=integer(),
-                             "POSITION"=numeric(),
-                             "COUNT"=integer(),
-                             "BREED"=factor(),
-                             "PERCENTAGE"=numeric(),
-                             stringsAsFactors=FALSE)
+  # vector of breeds
+  group_list <- as.vector(unique(runs$POPULATION))
+
+  # final data frame
+  final_table <- data.frame(
+    "GROUP" = character(0), "Start_SNP" = character(0), "End_SNP" = character(0),
+    "chrom" = character(0), "nSNP" = integer(0), "from" = integer(0), "to" = integer(0), "avg_pct" = numeric(0)
+  )
+
+  # Start calculation % SNP in ROH
+  message("Calculation % SNP in ROH") # FILIPPO
 
   # create progress bar
   total <- length(unique(runs$CHROMOSOME))
-  message(paste('Chromosome founds: ',total)) #FILIPPO
-  n=0
+  message(paste("Chromosome founds: ", total)) # FILIPPO
+  n <- 0
   pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-  #SNP in ROH
+  # SNP in ROH
   for (chrom in sort(unique(runs$CHROMOSOME))) {
-    runsChrom <- runs[runs$CHROMOSOME==chrom,]
-    mapKrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
-    all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
-    n=n+1
-    setTxtProgressBar(pb, n)
-  }
-  close(pb)
-  
-  message("Calculation % SNP in ROH finish") #FILIPPO
+    # extract from map and runs only the chromosome I need
+    runsChrom <- runs[runs$CHROMOSOME == chrom, ]
+    mapKrom <- mappa[mappa$CHR == chrom, ]
 
-  #consecutive number
-  all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
+    # calculate snpInsideRuns
+    snpInsideRuns <- snpInsideRunsCpp(runsChrom, mapKrom, genotypeFile)
 
-  #final data frame
-  final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
-                            "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0), "avg_pct"=numeric(0))
+    # add a column with the row names as integer
+    snpInsideRuns$Number <- as.integer(row.names(snpInsideRuns))
 
+    for (grp in group_list) {
+      # create subset for group/thresold
+      group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp) & snpInsideRuns$PERCENTAGE > threshold_used, ]
 
-  #vector of breeds
-  group_list=as.vector(unique(all_SNPinROH$BREED))
-
-  for (grp in group_list){
-    message(paste('checking: ',grp))
-
-    #create subset for group/thresold
-    group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-
-    #print(group_subset)
-
-    #variable
-    old_pos=group_subset[1,7]
-    snp_pos1=group_subset[1,3]
-    Start_SNP=group_subset[1,1]
-    snp_count=0
-    sum_pct = 0
-
-    x=2
-    while(x <= length(rownames(group_subset))) {
-
-      snp_count = snp_count + 1
-      new_pos=group_subset[x,7]
-      old_pos=group_subset[x-1,7]
-      chr_old=group_subset[x-1,2]
-      chr_new =group_subset[x,2]
-      sum_pct = sum_pct + group_subset[x-1,"PERCENTAGE"]
-
-      diff=new_pos-old_pos
-
-      if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
-        if (x==length(rownames(group_subset))){
-          end_SNP=group_subset[x,1]
-          TO=group_subset[x,3]
-        }else{
-          end_SNP=group_subset[x-1,1]
-          TO=group_subset[x-1,3]
-        }
-
-        final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5],
-                                                                           "Start_SNP"=Start_SNP,
-                                                                           "End_SNP"=end_SNP,
-                                                                           "chrom"=group_subset[x-1,2],
-                                                                           "nSNP"=snp_count,
-                                                                           "from"=snp_pos1,
-                                                                           "to"=TO,
-                                                                           "avg_pct"=sum_pct))
-
-        #reset variable
-        snp_count=0
-        sum_pct=0
-        snp_pos1=group_subset[x,3]
-        Start_SNP=group_subset[x,1]
+      # after filtering, I need to have at least 2 rows or I can't do the following stuff
+      if (nrow(group_subset) <= 2) {
+        break
       }
 
-      #upgrade x value
-      x <- x+1
+      # initialize stuff
+      old_pos <- group_subset[1, 7]
+      snp_pos1 <- group_subset[1, 3]
+      Start_SNP <- group_subset[1, 1]
+      snp_count <- 0
+      sum_pct <- 0
 
+      for (x in 2:nrow(group_subset)) {
+        snp_count <- snp_count + 1
+        new_pos <- group_subset[x, 7]
+        old_pos <- group_subset[x - 1, 7]
+        chr_old <- group_subset[x - 1, 2]
+        chr_new <- group_subset[x, 2]
+        sum_pct <- sum_pct + group_subset[x - 1, "PERCENTAGE"]
+
+        # this will be 1 in case of adjacent rows
+        diff <- new_pos - old_pos
+
+        if ((diff > 1) | (chr_new != chr_old) | x == nrow(group_subset)) {
+          if (x == nrow(group_subset)) {
+            end_SNP <- group_subset[x, 1]
+            TO <- group_subset[x, 3]
+          } else {
+            end_SNP <- group_subset[x - 1, 1]
+            TO <- group_subset[x - 1, 3]
+          }
+
+          final_table <- rbind.data.frame(final_table, final_table = data.frame(
+            "Group" = group_subset[x - 1, 5],
+            "Start_SNP" = Start_SNP,
+            "End_SNP" = end_SNP,
+            "chrom" = group_subset[x - 1, 2],
+            "nSNP" = snp_count,
+            "from" = snp_pos1,
+            "to" = TO,
+            "avg_pct" = sum_pct
+          ))
+
+          # reset variable
+          snp_count <- 0
+          sum_pct <- 0
+          snp_pos1 <- group_subset[x, 3]
+          Start_SNP <- group_subset[x, 1]
+        }
+      }
     }
+
+    n <- n + 1
+    setTxtProgressBar(pb, n)
   }
 
-  final_table$avg_pct = final_table$avg_pct/final_table$nSNP
+  close(pb)
 
-  rownames(final_table) <- seq(1,length(row.names(final_table)))
+  message("Calculation % SNP in ROH finish") # FILIPPO
+
+  final_table$avg_pct <- final_table$avg_pct / final_table$nSNP
+
+  row.names(final_table) <- seq(1, nrow(final_table))
+
   return(final_table)
 }
-

@@ -23,8 +23,8 @@ included in the run and average percentage of SNPs in run
 are reported in the output dataframe)
 }
 \description{
-This function takes in input either the run results and returns a subset of 
-the runs most commonly found in the group/population. The parameter 
+This function takes in input either the run results and returns a subset of
+the runs most commonly found in the group/population. The parameter
 \code{threshold} controls the definition
 of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 }
@@ -36,12 +36,14 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- slidingRUNS.run(genotypeFile, mapFile,
+  windowSize = 15, threshold = 0.1, minSNP = 15,
+  ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+)
 }
 # loading pre-calculated data
-runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-runsDF = readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
+runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 
 tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 
