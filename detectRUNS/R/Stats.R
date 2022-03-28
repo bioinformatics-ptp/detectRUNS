@@ -397,10 +397,9 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 
 #' Function to retrieve most common runs in the population
 #'
-#' This function takes in input either the run results or the output from
-#' the function \code{snpInsideRuns} (proportion of times a SNP is inside a run)
-#' in the population/group, and returns a subset of the runs most commonly
-#' found in the group/population. The parameter \code{threshold} controls the definition
+#' This function takes in input either the run results and returns a subset of 
+#' the runs most commonly found in the group/population. The parameter 
+#' \code{threshold} controls the definition
 #' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
@@ -408,8 +407,6 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' @param runs R object (dataframe) with results on detected runs
 #' @param threshold value from 0 to 1 (default 0.7) that controls the desired
 #' proportion of individuals carrying that run (e.g. 70\%)
-#' @param SnpInRuns dataframe with the proportion of times each SNP falls inside a
-#' run in the population (output from \code{snpInsideRuns})
 #'
 #' @return A dataframe with the most common runs detected in the sampled individuals
 #' (the group/population, start and end position of the run, chromosome, number of SNP
@@ -435,7 +432,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 #' tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 #'
 
-tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold = 0.5) {
+tableRuns <- function(runs=NULL, genotypeFile, mapFile, threshold = 0.5) {
 
   #set a threshold
   threshold_used=threshold*100
@@ -444,45 +441,37 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile, mapFile, threshold 
   # read map file
   mappa <- readMapFile(mapFile)
 
-  if(!is.null(runs) & is.null(SnpInRuns)){
-    message('I found only Runs data frame. GOOD!')
+  #change colnames in runs file
+  names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-    #change colnames in runs file
-    names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
+  #Start calculation % SNP in ROH
+  message("Calculation % SNP in ROH") #FILIPPO
+  all_SNPinROH <- data.frame("SNP_NAME"=character(),
+                             "CHR"=integer(),
+                             "POSITION"=numeric(),
+                             "COUNT"=integer(),
+                             "BREED"=factor(),
+                             "PERCENTAGE"=numeric(),
+                             stringsAsFactors=FALSE)
 
-    #Start calculation % SNP in ROH
-    message("Calculation % SNP in ROH") #FILIPPO
-    all_SNPinROH <- data.frame("SNP_NAME"=character(),
-                               "CHR"=integer(),
-                               "POSITION"=numeric(),
-                               "COUNT"=integer(),
-                               "BREED"=factor(),
-                               "PERCENTAGE"=numeric(),
-                               stringsAsFactors=FALSE)
+  # create progress bar
+  total <- length(unique(runs$CHROMOSOME))
+  message(paste('Chromosome founds: ',total)) #FILIPPO
+  n=0
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-    # create progress bar
-    total <- length(unique(runs$CHROMOSOME))
-    message(paste('Chromosome founds: ',total)) #FILIPPO
-    n=0
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
-
-    #SNP in ROH
-    for (chrom in sort(unique(runs$CHROMOSOME))) {
-      runsChrom <- runs[runs$CHROMOSOME==chrom,]
-      mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
-      all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
-      n=n+1
-      setTxtProgressBar(pb, n)
-    }
-    close(pb)
-    message("Calculation % SNP in ROH finish") #FILIPPO
-  } else if (is.null(runs) & !is.null(SnpInRuns)) {
-    message('I found only SNPinRuns data frame. GOOD!')
-    all_SNPinROH=SnpInRuns
-  } else{
-    stop('You gave me Runs and SNPinRuns! Please choose one!')
+  #SNP in ROH
+  for (chrom in sort(unique(runs$CHROMOSOME))) {
+    runsChrom <- runs[runs$CHROMOSOME==chrom,]
+    mapKrom <- mappa[mappa$CHR==chrom,]
+    snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
+    all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
+    n=n+1
+    setTxtProgressBar(pb, n)
   }
+  close(pb)
+  
+  message("Calculation % SNP in ROH finish") #FILIPPO
 
   #consecutive number
   all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))

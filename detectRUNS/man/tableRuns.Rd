@@ -4,19 +4,10 @@
 \alias{tableRuns}
 \title{Function to retrieve most common runs in the population}
 \usage{
-tableRuns(
-  runs = NULL,
-  SnpInRuns = NULL,
-  genotypeFile,
-  mapFile,
-  threshold = 0.5
-)
+tableRuns(runs = NULL, genotypeFile, mapFile, threshold = 0.5)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}
-
-\item{SnpInRuns}{dataframe with the proportion of times each SNP falls inside a
-run in the population (output from \code{snpInsideRuns})}
 
 \item{genotypeFile}{Plink ped file (for SNP position)}
 
@@ -32,10 +23,9 @@ included in the run and average percentage of SNPs in run
 are reported in the output dataframe)
 }
 \description{
-This function takes in input either the run results or the output from
-the function \code{snpInsideRuns} (proportion of times a SNP is inside a run)
-in the population/group, and returns a subset of the runs most commonly
-found in the group/population. The parameter \code{threshold} controls the definition
+This function takes in input either the run results and returns a subset of 
+the runs most commonly found in the group/population. The parameter 
+\code{threshold} controls the definition
 of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
 }
 \examples{
