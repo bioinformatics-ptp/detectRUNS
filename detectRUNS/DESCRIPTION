@@ -2,11 +2,11 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
-Version: 0.9.6.9000
+Version: 0.9.6.9001
 Date: 2020-12-20
 Authors@R: c(
     person("Filippo","Biscarini", email="filippo.biscarini@gmail.com", role=c("aut", "cre")),
-    person("Paolo","Cozzi", email="paolo.cozzi@ptp.it", role="aut"),
+    person("Paolo","Cozzi", email="paolo.cozzi@ibba.cnr.it", role="aut"),
     person("Giustino","Gaspa", email="gigaspa@uniss.it", role="aut"),
     person("Gabriele","Marras", email="gmarras@uoguelph.ca", role="aut")
   )
@@ -28,7 +28,7 @@ Imports:
     Rcpp,
     gridExtra,
     data.table
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests:
     testthat,
     knitr,
