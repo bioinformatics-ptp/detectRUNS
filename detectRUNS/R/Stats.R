@@ -17,7 +17,7 @@
 chromosomeLength <- function(mapFile){
   # read mapfile
   mappa <- readMapFile(mapFile)
-  
+
   maps<-mappa[mappa$POSITION != 0, ] #delete chromosome 0
 
   # defining NULL variables to avoid warning messages
@@ -355,7 +355,7 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
 
     message("Calculating SNPs inside ROH")
     names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-    
+
     #read map file
     mappa <- readMapFile(mapFile)
 
@@ -477,7 +477,7 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
 
     for (grp in group_list) {
       # create subset for group/thresold
-      group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp) & snpInsideRuns$PERCENTAGE > threshold_used, ]
+      group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp) & snpInsideRuns$PERCENTAGE >= threshold_used, ]
 
       # after filtering, I need to have at least 2 rows or I can't do the following stuff
       if (nrow(group_subset) <= 2) {
@@ -495,14 +495,12 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
         snp_count <- snp_count + 1
         new_pos <- group_subset[x, 7]
         old_pos <- group_subset[x - 1, 7]
-        chr_old <- group_subset[x - 1, 2]
-        chr_new <- group_subset[x, 2]
         sum_pct <- sum_pct + group_subset[x - 1, "PERCENTAGE"]
 
         # this will be 1 in case of adjacent rows
         diff <- new_pos - old_pos
 
-        if ((diff > 1) | (chr_new != chr_old) | x == nrow(group_subset)) {
+        if ((diff > 1) | x == nrow(group_subset)) {
           if (x == nrow(group_subset)) {
             end_SNP <- group_subset[x, 1]
             TO <- group_subset[x, 3]
