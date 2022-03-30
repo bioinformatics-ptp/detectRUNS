@@ -484,48 +484,67 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
         break
       }
 
+      # message("Start from: ", paste0(group_subset[1, ], sep = " "))
+
       # initialize stuff
-      old_pos <- group_subset[1, 7]
-      snp_pos1 <- group_subset[1, 3]
+      old_idx <- group_subset[1, 7]
+      from <- group_subset[1, 3]
       Start_SNP <- group_subset[1, 1]
-      snp_count <- 0
-      sum_pct <- 0
+      snp_count <- 1
+      sum_pct <- group_subset[1, "PERCENTAGE"]
 
       for (x in 2:nrow(group_subset)) {
-        snp_count <- snp_count + 1
-        new_pos <- group_subset[x, 7]
-        old_pos <- group_subset[x - 1, 7]
-        sum_pct <- sum_pct + group_subset[x - 1, "PERCENTAGE"]
+        # message("Processing: ", paste0(group_subset[x, ], sep = " "))
 
-        # this will be 1 in case of adjacent rows
-        diff <- new_pos - old_pos
+        # get current index
+        new_idx <- group_subset[x, 7]
+
+        # Difference between indexes. This will be 1 in case of adjacent rows
+        diff <- new_idx - old_idx
 
         if ((diff > 1) | x == nrow(group_subset)) {
           if (x == nrow(group_subset)) {
+            # message("End of subset")
             end_SNP <- group_subset[x, 1]
             TO <- group_subset[x, 3]
           } else {
+            # message("End of segment")
             end_SNP <- group_subset[x - 1, 1]
             TO <- group_subset[x - 1, 3]
           }
 
-          final_table <- rbind.data.frame(final_table, final_table = data.frame(
-            "Group" = group_subset[x - 1, 5],
-            "Start_SNP" = Start_SNP,
-            "End_SNP" = end_SNP,
-            "chrom" = group_subset[x - 1, 2],
-            "nSNP" = snp_count,
-            "from" = snp_pos1,
-            "to" = TO,
-            "avg_pct" = sum_pct
-          ))
+          # throw away row if composed by only one SNP
+          if (snp_count > 1) {
+            final_table <- rbind.data.frame(final_table, final_table = data.frame(
+              "Group" = group_subset[x - 1, 5],
+              "Start_SNP" = Start_SNP,
+              "End_SNP" = end_SNP,
+              "chrom" = group_subset[x - 1, 2],
+              "nSNP" = snp_count,
+              "from" = from,
+              "to" = TO,
+              "avg_pct" = sum_pct
+            ))
+
+            # message("Writing: ", paste0(tail(final_table, n = 1), sep = " "))
+            # message("Start a new segment: ", paste0(group_subset[x, ], sep = " "))
+          }
 
           # reset variable
-          snp_count <- 0
-          sum_pct <- 0
-          snp_pos1 <- group_subset[x, 3]
+          snp_count <- 1
+          sum_pct <- group_subset[x, "PERCENTAGE"]
+          from <- group_subset[x, 3]
           Start_SNP <- group_subset[x, 1]
+        } else {
+          # update stuff
+          snp_count <- snp_count + 1
+          sum_pct <- sum_pct + group_subset[x, "PERCENTAGE"]
+
+          # message("Add snp to group: ", paste(snp_count, new_idx, old_idx, sum_pct))
         }
+
+        # update index
+        old_idx <- new_idx
       }
     }
 
