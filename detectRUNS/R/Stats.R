@@ -481,7 +481,7 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
 
       # after filtering, I need to have at least 2 rows or I can't do the following stuff
       if (nrow(group_subset) <= 2) {
-        break
+        next
       }
 
       # message("Start from: ", paste0(group_subset[1, ], sep = " "))
