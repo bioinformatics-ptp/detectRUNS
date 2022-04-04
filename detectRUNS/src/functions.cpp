@@ -1013,3 +1013,169 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   // returning all runs for this individual genotype
   return(res);
 }
+
+
+DataFrame subset_runs_by_chrom(DataFrame runs, std::string chrom){
+  CharacterVector population = runs[0];
+  CharacterVector ind = runs[1];
+  CharacterVector chromosomes = runs[2];
+  IntegerVector count = runs[3];
+  IntegerVector start = runs[4];
+  IntegerVector end = runs[5];
+  IntegerVector length = runs[6];
+
+  LogicalVector chrom_idx(chromosomes.size());
+
+  for (unsigned int j=0; j<chromosomes.size(); j++) {
+    chrom_idx[j] = (chromosomes[j] == chrom);
+  }
+
+  return DataFrame::create(
+    Named("POPULATION") = population[chrom_idx],
+    Named("IND") = ind[chrom_idx],
+    Named("CHROMOSOME") = chromosomes[chrom_idx],
+    Named("COUNT") = count[chrom_idx],
+    Named("START") = start[chrom_idx],
+    Named("END") = end[chrom_idx],
+    Named("LENGTH") = length[chrom_idx]
+  );
+}
+
+
+DataFrame subset_map_by_chrom(DataFrame mappa, std::string chrom){
+  CharacterVector chromosomes = mappa[0];
+  CharacterVector snps = mappa[1];
+  IntegerVector positions = mappa[2];
+
+  LogicalVector chrom_idx(chromosomes.size());
+
+  for (unsigned int j=0; j<chromosomes.size(); j++) {
+    chrom_idx[j] = (chromosomes[j] == chrom);
+  }
+
+  return DataFrame::create(
+    Named("CHR") = chromosomes[chrom_idx],
+    Named("SNP_NAME") = snps[chrom_idx],
+    Named("POSITION") = positions[chrom_idx]
+  );
+}
+
+
+DataFrame filter_snpInsideRuns_by_threshold(
+    DataFrame snpInsideRuns, float threshold){
+  CharacterVector snps = snpInsideRuns["SNP_NAME"];
+  CharacterVector chromosomes = snpInsideRuns["CHR"];
+  IntegerVector positions = snpInsideRuns["POSITION"];
+  IntegerVector counts = snpInsideRuns["COUNT"];
+  CharacterVector breeds = snpInsideRuns["BREED"];
+  NumericVector percentages = snpInsideRuns["PERCENTAGE"];
+  IntegerVector numbers = snpInsideRuns["Number"];
+
+  LogicalVector idx(percentages.size());
+
+  for (unsigned int j=0; j<percentages.size(); j++) {
+    idx[j] = (percentages[j] >= threshold);
+  }
+
+  return DataFrame::create(
+    Named("SNP_NAME") = snps[idx],
+    Named("CHR") = chromosomes[idx],
+    Named("POSITION") = positions[idx],
+    Named("COUNT") = counts[idx],
+    Named("BREED") = fast_factor(breeds[idx]), //returns a factor
+    Named("PERCENTAGE") = percentages[idx],
+    Named("Number") = numbers[idx],
+    _["stringsAsFactors"] = false);
+}
+
+
+//' Function to retrieve most common runs in the population
+//'
+//' This function takes in input either the run results and returns a subset of
+//' the runs most commonly found in the group/population. The parameter
+//' \code{threshold} controls the definition
+//' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
+//'
+//' @param genotypeFile Plink ped file (for SNP position)
+//' @param mapFile Plink map file (for SNP position)
+//' @param runs R object (dataframe) with results on detected runs
+//' @param threshold value from 0 to 1 (default 0.7) that controls the desired
+//' proportion of individuals carrying that run (e.g. 70\%)
+//'
+//' @return A dataframe with the most common runs detected in the sampled individuals
+//' (the group/population, start and end position of the run, chromosome, number of SNP
+//' included in the run and average percentage of SNPs in run
+//' are reported in the output dataframe)
+//' @export
+//'
+//' @examples
+//' # getting map and ped paths
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+//'
+//' # calculating runs of Homozygosity
+//' \dontrun{
+//' # skipping runs calculation
+//' runs <- slidingRUNS.run(genotypeFile, mapFile,
+//'   windowSize = 15, threshold = 0.1, minSNP = 15,
+//'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+//' )
+//' }
+//' # loading pre-calculated data
+//' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+//' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
+//'
+//' table <- tableRunsCpp(
+//'   runs = runsDF, genotypeFile = genotypeFile,
+//'   mapFile = mapFile, threshold = 0.5)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//'
+// [[Rcpp::export]]
+DataFrame tableRunsCpp(DataFrame runs, std::string genotypeFile, std::string mapFile,
+                  const float threshold = 0.5) {
+
+  // set a threshold
+  float threshold_used = threshold * 100;
+  Rprintf("Threshold used: %f", threshold_used);
+
+  // Obtaining namespace of detectRUNS package
+  Environment pkg = Environment::namespace_env("detectRUNS");
+
+  // Picking up readMapFile function from detectRUNS package
+  Function readMapFile = pkg["readMapFile"];
+
+  // read mapfile using R function (which uses data.table::fread)
+  DataFrame mappa = readMapFile(mapFile);
+
+  // get distinct chromosomes
+  CharacterVector chromosomes = runs[2];
+  CharacterVector unique_chromosomes = sort_unique(chromosomes);
+
+  DataFrame snpInsideRuns;
+
+  for (unsigned int i=0; i<unique_chromosomes.size(); i++) {
+    std::string chrom = as<std::string>(unique_chromosomes[i]);
+
+    // extract the desidered chrom
+    DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);
+    DataFrame mapKrom = subset_map_by_chrom(mappa, chrom);
+
+    // calculate snpInsideRuns
+    snpInsideRuns = snpInsideRunsCpp(runsChrom, mapKrom, genotypeFile);
+
+    // add a column with the row names as integer
+    IntegerVector Number = seq(1, snpInsideRuns.nrows());
+    snpInsideRuns.push_back(Number, "Number");
+
+    // now filter snpInsideRuns relying on threshold
+    snpInsideRuns = filter_snpInsideRuns_by_threshold(snpInsideRuns, threshold_used);
+
+    // debug
+    break;
+  }
+
+  return snpInsideRuns;
+
+}
