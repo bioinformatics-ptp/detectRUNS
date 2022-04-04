@@ -1211,14 +1211,33 @@ DataFrame tableRunsCpp(
   for (unsigned int i=0; i<unique_chromosomes.size(); i++) {
     std::string chrom = as<std::string>(unique_chromosomes[i]);
 
-    Rprintf("Processing %d/%d chromosome\n", i+1, unique_chromosomes.size());
+    Rprintf(
+      "Processing chromosome '%s'  (%d/%d)\n",
+      chrom.c_str(),
+      i+1, unique_chromosomes.size());
 
     // extract the desired chrom
     DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);
+
+    if (runsChrom.nrows() == 0) {
+      REprintf("No runs on chromosome %s\n", chrom.c_str());
+      continue;
+    }
+
     DataFrame mapKrom = subset_map_by_chrom(mappa, chrom);
+
+    if (mapKrom.nrows() == 0) {
+      REprintf("No SNPs data for chromosome %s\n", chrom.c_str());
+      continue;
+    }
 
     // calculate snpInsideRuns
     DataFrame snpInsideRuns = snpInsideRunsCpp(runsChrom, mapKrom, genotypeFile);
+
+    if (snpInsideRuns.nrows() == 0) {
+      REprintf("No SNPs in runs for chromosome %s\n", chrom.c_str());
+      continue;
+    }
 
     // add a column with the row names as integer
     IntegerVector Number = seq(1, snpInsideRuns.nrows());
@@ -1226,6 +1245,13 @@ DataFrame tableRunsCpp(
 
     // now filter snpInsideRuns relying on threshold
     snpInsideRuns = filter_snpInsideRuns_by_threshold(snpInsideRuns, threshold_used);
+
+    if (snpInsideRuns.nrows() == 0) {
+      REprintf(
+        "No SNPs in runs after filtering %f for chromosome %s\n",
+        threshold_used,  chrom.c_str());
+      continue;
+    }
 
     // collect the distinct breeds
     CharacterVector breeds = snpInsideRuns["BREED"];
