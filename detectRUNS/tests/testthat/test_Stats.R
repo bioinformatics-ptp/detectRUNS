@@ -19,3 +19,14 @@ test_that("Test tableRuns", {
 
   expect_equal(reference, test)
 })
+
+test_that("Test tableRunsCpp", {
+  colClasses <- c("factor", "character", "character", "character", "numeric",
+                  "integer", "integer", "numeric")
+  reference <- read.csv2("test.tableRuns.csv", colClasses = colClasses)
+
+  runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
+  test <- tableRunsCpp(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
+
+  expect_equal(reference, test)
+})
