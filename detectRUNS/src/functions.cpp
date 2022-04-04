@@ -1026,7 +1026,7 @@ DataFrame subset_runs_by_chrom(DataFrame runs, std::string chrom){
 
   LogicalVector chrom_idx(chromosomes.size());
 
-  Rprintf("Got %d runs\n", runs.nrows());
+  // Rprintf("Got %d runs\n", runs.nrows());
 
   for (unsigned int j=0; j<chromosomes.size(); j++) {
     chrom_idx[j] = (chromosomes[j] == chrom);
@@ -1042,7 +1042,7 @@ DataFrame subset_runs_by_chrom(DataFrame runs, std::string chrom){
     Named("LENGTH") = length[chrom_idx]
   );
 
-  Rprintf("%d runs remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
+  // Rprintf("%d runs remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
   return res;
 }
 
@@ -1054,7 +1054,7 @@ DataFrame subset_map_by_chrom(DataFrame mappa, std::string chrom){
 
   LogicalVector chrom_idx(chromosomes.size());
 
-  Rprintf("Got %d snps\n", mappa.nrows());
+  // Rprintf("Got %d snps\n", mappa.nrows());
 
   for (unsigned int j=0; j<chromosomes.size(); j++) {
     chrom_idx[j] = (as<std::string>(chromosomes[j]) == chrom);
@@ -1066,7 +1066,7 @@ DataFrame subset_map_by_chrom(DataFrame mappa, std::string chrom){
     Named("POSITION") = positions[chrom_idx]
   );
 
-  Rprintf("%d snps remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
+  // Rprintf("%d snps remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
   return res;
 }
 
@@ -1083,7 +1083,7 @@ DataFrame filter_snpInsideRuns_by_threshold(
 
   LogicalVector idx(percentages.size());
 
-  Rprintf("Got %d snpInsideRuns\n", snpInsideRuns.nrows());
+  // Rprintf("Got %d snpInsideRuns\n", snpInsideRuns.nrows());
 
   for (unsigned int j=0; j<percentages.size(); j++) {
     idx[j] = (percentages[j] >= threshold);
@@ -1099,7 +1099,7 @@ DataFrame filter_snpInsideRuns_by_threshold(
     Named("Number") = numbers[idx],
     _["stringsAsFactors"] = false);
 
-  Rprintf("%d snpInsideRuns remained after filtering for threshold %f\n", res.nrows(), threshold);
+  // Rprintf("%d snpInsideRuns remained after filtering for threshold %f\n", res.nrows(), threshold);
   return res;
 }
 
@@ -1234,7 +1234,7 @@ DataFrame tableRunsCpp(
     for (unsigned int j=0; j<group_list.size(); j++) {
       std::string grp = as<std::string>(group_list[j]);
 
-      Rprintf("Processing breed: %s, chromosome: %s", grp.c_str(), chrom.c_str());
+      // Rprintf("Processing breed: %s, chromosome: %s", grp.c_str(), chrom.c_str());
 
       DataFrame group_subset = filter_snpInsideRuns_by_breed(snpInsideRuns, grp);
 
@@ -1255,13 +1255,13 @@ DataFrame tableRunsCpp(
       int snp_count = 1;
       double sum_pct = sum_pcts[0];
 
-      Rprintf("Starting from old_idx: %d, from: %d, ", old_idx, from);
-      Rprintf("Start_SNP: %s, snp_count: %d, ", Start_SNP.get_cstring(), snp_count);
-      Rprintf("sum_pct: %f\n", sum_pct);
+      // Rprintf("Starting from old_idx: %d, from: %d, ", old_idx, from);
+      // Rprintf("Start_SNP: %s, snp_count: %d, ", Start_SNP.get_cstring(), snp_count);
+      // Rprintf("sum_pct: %f\n", sum_pct);
 
       for (unsigned int x=1; x<group_subset.nrows(); x++) {
-        Rprintf("Processing: %s, ", as<std::string>(snp_names[x]).c_str());
-        Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
+        // Rprintf("Processing: %s, ", as<std::string>(snp_names[x]).c_str());
+        // Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
 
         // get current index
         int new_idx = idxs[x];
@@ -1275,11 +1275,11 @@ DataFrame tableRunsCpp(
 
         if ((diff > 1) | (x == group_subset.nrows()-1)) {
           if (x == group_subset.nrows()-1) {
-            Rcout << "End of subset\n";
+            // Rcout << "End of subset\n";
             end_SNP = snp_names[x];
             TO = positions[x];
           } else {
-            Rcout << "End of segment\n";
+            // Rcout << "End of segment\n";
             end_SNP = snp_names[x-1];
             TO = positions[x-1];
           }
@@ -1295,15 +1295,15 @@ DataFrame tableRunsCpp(
             res_to.push_back(TO);
             res_avg_pct.push_back(sum_pct);
 
-            Rprintf("Writing group: %s, Start_SNP: %s, ", grp.c_str(), Start_SNP.get_cstring());
-            Rprintf("end_SNP: %s, chrom: %s, ", end_SNP.get_cstring(), chrom.c_str());
-            Rprintf("snp_count: %d, from: %d, TO: %d, ", snp_count, from, TO);
-            Rprintf("sum_pct: %d\n", sum_pct);
+            // Rprintf("Writing group: %s, Start_SNP: %s, ", grp.c_str(), Start_SNP.get_cstring());
+            // Rprintf("end_SNP: %s, chrom: %s, ", end_SNP.get_cstring(), chrom.c_str());
+            // Rprintf("snp_count: %d, from: %d, TO: %d, ", snp_count, from, TO);
+            // Rprintf("sum_pct: %d\n", sum_pct);
           }
 
           // reset variable
-          Rprintf("Start a new segment: %s, ", as<std::string>(snp_names[x]).c_str());
-          Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
+          // Rprintf("Start a new segment: %s, ", as<std::string>(snp_names[x]).c_str());
+          // Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
 
           snp_count = 1;
           sum_pct = sum_pcts[x];
@@ -1314,8 +1314,8 @@ DataFrame tableRunsCpp(
           snp_count++;
           sum_pct += sum_pcts[x];
 
-          Rprintf("Add %s to group ", as<std::string>(snp_names[x]).c_str());
-          Rprintf("(count: %d, sum_pct: %f)\n", snp_count, sum_pct);
+          // Rprintf("Add %s to group ", as<std::string>(snp_names[x]).c_str());
+          // Rprintf("(count: %d, sum_pct: %f)\n", snp_count, sum_pct);
         }
 
         // update index
@@ -1334,7 +1334,7 @@ DataFrame tableRunsCpp(
   Rcout << "Calculation % SNP in ROH finish\n";
 
   return DataFrame::create(
-    Named("Group") = res_group,
+    Named("Group") = fast_factor(res_group),
     Named("Start_SNP") = res_start_snp,
     Named("End_SNP") = res_end_snp,
     Named("chrom") = res_chrom,
