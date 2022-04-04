@@ -480,7 +480,7 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
       group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp) & snpInsideRuns$PERCENTAGE >= threshold_used, ]
 
       # after filtering, I need to have at least 2 rows or I can't do the following stuff
-      if (nrow(group_subset) <= 2) {
+      if (nrow(group_subset) < 2) {
         next
       }
 
@@ -527,10 +527,10 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
             ))
 
             # message("Writing: ", paste0(tail(final_table, n = 1), sep = " "))
-            # message("Start a new segment: ", paste0(group_subset[x, ], sep = " "))
           }
 
           # reset variable
+          # message("Start a new segment: ", paste0(group_subset[x, ], sep = " "))
           snp_count <- 1
           sum_pct <- group_subset[x, "PERCENTAGE"]
           from <- group_subset[x, 3]
