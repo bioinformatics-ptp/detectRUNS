@@ -921,10 +921,10 @@ void Runs::dumpRuns() {
 DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
                            std::string genotypeFile) {
 
-  // transform R object in Cpp object
-  std::vector<int> POSITIONS = as<std::vector<int> >(mapChrom["POSITION"]);
-  std::vector<std::string> SNP_NAME = as<std::vector<std::string> >(mapChrom["SNP_NAME"]);
-  std::vector<std::string> CHR = as<std::vector<std::string> >(mapChrom["CHR"]);
+  // get columns as vectors
+  IntegerVector POSITIONS = mapChrom["POSITION"];
+  CharacterVector SNP_NAME = mapChrom["SNP_NAME"];
+  CharacterVector CHR = mapChrom["CHR"];
 
   // get unique breeds
   CharacterVector population = runsChrom["POPULATION"];
@@ -1212,7 +1212,7 @@ DataFrame tableRunsCpp(
     std::string chrom = as<std::string>(unique_chromosomes[i]);
 
     Rprintf(
-      "Processing chromosome '%s'  (%d/%d)\n",
+      "Processing chromosome '%s' (%d/%d)\n",
       chrom.c_str(),
       i+1, unique_chromosomes.size());
 
