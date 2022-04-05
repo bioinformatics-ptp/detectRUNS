@@ -159,9 +159,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// tableRunsCpp
-DataFrame tableRunsCpp(DataFrame runs, std::string genotypeFile, std::string mapFile, const float threshold);
-RcppExport SEXP _detectRUNS_tableRunsCpp(SEXP runsSEXP, SEXP genotypeFileSEXP, SEXP mapFileSEXP, SEXP thresholdSEXP) {
+// tableRuns
+DataFrame tableRuns(DataFrame runs, std::string genotypeFile, std::string mapFile, const float threshold);
+RcppExport SEXP _detectRUNS_tableRuns(SEXP runsSEXP, SEXP genotypeFileSEXP, SEXP mapFileSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -169,7 +169,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type genotypeFile(genotypeFileSEXP);
     Rcpp::traits::input_parameter< std::string >::type mapFile(mapFileSEXP);
     Rcpp::traits::input_parameter< const float >::type threshold(thresholdSEXP);
-    rcpp_result_gen = Rcpp::wrap(tableRunsCpp(runs, genotypeFile, mapFile, threshold));
+    rcpp_result_gen = Rcpp::wrap(tableRuns(runs, genotypeFile, mapFile, threshold));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -186,7 +186,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_detectRUNS_readPOPCpp", (DL_FUNC) &_detectRUNS_readPOPCpp, 1},
     {"_detectRUNS_consecutiveRunsCpp", (DL_FUNC) &_detectRUNS_consecutiveRunsCpp, 9},
     {"_detectRUNS_snpInsideRunsCpp", (DL_FUNC) &_detectRUNS_snpInsideRunsCpp, 3},
-    {"_detectRUNS_tableRunsCpp", (DL_FUNC) &_detectRUNS_tableRunsCpp, 4},
+    {"_detectRUNS_tableRuns", (DL_FUNC) &_detectRUNS_tableRuns, 4},
     {NULL, NULL, 0}
 };
 
