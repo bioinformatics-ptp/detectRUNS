@@ -948,6 +948,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   IntegerVector count(result_size);
   CharacterVector breed(result_size);
   NumericVector percentage(result_size);
+  IntegerVector number(result_size);
 
   // get all populations
   DataFrame pops = readPOPCpp(genotypeFile);
@@ -988,6 +989,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
       count[index] = snpCounts[ras];
       breed[index] = ras;
       percentage[index] = double(snpCounts[ras])/nBreeds[ras]*100;
+      number[index] = j+1;
 
       // debug
       // if (SNP_NAME[j] == "OAR24_6970428.1") {
@@ -1006,9 +1008,14 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // initialize dataframe of results.
   DataFrame res = DataFrame::create(
-    Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
-    Named("COUNT")=count, Named("BREED")=fast_factor(breed)  , //returns a factor
-    Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
+    Named("SNP_NAME") = snp_name,
+    Named("CHR") = chrom,
+    Named("POSITION") = position,
+    Named("COUNT") = count,
+    Named("BREED") = fast_factor(breed), //returns a factor
+    Named("PERCENTAGE") = percentage,
+    Named("Number") = number,
+    _["stringsAsFactors"] = false);
 
   // returning all runs for this individual genotype
   return(res);
@@ -1239,10 +1246,6 @@ DataFrame tableRunsCpp(
       continue;
     }
 
-    // add a column with the row names as integer
-    IntegerVector Number = seq(1, snpInsideRuns.nrows());
-    snpInsideRuns.push_back(Number, "Number");
-
     // now filter snpInsideRuns relying on threshold
     snpInsideRuns = filter_snpInsideRuns_by_threshold(snpInsideRuns, threshold_used);
 
@@ -1285,7 +1288,7 @@ DataFrame tableRunsCpp(
       // Rprintf("Start_SNP: %s, snp_count: %d, ", Start_SNP.get_cstring(), snp_count);
       // Rprintf("sum_pct: %f\n", sum_pct);
 
-      for (unsigned int x=1; x<group_subset.nrows(); x++) {
+      for (int x=1; x<group_subset.nrows(); x++) {
         // Rprintf("Processing: %s, ", as<std::string>(snp_names[x]).c_str());
         // Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
 

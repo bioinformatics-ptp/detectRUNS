@@ -379,6 +379,10 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
       runsChrom <- runs[runs$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
       snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
+
+      # remove Number column
+      snpInRuns$Number <- NULL
+
       all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
       n=n+1
       setTxtProgressBar(pb, n)
@@ -471,9 +475,6 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
 
     # calculate snpInsideRuns
     snpInsideRuns <- snpInsideRunsCpp(runsChrom, mapKrom, genotypeFile)
-
-    # add a column with the row names as integer
-    snpInsideRuns$Number <- as.integer(row.names(snpInsideRuns))
 
     # filter by threshold once
     snpInsideRuns <- snpInsideRuns[snpInsideRuns$PERCENTAGE >= threshold_used, ]
