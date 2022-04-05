@@ -4,7 +4,7 @@
 \alias{countSnpInRunsCpp}
 \title{Function to count number of times a SNP is in a RUN}
 \usage{
-countSnpInRunsCpp(runsChrom, mapChrom, genotypeFile)
+countSnpInRunsCpp(runsChrom, mapChrom, genotypeFile, threshold = 50)
 }
 \arguments{
 \item{runsChrom}{R object (dataframe) with results per chromosome}
@@ -12,6 +12,8 @@ countSnpInRunsCpp(runsChrom, mapChrom, genotypeFile)
 \item{mapChrom}{R map object with SNP per chromosome}
 
 \item{genotypeFile}{genotype (.ped) file location}
+
+\item{threshold}{filter out SNPs below this value}
 }
 \value{
 dataframe with counts per SNP in runs (per population)

@@ -469,11 +469,9 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
     runsChrom <- runs[runs$CHROMOSOME == chrom, ]
     mapKrom <- mappa[mappa$CHR == chrom, ]
 
-    # calculate snpInsideRuns
-    snpInsideRuns <- countSnpInRunsCpp(runsChrom, mapKrom, genotypeFile)
-
-    # filter by threshold once
-    snpInsideRuns <- snpInsideRuns[snpInsideRuns$PERCENTAGE >= threshold_used, ]
+    # calculate snpInsideRuns with threshold
+    snpInsideRuns <- countSnpInRunsCpp(
+      runsChrom, mapKrom, genotypeFile, threshold_used)
 
     for (grp in group_list) {
       # create subset for group

@@ -160,15 +160,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // countSnpInRunsCpp
-DataFrame countSnpInRunsCpp(DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile);
-RcppExport SEXP _detectRUNS_countSnpInRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP genotypeFileSEXP) {
+DataFrame countSnpInRunsCpp(DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile, float threshold);
+RcppExport SEXP _detectRUNS_countSnpInRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP genotypeFileSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type runsChrom(runsChromSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type mapChrom(mapChromSEXP);
     Rcpp::traits::input_parameter< std::string >::type genotypeFile(genotypeFileSEXP);
-    rcpp_result_gen = Rcpp::wrap(countSnpInRunsCpp(runsChrom, mapChrom, genotypeFile));
+    Rcpp::traits::input_parameter< float >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(countSnpInRunsCpp(runsChrom, mapChrom, genotypeFile, threshold));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -199,7 +200,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_detectRUNS_readPOPCpp", (DL_FUNC) &_detectRUNS_readPOPCpp, 1},
     {"_detectRUNS_consecutiveRunsCpp", (DL_FUNC) &_detectRUNS_consecutiveRunsCpp, 9},
     {"_detectRUNS_snpInsideRunsCpp", (DL_FUNC) &_detectRUNS_snpInsideRunsCpp, 3},
-    {"_detectRUNS_countSnpInRunsCpp", (DL_FUNC) &_detectRUNS_countSnpInRunsCpp, 3},
+    {"_detectRUNS_countSnpInRunsCpp", (DL_FUNC) &_detectRUNS_countSnpInRunsCpp, 4},
     {"_detectRUNS_tableRunsCpp", (DL_FUNC) &_detectRUNS_tableRunsCpp, 4},
     {NULL, NULL, 0}
 };

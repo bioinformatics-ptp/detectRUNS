@@ -204,6 +204,7 @@ snpInsideRunsCpp <- function(runsChrom, mapChrom, genotypeFile) {
 #' @param runsChrom R object (dataframe) with results per chromosome
 #' @param mapChrom R map object with SNP per chromosome
 #' @param genotypeFile genotype (.ped) file location
+#' @param threshold filter out SNPs below this value
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #'
@@ -212,8 +213,8 @@ snpInsideRunsCpp <- function(runsChrom, mapChrom, genotypeFile) {
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-countSnpInRunsCpp <- function(runsChrom, mapChrom, genotypeFile) {
-    .Call('_detectRUNS_countSnpInRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, genotypeFile)
+countSnpInRunsCpp <- function(runsChrom, mapChrom, genotypeFile, threshold = 50) {
+    .Call('_detectRUNS_countSnpInRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, genotypeFile, threshold)
 }
 
 #' Function to retrieve most common runs in the population

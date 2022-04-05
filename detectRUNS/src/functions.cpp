@@ -1023,6 +1023,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 //' @param runsChrom R object (dataframe) with results per chromosome
 //' @param mapChrom R map object with SNP per chromosome
 //' @param genotypeFile genotype (.ped) file location
+//' @param threshold filter out SNPs below this value
 //'
 //' @return dataframe with counts per SNP in runs (per population)
 //'
@@ -1033,7 +1034,8 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 //'
 // [[Rcpp::export]]
 DataFrame countSnpInRunsCpp(
-    DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile) {
+    DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile,
+    float threshold = 50) {
 
   // get columns as vectors
   IntegerVector POSITIONS = mapChrom["POSITION"];
@@ -1049,20 +1051,17 @@ DataFrame countSnpInRunsCpp(
 
   // declare others variables
   std::string ras;
-  int pos, index, map_size = SNP_NAME.size();
+  int pos; float avg_perc;
   std::map <std::string, int> snpCounts, nBreeds ;
 
-  // define result size like n SNPs * unique_breeds
-  int result_size = map_size * unique_breeds.size();
-
   // the columns of data.frame Defining data types accordingly slinding window
-  CharacterVector snp_name(result_size);
-  CharacterVector chrom(result_size);
-  IntegerVector position(result_size);
-  IntegerVector count(result_size);
-  CharacterVector breed(result_size);
-  NumericVector percentage(result_size);
-  IntegerVector number(result_size);
+  CharacterVector snp_name;
+  CharacterVector chrom;
+  IntegerVector position;
+  IntegerVector count;
+  CharacterVector breed;
+  NumericVector percentage;
+  IntegerVector number;
 
   // get all populations
   DataFrame pops = readPOPCpp(genotypeFile);
@@ -1096,25 +1095,21 @@ DataFrame countSnpInRunsCpp(
       // get a breed
       ras = unique_breeds[i];
 
-      //calculating results index
-      index = i * map_size + j;
+      // calculate percentage
+      avg_perc = double(snpCounts[ras])/nBreeds[ras]*100;
 
-      // update values
-      number[index] = j+1;
-      count[index] = snpCounts[ras];
-      breed[index] = ras;
-      percentage[index] = double(snpCounts[ras])/nBreeds[ras]*100;
+      if (avg_perc >= threshold) {
+        // track SNP
+        number.push_back(j+1);
+        count.push_back(snpCounts[ras]);
+        breed.push_back(ras);
+        percentage.push_back(avg_perc);
 
-      // debug
-      // if (SNP_NAME[j] == "OAR24_6970428.1") {
-      //   Rcout << "Index i: " << i << " Index j: " << j << " Final index: " << index;
-      //   Rcout << " Breed: " << ras << " Count: " << snpCounts[ras] << std::endl;
-      // }
-
-      // read data from mapChrom
-      snp_name[index] = SNP_NAME[j];
-      chrom[index] = CHR[j];
-      position[index] = pos;
+        // read data from mapChrom
+        snp_name.push_back(SNP_NAME[j]);
+        chrom.push_back(CHR[j]);
+        position.push_back(pos);
+      }
 
     } // cicle for snp position
 
@@ -1353,20 +1348,14 @@ DataFrame tableRunsCpp(
     }
 
     // calculate snpInsideRuns
-    DataFrame snpInsideRuns = countSnpInRunsCpp(runsChrom, mapKrom, genotypeFile);
-
-    if (snpInsideRuns.nrows() == 0) {
-      REprintf("No SNPs in runs for chromosome %s\n", chrom.c_str());
-      continue;
-    }
-
-    // now filter snpInsideRuns relying on threshold
-    snpInsideRuns = filter_snpInsideRuns_by_threshold(snpInsideRuns, threshold_used);
+    DataFrame snpInsideRuns = countSnpInRunsCpp(
+      runsChrom, mapKrom, genotypeFile, threshold_used);
 
     if (snpInsideRuns.nrows() == 0) {
       REprintf(
-        "No SNPs in runs after filtering %f for chromosome %s\n",
-        threshold_used,  chrom.c_str());
+        "No SNPs in runs for chromosome %s with threshold %f\n",
+        chrom.c_str(),
+        threshold);
       continue;
     }
 
