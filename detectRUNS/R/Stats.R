@@ -475,9 +475,12 @@ tableRuns <- function(runs = NULL, genotypeFile, mapFile, threshold = 0.5) {
     # add a column with the row names as integer
     snpInsideRuns$Number <- as.integer(row.names(snpInsideRuns))
 
+    # filter by threshold once
+    snpInsideRuns <- snpInsideRuns[snpInsideRuns$PERCENTAGE >= threshold_used, ]
+
     for (grp in group_list) {
-      # create subset for group/thresold
-      group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp) & snpInsideRuns$PERCENTAGE >= threshold_used, ]
+      # create subset for group
+      group_subset <- snpInsideRuns[snpInsideRuns$BREED %in% c(grp), ]
 
       # after filtering, I need to have at least 2 rows or I can't do the following stuff
       if (nrow(group_subset) < 2) {
