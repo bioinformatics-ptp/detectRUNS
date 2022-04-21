@@ -1,6 +1,11 @@
 
 # Valuating detectRUNS performance
 
+library(devtools)
+library(here)
+
+load_all(path = here("detectRUNS/"))
+
 # clean up
 rm(list = ls())
 
@@ -75,8 +80,8 @@ steps <- ceiling(seq(1, length(x), length.out = (x_points+1) ))[-1]
 
 # calculating runs of Homozygosity
 runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
-                        minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1,
-                        maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+                        minSNP = 15, ROHet = FALSE,  maxOppWindow = 1,
+                        maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 
 # fix column names
 names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -100,11 +105,11 @@ for (i in steps) {
   message(paste("Test sliding window: step", i))
 
   # calculate sliding window
-  y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+  y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
                      parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss)
 
   test_sliding <- microbenchmark(
-    slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+    slidingWindow(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
                   parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
@@ -118,7 +123,7 @@ for (i in steps) {
 
   # check cpp slidingWindow
   test_slidingCpp <- microbenchmark(
-    slidingWindowCpp(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
+    slidingWindowCpp(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
                      parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
@@ -256,9 +261,12 @@ for (i in steps) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRuns$time, language=test_language)
   tests <- rbind(tests, tmp)
 
+  # read pops
+  pops <- readPOPCpp(genotypeFile)
+
   # check cpp snpInsideRuns
   test_snpInsideRunsCpp <- microbenchmark(
-    snpInsideRunsCpp(runs, mappa, genotypeFile),
+    snpInsideRunsCpp(runs, mappa, pops),
     unit = 'ms',
     times = times
   )
