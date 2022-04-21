@@ -1,4 +1,9 @@
 
+library(devtools)
+library(here)
+
+load_all(path = here("detectRUNS/"))
+
 # get files path
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package="detectRUNS")
 genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package="detectRUNS")
@@ -20,7 +25,12 @@ runs <- readExternalRuns(runsfile, program="detectRUNS")
 names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 runsChrom <- runs[runs$CHROMOSOME==chrom, ]
 
+# loading pops
+pops <- readPOPCpp(genotypeFile)
+
+message("testing snpInsideRunsCpp...")
+
 # get snps inside runs
 for (i in 1:100000) {
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)  
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
 }
