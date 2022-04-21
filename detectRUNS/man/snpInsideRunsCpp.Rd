@@ -4,14 +4,14 @@
 \alias{snpInsideRunsCpp}
 \title{Function to count number of times a SNP is in a RUN}
 \usage{
-snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+snpInsideRunsCpp(runsChrom, mapChrom, pops)
 }
 \arguments{
 \item{runsChrom}{R object (dataframe) with results per chromosome}
 
 \item{mapChrom}{R map object with SNP per chromosome}
 
-\item{genotypeFile}{genotype (.ped) file location}
+\item{pops}{R object (dataframe) with populations see \code{\link{readPOPCpp}}}
 }
 \value{
 dataframe with counts per SNP in runs (per population)

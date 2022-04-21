@@ -183,7 +183,7 @@ consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSN
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome
 #' @param mapChrom R map object with SNP per chromosome
-#' @param genotypeFile genotype (.ped) file location
+#' @param pops R object (dataframe) with populations see \code{\link{readPOPCpp}}
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #'
@@ -192,8 +192,8 @@ consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSN
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-snpInsideRunsCpp <- function(runsChrom, mapChrom, genotypeFile) {
-    .Call('_detectRUNS_snpInsideRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, genotypeFile)
+snpInsideRunsCpp <- function(runsChrom, mapChrom, pops) {
+    .Call('_detectRUNS_snpInsideRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, pops)
 }
 
 #' Function to retrieve most common runs in the population

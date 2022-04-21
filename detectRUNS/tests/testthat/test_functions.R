@@ -866,7 +866,9 @@ test_that("Testing snpInsideRuns", {
 
   # get snps inside runs
   reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+
+  pops <- readPOPCpp(genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
 
   # remove Number column from test
   test$Number <- NULL
@@ -906,7 +908,9 @@ test_that("Testing snpInsideRuns with CHR as strings", {
 
   # get snps inside runs
   reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+
+  pops <- readPOPCpp(genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
 
   # remove Number column from test
   test$Number <- NULL
