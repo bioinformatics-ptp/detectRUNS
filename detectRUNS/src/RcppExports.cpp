@@ -147,15 +147,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // snpInsideRunsCpp
-DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile);
-RcppExport SEXP _detectRUNS_snpInsideRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP genotypeFileSEXP) {
+DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom, DataFrame pops);
+RcppExport SEXP _detectRUNS_snpInsideRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP popsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type runsChrom(runsChromSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type mapChrom(mapChromSEXP);
-    Rcpp::traits::input_parameter< std::string >::type genotypeFile(genotypeFileSEXP);
-    rcpp_result_gen = Rcpp::wrap(snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile));
+    Rcpp::traits::input_parameter< DataFrame >::type pops(popsSEXP);
+    rcpp_result_gen = Rcpp::wrap(snpInsideRunsCpp(runsChrom, mapChrom, pops));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -908,7 +908,7 @@ void Runs::dumpRuns() {
 //'
 //' @param runsChrom R object (dataframe) with results per chromosome
 //' @param mapChrom R map object with SNP per chromosome
-//' @param genotypeFile genotype (.ped) file location
+//' @param pops R object (dataframe) with populations see \code{\link{readPOPCpp}}
 //'
 //' @return dataframe with counts per SNP in runs (per population)
 //'
@@ -919,7 +919,7 @@ void Runs::dumpRuns() {
 //'
 // [[Rcpp::export]]
 DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
-                           std::string genotypeFile) {
+                           DataFrame pops) {
 
   // get columns as vectors
   IntegerVector POSITIONS = mapChrom["POSITION"];
@@ -951,7 +951,6 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   IntegerVector number(result_size);
 
   // get all populations
-  DataFrame pops = readPOPCpp(genotypeFile);
   CharacterVector pop = pops["POP"];
 
   // instantiate a Runs object
@@ -1199,6 +1198,11 @@ DataFrame tableRuns(
   // read mapfile using R function (which uses data.table::fread)
   DataFrame mappa = readMapFile(mapFile);
 
+  // read populations from genotypeFile
+  Rprintf("Read populations from '%s'...\n", genotypeFile.c_str());
+  DataFrame pops = readPOPCpp(genotypeFile);
+  Rprintf("Done!\n");
+
   // get distinct chromosomes
   CharacterVector chromosomes = runs[2];
   CharacterVector unique_chromosomes = sort_unique(chromosomes);
@@ -1239,7 +1243,7 @@ DataFrame tableRuns(
     }
 
     // calculate snpInsideRuns
-    DataFrame snpInsideRuns = snpInsideRunsCpp(runsChrom, mapKrom, genotypeFile);
+    DataFrame snpInsideRuns = snpInsideRunsCpp(runsChrom, mapKrom, pops);
 
     if (snpInsideRuns.nrows() == 0) {
       REprintf("No SNPs in runs for chromosome %s\n", chrom.c_str());

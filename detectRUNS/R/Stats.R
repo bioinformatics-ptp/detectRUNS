@@ -378,7 +378,9 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
     for (chrom in sort(unique(runs$CHROMOSOME))) {
       runsChrom <- runs[runs$CHROMOSOME==chrom,]
       mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, genotypeFile)
+
+      pops <- readPOPCpp(genotypeFile)
+      snpInRuns <- snpInsideRunsCpp(runsChrom,mapKrom, pops)
 
       # remove Number column
       snpInRuns$Number <- NULL
