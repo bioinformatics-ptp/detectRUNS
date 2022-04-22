@@ -25,12 +25,14 @@ parameters <- list(
   minSNP=5,
   ROHet=TRUE,
   maxOppositeGenotype=1,
+  maxOppWindow=1,
   maxMiss=1,
   maxGap=10^6,
   minLengthBps=1000,
   minDensity=1/10,
-  maxOppRun=NULL,
-  maxMissRun=NULL
+  maxOppRun=1,
+  maxMissRun=1,
+  maxMissWindow=1
 )
 
 # how many times perform test
@@ -57,7 +59,7 @@ animals <- readPOPCpp(genotypeFile = genotypeFile)
 
 # get only one individual. Get index
 # idx <- 1
-idx <- which(animals$ID=="H70")
+idx <- which(animals$ID=="H114")
 
 # get an animal
 animal <- animals[idx, ]
@@ -105,11 +107,11 @@ for (i in steps) {
   message(paste("Test sliding window: step", i))
 
   # calculate sliding window
-  y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
+  y <- slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
                      parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss)
 
   test_sliding <- microbenchmark(
-    slidingWindow(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
+    slidingWindow(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
                   parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
@@ -123,7 +125,7 @@ for (i in steps) {
 
   # check cpp slidingWindow
   test_slidingCpp <- microbenchmark(
-    slidingWindowCpp(subset_genotype, gaps, parameters$windowSize, step=2, parameters$maxGap,
+    slidingWindowCpp(subset_genotype, gaps, parameters$windowSize, step=1, parameters$maxGap,
                      parameters$ROHet, parameters$maxOppositeGenotype, parameters$maxMiss),
     unit = 'ms',
     times = times
