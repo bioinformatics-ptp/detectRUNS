@@ -13,8 +13,8 @@ tableRuns(runs, genotypeFile, mapFile, threshold = 0.5)
 
 \item{mapFile}{Plink map file (for SNP position)}
 
-\item{threshold}{value from 0 to 1 (default 0.7) that controls the desired
-proportion of individuals carrying that run (e.g. 70\%)}
+\item{threshold}{value from 0 to 1 (default 0.5) that controls the desired
+proportion of individuals carrying that run (e.g. 50\%)}
 }
 \value{
 A dataframe with the most common runs detected in the sampled individuals

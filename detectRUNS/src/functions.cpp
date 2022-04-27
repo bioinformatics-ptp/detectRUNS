@@ -1147,8 +1147,8 @@ DataFrame filter_snpInsideRuns_by_breed(
 //' @param genotypeFile Plink ped file (for SNP position)
 //' @param mapFile Plink map file (for SNP position)
 //' @param runs R object (dataframe) with results on detected runs
-//' @param threshold value from 0 to 1 (default 0.7) that controls the desired
-//' proportion of individuals carrying that run (e.g. 70\%)
+//' @param threshold value from 0 to 1 (default 0.5) that controls the desired
+//' proportion of individuals carrying that run (e.g. 50\%)
 //'
 //' @return A dataframe with the most common runs detected in the sampled individuals
 //' (the group/population, start and end position of the run, chromosome, number of SNP
@@ -1184,6 +1184,11 @@ DataFrame filter_snpInsideRuns_by_breed(
 DataFrame tableRuns(
     DataFrame runs, std::string genotypeFile, std::string mapFile,
     const float threshold = 0.5) {
+
+  // check for threshold value
+  if (threshold > 1 || threshold < 0) {
+    throw std::range_error("Threshold must be between 0 and 1");
+  }
 
   // set a threshold
   float threshold_used = threshold * 100;
