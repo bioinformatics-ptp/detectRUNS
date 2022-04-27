@@ -19,4 +19,9 @@ test_that("Test tableRuns", {
   test <- tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 
   expect_equal(reference, test)
+
+  expect_error(
+    tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 50),
+    "Threshold must be between 0 and 1"
+  )
 })
