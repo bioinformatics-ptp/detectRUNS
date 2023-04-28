@@ -783,7 +783,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g1 <- g1 +  scale_x_discrete(labels=list_chr)
     g1 <- g1 +  xlab("Inbreeding by Chromosome") + ylab("Froh")
     if(!is.null(plotTitle)) { g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5)) }
-    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }     # if you want split or not!
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill="none") }     # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
 
@@ -795,7 +795,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g2 <- g2 + scale_x_discrete(labels=list_chr)
     g2 <- g2 + xlab("Inbreeding by Chromosome") + ylab("Froh")
     if(!is.null(plotTitle)) { g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5)) }
-    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
 
@@ -949,7 +949,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g1 <- g1 + geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 + xlab("Class Length Category") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
     g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
 
@@ -962,7 +962,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g2 <- g2 + geom_bar(stat="identity", position=position_dodge())
     g2 <- g2 + xlab("Chromosome") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
     g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
 
@@ -974,7 +974,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g3 <- g3 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$CLASS))
     g3 <- g3 + xlab("Class Length Category") + ylab("Frequency")
     g3 <- g3 +  ggtitle(mainTitle3) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g3 <- g3 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g3 <- g3 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput3 , plot = g3, device = "pdf") } else { print(g3) }
   }
 
@@ -987,7 +987,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g4 <- g4 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$chrom))
     g4 <- g4 + xlab("Chromosome") + ylab("Frequency")
     g4 <- g4 +  ggtitle(mainTitle4) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g4 <- g4 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g4 <- g4 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput4 , plot = g4, device = "pdf") } else { print(g4) }
   }
 }
