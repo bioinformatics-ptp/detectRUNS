@@ -183,7 +183,7 @@ consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSN
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome
 #' @param mapChrom R map object with SNP per chromosome
-#' @param genotypeFile genotype (.ped) file location
+#' @param pops R object (dataframe) with populations see \code{\link{readPOPCpp}}
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #'
@@ -192,7 +192,54 @@ consecutiveRunsCpp <- function(indGeno, individual, mapFile, ROHet = TRUE, minSN
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-snpInsideRunsCpp <- function(runsChrom, mapChrom, genotypeFile) {
-    .Call('_detectRUNS_snpInsideRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, genotypeFile)
+snpInsideRunsCpp <- function(runsChrom, mapChrom, pops) {
+    .Call('_detectRUNS_snpInsideRunsCpp', PACKAGE = 'detectRUNS', runsChrom, mapChrom, pops)
+}
+
+#' Function to retrieve most common runs in the population
+#'
+#' This function takes in input either the run results and returns a subset of
+#' the runs most commonly found in the group/population. The parameter
+#' \code{threshold} controls the definition
+#' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
+#'
+#' @param genotypeFile Plink ped file (for SNP position)
+#' @param mapFile Plink map file (for SNP position)
+#' @param runs R object (dataframe) with results on detected runs
+#' @param threshold value from 0 to 1 (default 0.5) that controls the desired
+#' proportion of individuals carrying that run (e.g. 50\%)
+#'
+#' @return A dataframe with the most common runs detected in the sampled individuals
+#' (the group/population, start and end position of the run, chromosome, number of SNP
+#' included in the run and average percentage of SNPs in run
+#' are reported in the output dataframe)
+#' @export
+#'
+#' @examples
+#' # getting map and ped paths
+#' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+#' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+#'
+#' # calculating runs of Homozygosity
+#' \dontrun{
+#' # skipping runs calculation
+#' runs <- slidingRUNS.run(genotypeFile, mapFile,
+#'   windowSize = 15, threshold = 0.1, minSNP = 15,
+#'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+#' )
+#' }
+#' # loading pre-calculated data
+#' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+#' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
+#'
+#' table <- tableRuns(
+#'   runs = runsDF, genotypeFile = genotypeFile,
+#'   mapFile = mapFile, threshold = 0.5)
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+#'
+tableRuns <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
+    .Call('_detectRUNS_tableRuns', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
 }
 
