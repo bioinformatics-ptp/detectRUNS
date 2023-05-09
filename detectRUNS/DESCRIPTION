@@ -28,7 +28,7 @@ Imports:
     Rcpp,
     gridExtra,
     data.table
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests:
     testthat,
     knitr,
