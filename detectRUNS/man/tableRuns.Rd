@@ -27,8 +27,9 @@ proportion of individuals carrying that run (e.g. 70\%)}
 }
 \value{
 A dataframe with the most common runs detected in the sampled individuals
-(the group/population, start and end position of the run, chromosome and number of SNP
-included in the run are reported in the output dataframe)
+(the group/population, start and end position of the run, chromosome, number of SNP
+included in the run and average percentage of SNPs in run
+are reported in the output dataframe)
 }
 \description{
 This function takes in input either the run results or the output from
