@@ -147,15 +147,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // snpInsideRunsCpp
-DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom, std::string genotypeFile);
-RcppExport SEXP _detectRUNS_snpInsideRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP genotypeFileSEXP) {
+DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom, DataFrame pops);
+RcppExport SEXP _detectRUNS_snpInsideRunsCpp(SEXP runsChromSEXP, SEXP mapChromSEXP, SEXP popsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame >::type runsChrom(runsChromSEXP);
     Rcpp::traits::input_parameter< DataFrame >::type mapChrom(mapChromSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type pops(popsSEXP);
+    rcpp_result_gen = Rcpp::wrap(snpInsideRunsCpp(runsChrom, mapChrom, pops));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tableRuns
+DataFrame tableRuns(DataFrame runs, std::string genotypeFile, std::string mapFile, const float threshold);
+RcppExport SEXP _detectRUNS_tableRuns(SEXP runsSEXP, SEXP genotypeFileSEXP, SEXP mapFileSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type runs(runsSEXP);
     Rcpp::traits::input_parameter< std::string >::type genotypeFile(genotypeFileSEXP);
-    rcpp_result_gen = Rcpp::wrap(snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile));
+    Rcpp::traits::input_parameter< std::string >::type mapFile(mapFileSEXP);
+    Rcpp::traits::input_parameter< const float >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(tableRuns(runs, genotypeFile, mapFile, threshold));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -172,6 +186,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_detectRUNS_readPOPCpp", (DL_FUNC) &_detectRUNS_readPOPCpp, 1},
     {"_detectRUNS_consecutiveRunsCpp", (DL_FUNC) &_detectRUNS_consecutiveRunsCpp, 9},
     {"_detectRUNS_snpInsideRunsCpp", (DL_FUNC) &_detectRUNS_snpInsideRunsCpp, 3},
+    {"_detectRUNS_tableRuns", (DL_FUNC) &_detectRUNS_tableRuns, 4},
     {NULL, NULL, 0}
 };
 

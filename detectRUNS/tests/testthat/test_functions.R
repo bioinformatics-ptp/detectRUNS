@@ -26,10 +26,10 @@ test_that("Test readMapFile", {
   reference <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
   names(reference) <- c("CHR","SNP_NAME","x","POSITION")
   reference$x <- NULL
-  
+
   test <- readMapFile(mapFile)
   expect_equal(reference, test)
-  
+
   # test for a non existing file
   expect_error(readMapFile("does_not_exists.map"), "doesn't exists")
 })
@@ -845,7 +845,7 @@ test_that("Testing consecutiveRunsCpp", {
 test_that("Testing snpInsideRuns", {
   # read mapfile with custom methods
   mappa <- readMapFile(mapFile)
-  
+
   # this is the chromosome I want to test
   chrom <- "24"
 
@@ -866,7 +866,12 @@ test_that("Testing snpInsideRuns", {
 
   # get snps inside runs
   reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+
+  pops <- readPOPCpp(genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
+
+  # remove Number column from test
+  test$Number <- NULL
 
   # testing functions
   expect_equivalent(test, reference)
@@ -876,35 +881,40 @@ test_that("Testing snpInsideRuns", {
 test_that("Testing snpInsideRuns with CHR as strings", {
   # read mapfile with custom methods
   mappa <- readMapFile(mapFile)
-  
+
   # this is the chromosome I want to test
   chrom <- "X"
-  
+
   # replacing chromsomes with a string value (which cannot be converted as int)
   mappa$CHR <- chrom
-  
+
   # subsetting mapChrom (get x random snps from mapfile)
   set.seed(42)
   mapChrom <- mappa[mappa$CHR==chrom, ]
   mapChrom <- mapChrom[sort(sample(nrow(mapChrom), 10)), ]
-  
+
   # loading pre-calculated data
   runsFile <- "test.ROHet.sliding.csv"
   colClasses <- c(rep("character", 3), rep("numeric", 4)  )
   runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
                     colClasses = colClasses)
-  
+
   # replacing chromsomes with a string value (which cannot be converted as int)
   runs$chrom <- chrom
-  
+
   # fix column names and define runsChrom
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
   runsChrom <- runs[runs$CHROMOSOME==chrom, ]
-  
+
   # get snps inside runs
   reference <- snpInsideRuns(runsChrom, mapChrom, genotypeFile)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
-  
+
+  pops <- readPOPCpp(genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
+
+  # remove Number column from test
+  test$Number <- NULL
+
   # testing functions
   expect_equivalent(test, reference)
 })
