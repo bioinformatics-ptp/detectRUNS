@@ -12,9 +12,10 @@
 #' max n. of opposite genotypes etc.) are specified here.
 #' Input data are in the ped/map
 #' Plink format (https://www.cog-genomics.org/plink/1.9/input#ped)
+#' Chromosomes should be coded as numbers (e.g. 1-23)
 #'
 #' @param genotypeFile genotype (.ped) file path
-#' @param mapFile map file (.map) file path
+#' @param mapFile map file (.map) file path (chromosomes should be numeric)
 #' @param windowSize the size of sliding window (number of SNP loci) (default = 15)
 #' @param threshold the threshold of overlapping windows of the same state
 #' (homozygous/heterozygous) to call a SNP in a RUN (default = 0.05)
@@ -251,7 +252,7 @@ consecutiveRUNS.run <- function(genotypeFile, mapFile, ROHet = FALSE,
 
   # read mapfile
   mapFile <- readMapFile(mapFile)
-  
+
   # override colnames
   colnames(mapFile) <- c("Chrom", "SNP", "bps")
 

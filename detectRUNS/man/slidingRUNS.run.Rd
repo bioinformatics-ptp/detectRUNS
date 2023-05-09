@@ -23,7 +23,7 @@ slidingRUNS.run(
 \arguments{
 \item{genotypeFile}{genotype (.ped) file path}
 
-\item{mapFile}{map file (.map) file path}
+\item{mapFile}{map file (.map) file path (chromosomes should be numeric)}
 
 \item{windowSize}{the size of sliding window (number of SNP loci) (default = 15)}
 
@@ -66,6 +66,7 @@ All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotyp
 max n. of opposite genotypes etc.) are specified here.
 Input data are in the ped/map
 Plink format (https://www.cog-genomics.org/plink/1.9/input#ped)
+Chromosomes should be coded as numbers (e.g. 1-23)
 }
 \details{
 This function scans the genome (diploid) for runs using the sliding-window method.
