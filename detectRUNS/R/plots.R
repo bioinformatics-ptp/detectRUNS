@@ -902,7 +902,6 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
-  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
 
 
   #RESULTS!!!!!
