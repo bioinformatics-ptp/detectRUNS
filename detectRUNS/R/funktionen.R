@@ -829,8 +829,10 @@ reorderDF <- function(dfx) {
 #' @param runs a ROH dataframe object
 #' @param class_size the starting bin size
 #'
-#' @return a new dataframe with two new columns, MB for ROH length in MB and
-#' CLASS column which tag a ROH in a proper bin relying on size
+#' @return a list with runs and range_mb fields: runs keeps a modified version of
+#' the original runs dataframe with two additional columns, MB for ROH length in
+#' megabases and a CLASS column which tags a ROH in a proper bin relying on size;
+#' range_mb field return a list of ranges in MB used to define the classes
 #'
 
 classifyRuns <- function(runs, class_size=2) {
@@ -845,7 +847,7 @@ classifyRuns <- function(runs, class_size=2) {
     class_size <- class_size * 2
   }
 
-  #range_mb
+  # using intervals to construct labels
   name_CLASS <- c(
     paste(range_mb[1], "-", range_mb[2], sep = ''),
     paste(range_mb[2], "-", range_mb[3], sep = ''),
@@ -859,5 +861,5 @@ classifyRuns <- function(runs, class_size=2) {
   levels(runs$CLASS) <- name_CLASS
   runs$CLASS <- factor(runs$CLASS)
 
-  return(runs)
+  return(list("runs" = runs, "range_mb" = range_mb))
 }
