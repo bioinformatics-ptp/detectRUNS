@@ -282,7 +282,6 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
-  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
 
   #RESULTS!!!!!
   summary_ROH_mean_chr1 = ddply(runs,.(group,chrom),summarize,sum=mean(MB))
