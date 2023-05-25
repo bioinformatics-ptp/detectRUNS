@@ -918,3 +918,45 @@ test_that("Testing snpInsideRuns with CHR as strings", {
   # testing functions
   expect_equivalent(test, reference)
 })
+
+testthat::test_that("Testing classify ROH by sizes", {
+  # loading pre-calculated data
+  runsFile <- "test.ROHet.sliding.csv"
+  colClasses <- c(rep("character", 3), rep("numeric", 4))
+
+  # test first 5 rows
+  runs <- read.csv2(
+    runsFile, header = TRUE, stringsAsFactors = FALSE,
+    colClasses = colClasses, nrows = 5)
+
+  # calling function
+  test <- classifyRuns(runs, class_size = 2)
+
+  # scale length to MB and test
+  MB <- runs$lengthBps / 1000000
+  expect_equivalent(test$MB, MB)
+
+  # test for classes
+  classes <- as.factor(c("2-4", "0-2", "4-8", "0-2", "2-4"))
+  expect_equivalent(test$CLASS, classes)
+
+  # calling function with a different size
+  test <- classifyRuns(runs, class_size = 1)
+
+  # MB are the same
+  expect_equivalent(test$MB, MB)
+
+  # test for classes
+  classes <- as.factor(c("2-4", "1-2", "4-8", "1-2", "2-4"))
+  expect_equivalent(test$CLASS, classes)
+
+  # calling function with a different size
+  test <- classifyRuns(runs, class_size = .2)
+
+  # MB are the same
+  expect_equivalent(test$MB, MB)
+
+  # test for classes
+  classes <- as.factor(c(">1.6", "0.8-1.6", ">1.6", "0.8-1.6", ">1.6"))
+  expect_equivalent(test$CLASS, classes)
+})
