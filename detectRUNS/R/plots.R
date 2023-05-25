@@ -896,28 +896,8 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
 
-  step_value=Class
-  range_mb=c(0,0,0,0,0,99999)
-  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
-    range_mb[i]=step_value
-    step_value=step_value*2
-  }
-
-  #range_mb
-  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
-               paste(range_mb[2],"-",range_mb[3],sep=''),
-               paste(range_mb[3],"-",range_mb[4],sep=''),
-               paste(range_mb[4],"-",range_mb[5],sep=''),
-               paste(">",range_mb[5],sep=''),
-               paste(">",range_mb[6],sep=''))
-
-  # Creating the data frame
-  runs$MB <- runs$lengthBps/1000000
-  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
-  levels(runs$CLASS) = name_CLASS
-  runs$CLASS=factor(runs$CLASS)
-
-  head(runs)
+  # classify runs in bins
+  runs <- classifyRuns(runs, class_size = Class)$runs
 
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
