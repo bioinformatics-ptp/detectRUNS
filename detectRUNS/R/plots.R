@@ -838,7 +838,8 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
-#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #'
 #' @return plot Distribution Runs
 #' @export
@@ -858,7 +859,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
+#' plot_DistributionRuns(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
 plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") ,
