@@ -918,3 +918,63 @@ test_that("Testing snpInsideRuns with CHR as strings", {
   # testing functions
   expect_equivalent(test, reference)
 })
+
+testthat::test_that("Testing classify ROH by sizes", {
+  # loading pre-calculated data
+  runsFile <- "test.ROHet.sliding.csv"
+  colClasses <- c(rep("character", 3), rep("numeric", 4))
+
+  # test first 5 rows
+  runs <- read.csv2(
+    runsFile, header = TRUE, stringsAsFactors = FALSE,
+    colClasses = colClasses, nrows = 5)
+
+  # calling function
+  results <- classifyRuns(runs, class_size = 2)
+  test <- results$runs
+  test_range_mb <- results$range_mb
+
+  # scale length to MB and test
+  MB <- runs$lengthBps / 1000000
+  expect_equivalent(test$MB, MB)
+
+  # testing intervals
+  range_mb = c(0, 2, 4, 8, 16, 99999)
+  expect_equivalent(test_range_mb, range_mb)
+
+  # test for classes
+  classes <- as.factor(c("2-4", "0-2", "4-8", "0-2", "2-4"))
+  expect_equivalent(test$CLASS, classes)
+
+  # calling function with a different size
+  results <- classifyRuns(runs, class_size = 1)
+  test <- results$runs
+  test_range_mb <- results$range_mb
+
+  # MB are the same
+  expect_equivalent(test$MB, MB)
+
+  # testing intervals
+  range_mb = c(0, 1, 2, 4, 8, 99999)
+  expect_equivalent(test_range_mb, range_mb)
+
+  # test for classes
+  classes <- as.factor(c("2-4", "1-2", "4-8", "1-2", "2-4"))
+  expect_equivalent(test$CLASS, classes)
+
+  # calling function with a different size
+  results <- classifyRuns(runs, class_size = .2)
+  test <- results$runs
+  test_range_mb <- results$range_mb
+
+  # MB are the same
+  expect_equivalent(test$MB, MB)
+
+  # testing intervals
+  range_mb = c(0, .2, .4, .8, 1.6, 99999)
+  expect_equivalent(test_range_mb, range_mb)
+
+  # test for classes
+  classes <- as.factor(c(">1.6", "0.8-1.6", ">1.6", "0.8-1.6", ">1.6"))
+  expect_equivalent(test$CLASS, classes)
+})

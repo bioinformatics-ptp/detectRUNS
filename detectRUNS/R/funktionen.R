@@ -21,29 +21,29 @@ genoConvert <- function(x) {
 
 
 #' Read from a .map file locations and return a data.table object
-#' 
-#' This is an utility function which check for file existance, define 
+#'
+#' This is an utility function which check for file existance, define
 #' colClasses and then returns the read data.table object
 #' @param mapFile map file (.map) file path
 #' @keywords internal
 #' @return data.table object
-#' 
+#'
 
 readMapFile <- function(mapFile) {
   # define colClasses
   colClasses <- c("character", "character", "character", "numeric")
-  
+
   if(file.exists(mapFile)){
     # using data.table to read data
     mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
   } else {
     stop(paste("file", mapFile, "doesn't exists"))
   }
-  
+
   # set column names
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
-  
+
   return(mappa)
 }
 
@@ -751,7 +751,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' }
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 #' newData=readExternalRuns(runsFile, program = 'detectRUNS')
-#' 
+#'
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
 
@@ -821,4 +821,46 @@ reorderDF <- function(dfx) {
   ordered_dfx <- dfx[match(chr_order,dfx$chrom),]
 
   return(ordered_dfx)
+}
+
+
+#' Classify runs in bins.
+#'
+#' @param runs a ROH dataframe object
+#' @param class_size base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
+#'
+#' @return a list with runs and range_mb fields: runs keeps a modified version of
+#' the original runs dataframe with two additional columns, MB for ROH length in
+#' megabases and a CLASS column which tags a ROH in a proper bin relying on size;
+#' range_mb field return a list of ranges in MB used to define the classes
+#'
+
+classifyRuns <- function(runs, class_size=2) {
+  # calculate ROH sizes in MB
+  runs$MB <- runs$lengthBps/1000000
+
+  # this is required to classify runs in bins
+  range_mb <- c(0,0,0,0,0,99999)
+
+  for (i in seq(from = 2 , to = length(range_mb) - 1, by = 1) ) {
+    range_mb[i] <- class_size
+    class_size <- class_size * 2
+  }
+
+  # using intervals to construct labels
+  name_CLASS <- c(
+    paste(range_mb[1], "-", range_mb[2], sep = ''),
+    paste(range_mb[2], "-", range_mb[3], sep = ''),
+    paste(range_mb[3], "-", range_mb[4], sep = ''),
+    paste(range_mb[4], "-", range_mb[5], sep = ''),
+    paste(">", range_mb[5], sep = '')
+  )
+
+  message("Class created: ", paste(name_CLASS[0:5], collapse = ' '))
+  runs$CLASS <- cut(as.numeric(runs$MB), range_mb)
+  levels(runs$CLASS) <- name_CLASS
+  runs$CLASS <- factor(runs$CLASS)
+
+  return(list("runs" = runs, "range_mb" = range_mb))
 }
