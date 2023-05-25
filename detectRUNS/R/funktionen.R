@@ -827,7 +827,8 @@ reorderDF <- function(dfx) {
 #' Classify runs in bins.
 #'
 #' @param runs a ROH dataframe object
-#' @param class_size the starting bin size
+#' @param class_size base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #'
 #' @return a list with runs and range_mb fields: runs keeps a modified version of
 #' the original runs dataframe with two additional columns, MB for ROH length in

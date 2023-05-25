@@ -9,11 +9,14 @@ classifyRuns(runs, class_size = 2)
 \arguments{
 \item{runs}{a ROH dataframe object}
 
-\item{class_size}{the starting bin size}
+\item{class_size}{base ROH-length interval (in Mbps). Will be doubled in each interval,
+for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
 }
 \value{
-a new dataframe with two new columns, MB for ROH length in MB and
-CLASS column which tag a ROH in a proper bin relying on size
+a list with runs and range_mb fields: runs keeps a modified version of
+the original runs dataframe with two additional columns, MB for ROH length in
+megabases and a CLASS column which tags a ROH in a proper bin relying on size;
+range_mb field return a list of ranges in MB used to define the classes
 }
 \description{
 Classify runs in bins.

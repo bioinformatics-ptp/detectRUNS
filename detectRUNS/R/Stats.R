@@ -137,7 +137,8 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #'
 #' @param runs R object (dataframe) with ROH results
 #' @param mapFile Plink map file (for SNP position)
-#' @param Class base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #'
 #'
 #' @return A data frame with individual inbreeding coefficients based on ROH-length of
@@ -208,7 +209,8 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results on detected runs
-#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #' @param snpInRuns TRUE/FALSE (default): should the function \code{snpInsideRuns} be
 #' called to compute the proportion of times each SNP falls inside a run in the
 #' group/population?

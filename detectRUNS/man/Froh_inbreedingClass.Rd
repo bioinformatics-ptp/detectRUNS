@@ -11,7 +11,8 @@ Froh_inbreedingClass(runs, mapFile, Class = 2)
 
 \item{mapFile}{Plink map file (for SNP position)}
 
-\item{Class}{base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)}
+\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
+for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
 }
 \value{
 A data frame with individual inbreeding coefficients based on ROH-length of
