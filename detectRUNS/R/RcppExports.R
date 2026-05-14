@@ -243,3 +243,60 @@ tableRuns <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
     .Call('_detectRUNS_tableRuns', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
 }
 
+#' Scan PLINK binary (BED/BIM/FAM) for runs of homozygosity or heterozygosity
+#'
+#' Low-level C++ entry point called by \code{scanRUNS()}.
+#' Do not call directly; use \code{scanRUNS()} instead.
+#'
+#' @param bed_path Path to the .bed file
+#' @param bim_path Path to the .bim file
+#' @param fam_path Path to the .fam file
+#' @param method Integer: 0 = consecutive (Marras 2015), 1 = sliding window (Bjelland 2013)
+#' @param roh_type Integer: 0 = ROHom, 1 = ROHet
+#' @param min_snps Minimum SNPs in a qualifying run
+#' @param max_opposite Max opposite-type genotypes in a run (consecutive) or window (sliding)
+#' @param max_missing Max missing genotypes in a run (consecutive) or window (sliding)
+#' @param min_length_bp Minimum run length in base pairs
+#' @param max_gap Max gap between consecutive SNPs (bp); >= this breaks a run
+#' @param window_size Window width in SNPs (method=1 only)
+#' @param threshold Bjelland coverage ratio threshold, strictly > (method=1 only)
+#' @param n_threads Number of OpenMP threads (1 = single-threaded)
+#' @param verbose If TRUE, print a progress bar during scan and a summary on completion
+#' @return Named list: runs, summary, snp_freq, chrom_map
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_scan_roh_bed <- function(bed_path, bim_path, fam_path, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, verbose) {
+    .Call('_detectRUNS_C_scan_roh_bed', PACKAGE = 'detectRUNS', bed_path, bim_path, fam_path, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, verbose)
+}
+
+#' Save ROH scan results to a compact binary file
+#'
+#' Low-level C++ entry point called by \code{saveROH()}.
+#' Do not call directly.
+#'
+#' @param runs_df   data.frame with columns group, id, chrom, nSNP, from, to, lengthBps
+#' @param chrom_map_r Named integer vector from \code{scanRUNS()$chrom_map}
+#' @param path      Output file path
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_save_roh <- function(runs_df, chrom_map_r, path) {
+    invisible(.Call('_detectRUNS_C_save_roh', PACKAGE = 'detectRUNS', runs_df, chrom_map_r, path))
+}
+
+#' Load ROH scan results from a binary file
+#'
+#' Low-level C++ entry point called by \code{loadROH()}.
+#' Do not call directly.
+#'
+#' @param path Path to a .roh binary file written by \code{saveROH()}
+#' @return Named list with element \code{runs} (data.frame, same format as
+#'   \code{scanRUNS()$runs})
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_load_roh <- function(path) {
+    .Call('_detectRUNS_C_load_roh', PACKAGE = 'detectRUNS', path)
+}
+

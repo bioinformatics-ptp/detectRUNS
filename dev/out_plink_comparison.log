@@ -1,0 +1,88 @@
+Working directory: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+
+======================================================================
+[20:52:56]  ADAPTmap  PLINK vs detectRUNS
+======================================================================
+Running PLINK...
+Warning: 1932 het. haploid genotypes present (see
+Ext_Data/results/plink_comparison/ADAPTmap/plink_roh.hh ); many commands treat
+these as missing.
+  PLINK:  1.6 s
+  PLINK:  1529724 ROH in 4644 individuals
+Running detectRUNS...
+  detectRUNS:  1.0 s
+  detectRUNS:  1529724 ROH in 4644 individuals
+
+  PLINK runs:       1529724
+  detectRUNS runs:  1529724
+  Exact matches:    1529724
+  Only in PLINK:    0
+  Only in detectRUNS: 0
+  RESULT: *** PASS (100% match) ***
+
+======================================================================
+[20:53:07]  SELMOL  PLINK vs detectRUNS
+======================================================================
+Running PLINK...
+  PLINK:  1.2 s
+  PLINK:  1117234 ROH in 4095 individuals
+Running detectRUNS...
+  detectRUNS:  0.9 s
+  detectRUNS:  1117234 ROH in 4095 individuals
+
+  PLINK runs:       1117234
+  detectRUNS runs:  1117234
+  Exact matches:    1117234
+  Only in PLINK:    0
+  Only in detectRUNS: 0
+  RESULT: *** PASS (100% match) ***
+
+======================================================================
+[20:53:15]  pigData  PLINK vs detectRUNS
+======================================================================
+Running PLINK...
+  PLINK:  0.5 s
+  PLINK:  594368 ROH in 1208 individuals
+Running detectRUNS...
+  detectRUNS:  0.4 s
+  detectRUNS:  594368 ROH in 1208 individuals
+
+  PLINK runs:       594368
+  detectRUNS runs:  594368
+  Exact matches:    594368
+  Only in PLINK:    0
+  Only in detectRUNS: 0
+  RESULT: *** PASS (100% match) ***
+
+======================================================================
+[20:53:18]  Innovagen_HD  PLINK vs detectRUNS
+======================================================================
+Running PLINK...
+Warning: 965248 het. haploid genotypes present (see
+Ext_Data/results/plink_comparison/Innovagen_HD/plink_roh.hh ); many commands
+treat these as missing.
+  PLINK:  5.5 s
+  PLINK:  4401607 ROH in 1009 individuals
+Running detectRUNS...
+  detectRUNS:  4.0 s
+  detectRUNS:  4401607 ROH in 1009 individuals
+
+  PLINK runs:       4401607
+  detectRUNS runs:  4401607
+  Exact matches:    4401607
+  Only in PLINK:    0
+  Only in detectRUNS: 0
+  RESULT: *** PASS (100% match) ***
+
+======================================================================
+SUMMARY
+======================================================================
+  ADAPTmap         PLINK=1529724  detectRUNS=1529724  match=1529724  only_P=0  only_DR=0  [PASS]
+  SELMOL           PLINK=1117234  detectRUNS=1117234  match=1117234  only_P=0  only_DR=0  [PASS]
+  pigData          PLINK=594368  detectRUNS=594368  match=594368  only_P=0  only_DR=0  [PASS]
+  Innovagen_HD     PLINK=4401607  detectRUNS=4401607  match=4401607  only_P=0  only_DR=0  [PASS]
+
+Overall: ALL PASS
+
+Report: Ext_Data/results/plink_comparison/plink_comparison_report.md
+Done at 2026-05-26 20:53:54

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>detectRUNS — Test Report</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 13px; margin: 0; background: #f4f6f9; color: #222; }
+  nav { background: #2c3e50; padding: 10px 30px; position: sticky; top: 0; z-index: 100; }
+  nav a { color: #ecf0f1; text-decoration: none; margin-right: 24px; font-size: 13px; font-weight: bold; }
+  nav a:hover { color: #3498db; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+  h1 { font-size: 22px; margin-bottom: 4px; color: #2c3e50; }
+  h2 { font-size: 16px; color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 4px; margin-top: 40px; }
+  p.sub { color: #666; margin-top: 2px; margin-bottom: 20px; font-size: 12px; }
+  p.params-note { background: #eaf0fb; border-left: 3px solid #3498db; padding: 8px 12px; margin-bottom: 14px; font-size: 12px; color: #333; }
+  table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin-bottom: 30px; }
+  th { background: #2c3e50; color: #fff; font-size: 11px; padding: 8px 10px; text-align: left; white-space: nowrap; }
+  td { border: 1px solid #ddd; padding: 6px 10px; }
+  tr:hover td { background: #f0f4f8; }
+  .ds-hdr td { background: #d5e8f5; font-weight: bold; font-size: 12px; padding: 5px 10px; }
+  .param-hdr td { background: #e8f4e8; font-weight: bold; font-size: 12px; padding: 5px 10px; }
+  .meta { font-weight: normal; color: #555; font-size: 11px; }
+  .num { text-align: right; font-family: monospace; }
+  .spd { text-align: right; font-family: monospace; color: #c0392b; font-weight: bold; }
+  .pass { background: #d4edda; color: #155724; text-align: right; font-family: monospace; font-weight: bold; }
+  .warn { background: #fff3cd; color: #856404; text-align: right; font-family: monospace; font-weight: bold; }
+  .fail { background: #f8d7da; color: #721c24; text-align: right; font-family: monospace; font-weight: bold; }
+  .na   { color: #999; text-align: center; }
+  .pass-cell { color: #155724; font-weight: bold; font-size: 14px; text-align: center; background: #d4edda; }
+  .fail-cell { color: #721c24; font-weight: bold; font-size: 14px; text-align: center; background: #f8d7da; }
+  .indent { padding-left: 20px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-left: 8px; }
+  .badge-pass { background: #d4edda; color: #155724; }
+  .badge-info { background: #d1ecf1; color: #0c5460; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="#smoke">Smoke Test</a>
+  <a href="#plink">PLINK Comparison</a>
+  <a href="#sweep">Parameter Sweep</a>
+  <a href="#bench">Benchmark</a>
+</nav>
+<div class="wrap">
+<h1>detectRUNS — Test &amp; Validation Report <span class="badge badge-info">v1.0.0</span></h1>
+<p class="sub">Generated: %Y-%m-%d %H:%M:%S &nbsp;|&nbsp; Machine: 14 physical cores &nbsp;|&nbsp; R 4.6.0</p>
+
+<h2 id="smoke">1. Smoke Test <span class="badge badge-pass">PASS</span></h2>
+<p class="params-note">All 4 production datasets scanned at 1 / 10 / 14 threads, 2 parameter sets, consecutive method. No crashes, run counts stable across thread counts.</p>
+<table><thead><tr><th>Method</th><th>Params</th><th>n_runs</th><th>1 CPU</th><th>10 CPU</th><th>14 CPU</th><th>Speedup (1→14)</th><th>Peak mem</th></tr></thead><tbody><tr class="ds-hdr"><td colspan="9"><b>SELMOL</b> &nbsp;<span class="meta">44,191 SNPs &nbsp;|&nbsp; 4,095 individuals</span></td></tr>
+<tr><td>sliding</td><td>default</td><td class="num">1,274,826</td><td class="num">3.97 s</td><td class="num">0.81 s</td><td class="num">0.68 s</td><td class="spd">5.8×</td><td class="num">508 MB</td></tr>
+<tr><td>consecutive</td><td>default</td><td class="num">1,162,765</td><td class="num">1.30 s</td><td class="num">0.50 s</td><td class="num">0.50 s</td><td class="spd">2.6×</td><td class="num">531 MB</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="num">156,693</td><td class="num">4.31 s</td><td class="num">0.66 s</td><td class="num">0.60 s</td><td class="spd">7.2×</td><td class="num">609 MB</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="num">135,774</td><td class="num">1.18 s</td><td class="num">0.35 s</td><td class="num">0.34 s</td><td class="spd">3.5×</td><td class="num">614 MB</td></tr>
+<tr class="ds-hdr"><td colspan="9"><b>ADAPTmap</b> &nbsp;<span class="meta">53,347 SNPs &nbsp;|&nbsp; 4,653 individuals</span></td></tr>
+<tr><td>sliding</td><td>default</td><td class="num">1,027,255</td><td class="num">4.97 s</td><td class="num">0.88 s</td><td class="num">0.83 s</td><td class="spd">6.0×</td><td class="num">584 MB</td></tr>
+<tr><td>consecutive</td><td>default</td><td class="num">1,031,555</td><td class="num">1.73 s</td><td class="num">0.61 s</td><td class="num">0.59 s</td><td class="spd">2.9×</td><td class="num">618 MB</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="num">283,722</td><td class="num">5.71 s</td><td class="num">0.83 s</td><td class="num">0.77 s</td><td class="spd">7.4×</td><td class="num">521 MB</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="num">318,302</td><td class="num">1.59 s</td><td class="num">0.47 s</td><td class="num">0.46 s</td><td class="spd">3.5×</td><td class="num">548 MB</td></tr>
+<tr class="ds-hdr"><td colspan="9"><b>suini_12</b> &nbsp;<span class="meta">54,089 SNPs &nbsp;|&nbsp; 1,208 individuals</span></td></tr>
+<tr><td>sliding</td><td>default</td><td class="num">536,964</td><td class="num">1.44 s</td><td class="num">0.33 s</td><td class="num">0.32 s</td><td class="spd">4.5×</td><td class="num">576 MB</td></tr>
+<tr><td>consecutive</td><td>default</td><td class="num">642,569</td><td class="num">0.55 s</td><td class="num">0.26 s</td><td class="num">0.25 s</td><td class="spd">2.2×</td><td class="num">626 MB</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="num">201,582</td><td class="num">1.60 s</td><td class="num">0.33 s</td><td class="num">0.30 s</td><td class="spd">5.3×</td><td class="num">500 MB</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="num">222,344</td><td class="num">0.47 s</td><td class="num">0.20 s</td><td class="num">0.19 s</td><td class="spd">2.5×</td><td class="num">500 MB</td></tr>
+<tr class="ds-hdr"><td colspan="9"><b>Innovagen_HD</b> &nbsp;<span class="meta">777,962 SNPs &nbsp;|&nbsp; 1,009 individuals</span></td></tr>
+<tr><td>sliding</td><td>default</td><td class="num">243,880</td><td class="num">18.66 s</td><td class="num">3.33 s</td><td class="num">3.28 s</td><td class="spd">5.7×</td><td class="num">608 MB</td></tr>
+<tr><td>consecutive</td><td>default</td><td class="num">329,866</td><td class="num">7.32 s</td><td class="num">2.12 s</td><td class="num">2.41 s</td><td class="spd">3.0×</td><td class="num">634 MB</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="num">86,784</td><td class="num">21.64 s</td><td class="num">3.54 s</td><td class="num">3.44 s</td><td class="spd">6.3×</td><td class="num">618 MB</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="num">153,617</td><td class="num">7.25 s</td><td class="num">2.07 s</td><td class="num">2.37 s</td><td class="spd">3.1×</td><td class="num">595 MB</td></tr></tbody></table>
+
+<h2 id="plink">2. PLINK --homozyg Comparison <span class="badge badge-pass">ALL PASS</span></h2>
+<p class="params-note"><b>Parameters (lenient):</b> minSNP=10 | minLen=100 kbp | maxOpp=2 | maxMiss=2 | windowSize=15 | threshold=0.05 | maxGap=1,500 kbp | minDensity=0.02<br>Match key: <code>IID + CHR + POS_from + POS_to</code> (exact bp match, autosomes only)</p><table><thead><tr><th>Dataset</th><th>PLINK ROH</th><th>detectRUNS ROH</th><th>Exact matches</th><th>Only PLINK</th><th>Only detectRUNS</th><th>PLINK (s)</th><th>detectRUNS (s)</th><th>Result</th></tr></thead><tbody><tr><td><b>ADAPTmap</b></td><td class="num">1,529,724</td><td class="num">1,529,724</td><td class="num">1,529,724</td><td class="num">0</td><td class="num">0</td><td class="num">1.60 s</td><td class="num">1.00 s</td><td class="pass-cell">&#10003; PASS</td></tr>
+<tr><td><b>SELMOL</b></td><td class="num">1,117,234</td><td class="num">1,117,234</td><td class="num">1,117,234</td><td class="num">0</td><td class="num">0</td><td class="num">1.20 s</td><td class="num">0.90 s</td><td class="pass-cell">&#10003; PASS</td></tr>
+<tr><td><b>pigData</b></td><td class="num">594,368</td><td class="num">594,368</td><td class="num">594,368</td><td class="num">0</td><td class="num">0</td><td class="num">0.50 s</td><td class="num">0.40 s</td><td class="pass-cell">&#10003; PASS</td></tr>
+<tr><td><b>Innovagen_HD</b></td><td class="num">4,401,607</td><td class="num">4,401,607</td><td class="num">4,401,607</td><td class="num">0</td><td class="num">0</td><td class="num">5.50 s</td><td class="num">4.00 s</td><td class="pass-cell">&#10003; PASS</td></tr></tbody></table>
+
+<h2 id="sweep">3. Parameter Sweep — Sliding Window vs PLINK <span class="badge badge-pass">100% concordance</span></h2>
+<p class="params-note"><b>Test data:</b> 563 SNPs · 20 individuals · chr 24 · avg gap ~74.6 kbp<br><b>Baseline:</b> minSNP=5 | maxOpp=1 | maxMiss=1 | windowSize=10 | threshold=0.05 | minLen=50 kbp | maxGap=2 Mbp<br>Each parameter swept independently. BED_slide = new C++ engine; PED_slide = legacy R engine.</p><table><thead><tr><th>Value</th><th>PLINK n</th><th>BED_slide n</th><th>BED_slide % of PLINK</th><th>PED_slide % of PLINK</th></tr></thead><tbody><tr class="param-hdr"><td colspan="6"><b>minSNP</b></td></tr>
+<tr><td class="indent">3</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">5</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">10</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">15</td><td class="num">83</td><td class="num">83</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">20</td><td class="num">39</td><td class="num">39</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>maxOpp</b></td></tr>
+<tr><td class="indent">0</td><td class="num">68</td><td class="num">68</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">1</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">2</td><td class="num">264</td><td class="num">264</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">3</td><td class="num">253</td><td class="num">253</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>maxMiss</b></td></tr>
+<tr><td class="indent">0</td><td class="num">185</td><td class="num">185</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">1</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">2</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">3</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>minLengthBps</b></td></tr>
+<tr><td class="indent">1,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">25,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">50,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">100,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">250,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>maxGap</b></td></tr>
+<tr><td class="indent">100,000</td><td class="num">309</td><td class="num">309</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">500,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">1,000,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">2,000,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">5,000,000</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>minDensity</b></td></tr>
+<tr><td class="indent">0</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.001</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.01</td><td class="num">181</td><td class="num">181</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.02</td><td class="num">26</td><td class="num">26</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>windowSize</b></td></tr>
+<tr><td class="indent">5</td><td class="num">580</td><td class="num">580</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">10</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">15</td><td class="num">54</td><td class="num">54</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">20</td><td class="num">27</td><td class="num">27</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">30</td><td class="num">16</td><td class="num">16</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr class="param-hdr"><td colspan="6"><b>threshold</b></td></tr>
+<tr><td class="indent">0.05</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.1</td><td class="num">187</td><td class="num">187</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.2</td><td class="num">145</td><td class="num">145</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr>
+<tr><td class="indent">0.5</td><td class="num">84</td><td class="num">84</td><td class="pass">100.0%</td><td class="pass">100.0%</td></tr></tbody></table>
+
+<h2 id="bench">4. Benchmark — Consecutive BED path</h2>
+<p class="params-note">Method: consecutive (BED path). All-CPU = 14 threads.</p><table><thead><tr><th>Params</th><th>n_runs</th><th>1 CPU</th><th>14 CPU</th><th>Speedup</th></tr></thead><tbody><tr class="ds-hdr"><td colspan="6"><b>SELMOL</b> &nbsp;<span class="meta">44,191 SNPs &nbsp;|&nbsp; 4,095 individuals</span></td></tr>
+<tr><td>default</td><td class="num">1,162,765</td><td class="num">1.60 s</td><td class="num">0.50 s</td><td class="spd">3.2×</td></tr>
+<tr><td>relaxed</td><td class="num">5,531,894</td><td class="num">2.60 s</td><td class="num">1.50 s</td><td class="spd">1.7×</td></tr>
+<tr class="ds-hdr"><td colspan="6"><b>ADAPTmap</b> &nbsp;<span class="meta">53,347 SNPs &nbsp;|&nbsp; 4,653 individuals</span></td></tr>
+<tr><td>default</td><td class="num">1,031,555</td><td class="num">1.70 s</td><td class="num">0.60 s</td><td class="spd">2.8×</td></tr>
+<tr><td>relaxed</td><td class="num">6,205,411</td><td class="num">3.10 s</td><td class="num">1.80 s</td><td class="spd">1.7×</td></tr>
+<tr class="ds-hdr"><td colspan="6"><b>suini_12</b> &nbsp;<span class="meta">54,089 SNPs &nbsp;|&nbsp; 1,208 individuals</span></td></tr>
+<tr><td>default</td><td class="num">642,569</td><td class="num">0.50 s</td><td class="num">0.20 s</td><td class="spd">2.5×</td></tr>
+<tr><td>relaxed</td><td class="num">1,644,397</td><td class="num">0.80 s</td><td class="num">0.40 s</td><td class="spd">2.0×</td></tr>
+<tr class="ds-hdr"><td colspan="6"><b>Innovagen_HD</b> &nbsp;<span class="meta">777,962 SNPs &nbsp;|&nbsp; 1,009 individuals</span></td></tr>
+<tr><td>default</td><td class="num">329,866</td><td class="num">7.30 s</td><td class="num">2.40 s</td><td class="spd">3.0×</td></tr>
+<tr><td>relaxed</td><td class="num">3,939,734</td><td class="num">8.60 s</td><td class="num">3.30 s</td><td class="spd">2.6×</td></tr></tbody></table>
+
+</div>
+</body>
+</html>

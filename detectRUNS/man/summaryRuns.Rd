@@ -4,7 +4,13 @@
 \alias{summaryRuns}
 \title{Summary statistics on detected runs}
 \usage{
-summaryRuns(runs, mapFile, genotypeFile, Class = 2, snpInRuns = FALSE)
+summaryRuns(
+  runs,
+  mapFile = NULL,
+  genotypeFile = NULL,
+  Class = 2,
+  snpInRuns = FALSE
+)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}

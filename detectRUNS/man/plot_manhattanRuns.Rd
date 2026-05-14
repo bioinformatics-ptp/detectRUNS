@@ -6,8 +6,8 @@
 \usage{
 plot_manhattanRuns(
   runs,
-  genotypeFile,
-  mapFile,
+  genotypeFile = NULL,
+  mapFile = NULL,
   pct_threshold = 0.33,
   x_font_size = 10,
   savePlots = FALSE,

@@ -1,7 +1,15 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-cran-comments.md
+^cran-comments\.md$
+^CHANGES_PERSONAL\.md$
 ^README\.Rmd$
 ^README-.*\.png$
 ^\.github$
-^NEWS\.html$
+^\.gitignore$
+^src/.*\.o$
+^src/.*\.so$
+^src/.*\.dylib$
+\.DS_Store$
+^\.Rcheck/
+^Coding_AI/
+^performance/

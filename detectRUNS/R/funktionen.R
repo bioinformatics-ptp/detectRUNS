@@ -21,29 +21,29 @@ genoConvert <- function(x) {
 
 
 #' Read from a .map file locations and return a data.table object
-#'
-#' This is an utility function which check for file existance, define
+#' 
+#' This is an utility function which check for file existance, define 
 #' colClasses and then returns the read data.table object
 #' @param mapFile map file (.map) file path
 #' @keywords internal
 #' @return data.table object
-#'
+#' 
 
 readMapFile <- function(mapFile) {
   # define colClasses
   colClasses <- c("character", "character", "character", "numeric")
-
+  
   if(file.exists(mapFile)){
     # using data.table to read data
     mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
   } else {
     stop(paste("file", mapFile, "doesn't exists"))
   }
-
+  
   # set column names
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
-
+  
   return(mappa)
 }
 
@@ -190,8 +190,9 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
-  iInd <- itertools::izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
-  hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
+  ind1 <- c(rep(1L, windowSize - 1L), seq_len(RunVector_length))
+  ind2 <- c(seq_len(RunVector_length), rep(RunVector_length, windowSize - 1L))
+  hWin <- mapply(function(a, b) sum(RunVector[a:b]), ind1, ind2)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
@@ -224,7 +225,6 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @return a data.frame with RUNS per animal
 #'
 #' @import utils
-#' @import itertools
 #' @importFrom stats na.omit
 #'
 
@@ -234,7 +234,8 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 
   dd <- cbind.data.frame(snpRun,"Chrom"=mapFile$Chrom,"n"=seq(1,nrow(mapFile)))
 
-  dL <- plyr::ddply(dd,"Chrom",function(x) {
+  parts <- split(dd, dd$Chrom)
+  dL <- do.call(rbind, lapply(parts, function(x) {
 
     # define where RUNs change states
     # cutPoints for "from" and "to" on the original snpRun vector
@@ -245,20 +246,18 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
     cutPoints <- which(diff(sign(x$snpRun)) != 0)
     from_bis <- c(1, cutPoints + 1)
     to_bis <- c(cutPoints, length(x$snpRun))
-    # iterate on the vectors from and to
-    iLaenge <- itertools::izip(a = from_bis,b = to_bis)
-    lengte <- sapply(iLaenge, function(n) sum(x$snpRun[n$a:n$b]))
+    # count SNPs in each run segment
+    lengte <- mapply(function(a, b) sum(x$snpRun[a:b]), from_bis, to_bis)
     # get n of rows
     n_rows <- length(lengte)
 
-    return(data.frame("from"=from,
-                      "to"=to,
-                      "nSNP"=lengte,
-                      "chrom"=character(n_rows),
-                      "lengthBps"=numeric(n_rows), stringsAsFactors = F))
-  })
+    data.frame("from"=from,
+               "to"=to,
+               "nSNP"=lengte,
+               "chrom"=character(n_rows),
+               "lengthBps"=numeric(n_rows), stringsAsFactors=FALSE)
+  }))
 
-  dL$Chrom <- NULL
   # filter RUNs by minSNP
   dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
@@ -298,17 +297,8 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
     W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
 
     # Add nOpp and nMiss columns to dataframe
-    dL <- plyr::adply(dL, 1, function(x) {
-      # calc nOpp by filtering opposite SNPs using RUN coordinates
-      nOpp <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
-                       W$oppositeAndMissingSNP==0, ])
-
-      # calc nMiss by filtering opposite SNPs using RUN coordinates
-      nMiss <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
-                        W$oppositeAndMissingSNP==9, ])
-
-      return(c("nOpp"=nOpp,"nMiss"=nMiss))
-    })
+    dL$nOpp  <- mapply(function(chr, f, t) sum(W$Chrom==chr & W$bps>=f & W$bps<=t & W$oppositeAndMissingSNP==0), dL$chrom, dL$from, dL$to)
+    dL$nMiss <- mapply(function(chr, f, t) sum(W$Chrom==chr & W$bps>=f & W$bps<=t & W$oppositeAndMissingSNP==9), dL$chrom, dL$from, dL$to)
 
     if(!is.null(maxOppRun)) {
       # filter RUNs by opposite SNPs
@@ -382,8 +372,8 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #'
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","x","POSITION")
-#' @param genotypeFile genotype (.ped) file location
+#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","POSITION")
+#' @param sample_info data.frame with columns group and id (one row per individual)
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #' @keywords internal
@@ -391,55 +381,51 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #' @import utils
 #'
 
-snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
+snpInsideRuns <- function(runsChrom, mapChrom, sample_info) {
 
-  # if genotype is file, read with read.big.matrix
-  if(file.exists(genotypeFile)){
-    # read first two columns of PED with a CPP function
-    pops <- readPOPCpp(genotypeFile)
+  unique_groups <- sort(unique(runsChrom$POPULATION))
+  results <- vector("list", length(unique_groups))
 
-  } else {
-    stop(paste("file", genotypeFile, "doesn't exists"))
-  }
-
-  M <- data.frame("SNP_NAME"=character(),
-                   "CHR"=integer(),
-                   "POSITION"=integer(),
-                   "COUNT"=integer(),
-                   "GROUP"=factor(),
-                   "PERCENTAGE"=numeric(),
-                   stringsAsFactors=FALSE
+  snpDT <- data.table::data.table(
+    SNP_NAME = mapChrom$SNP_NAME,
+    CHR      = mapChrom$CHR,
+    POSITION = mapChrom$POSITION,
+    pos_end  = mapChrom$POSITION   # zero-width interval [pos, pos]
   )
+  data.table::setkeyv(snpDT, c("POSITION", "pos_end"))
 
-  unique_groups <- unique(runsChrom$POPULATION)
+  for (i in seq_along(unique_groups)) {
+    ras     <- unique_groups[i]
+    runsGrp <- runsChrom[runsChrom$POPULATION == ras, ]
+    nGroup  <- sum(sample_info$group == as.character(ras))
 
-  for (ras in sort(unique_groups)) {
+    runsDT <- data.table::data.table(START = runsGrp$START, END = runsGrp$END)
+    data.table::setkeyv(runsDT, c("START", "END"))
 
-    #print(paste("Population is:", ras))
-    runsGroup <- runsChrom[runsChrom$POPULATION==ras,]
-    nGroup <- nrow(pops[pops$POP==as.character(ras),])
-    #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
+    # foverlaps: for each SNP [pos,pos], count how many runs [START,END] contain it.
+    # Returns one row per (SNP, matching-run) pair; nomatch=NA gives one NA row
+    # for SNPs not in any run.  Aggregate with base R to avoid [.data.table dispatch.
+    hits_df <- as.data.frame(
+      data.table::foverlaps(snpDT, runsDT,
+                             by.x    = c("POSITION", "pos_end"),
+                             by.y    = c("START",    "END"),
+                             nomatch = NA)
+    )
+    count_by_snp <- tapply(!is.na(hits_df$START), hits_df$SNP_NAME, sum)
+    snpCount     <- as.integer(count_by_snp[mapChrom$SNP_NAME])
 
-    iPos <- itertools::ihasNext(mapChrom$POSITION)
-    snpCount <- rep(NA,nrow(mapChrom))
-
-    i <- 1
-    while(hasNext(iPos)) {
-
-      pos <- iterators::nextElem(iPos)
-      inRun <- (pos >= runsGroup$START & pos <= runsGroup$END)
-      snpCount[i] <- length(inRun[inRun==TRUE])
-      i <- i + 1
-    }
-
-    mapChrom$COUNT <- snpCount
-    mapChrom$GROUP <- as.factor(rep(ras,nrow(mapChrom)))
-    mapChrom$PERCENTAGE <- (snpCount/nGroup)*100
-    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","GROUP","PERCENTAGE")]
-    M <- rbind.data.frame(M,mapChrom)
+    results[[i]] <- data.frame(
+      SNP_NAME   = mapChrom$SNP_NAME,
+      CHR        = mapChrom$CHR,
+      POSITION   = mapChrom$POSITION,
+      COUNT      = snpCount,
+      BREED      = as.factor(rep(ras, nrow(mapChrom))),
+      PERCENTAGE = (snpCount / nGroup) * 100,
+      stringsAsFactors = FALSE
+    )
   }
 
-  return(M)
+  do.call(rbind, results)
 }
 
 
@@ -491,6 +477,7 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
                       parameters$maxOppRun, parameters$maxMissRun)
 
   # manipulate dRUN to order columns
+  dRUN <- as.data.frame(dRUN)
   dRUN$id <- rep(ind, nrow(dRUN))
   dRUN$group <- rep(group, nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
@@ -751,7 +738,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' }
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 #' newData=readExternalRuns(runsFile, program = 'detectRUNS')
-#'
+#' 
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
 
@@ -824,43 +811,55 @@ reorderDF <- function(dfx) {
 }
 
 
-#' Classify runs in bins.
+###########################################################
+### PLINK binary file readers (BIM / FAM)
+###########################################################
+
+
+#' Read a PLINK BIM file
 #'
-#' @param runs a ROH dataframe object
-#' @param class_size base ROH-length interval (in Mbps). Will be doubled in each interval,
-#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
+#' Reads a PLINK .bim file and returns a \code{data.table} with one row per
+#' SNP.  Useful for inspecting SNP metadata before calling \code{scanRUNS()}.
 #'
-#' @return a list with runs and range_mb fields: runs keeps a modified version of
-#' the original runs dataframe with two additional columns, MB for ROH length in
-#' megabases and a CLASS column which tags a ROH in a proper bin relying on size;
-#' range_mb field return a list of ranges in MB used to define the classes
+#' @param bimFile Path to the .bim file.
+#' @return A \code{data.table} with columns:
+#'   \code{chrom}, \code{snp_id}, \code{cm}, \code{bp_pos}, \code{a1}, \code{a2}.
+#' @export
 #'
+readBimFile <- function(bimFile) {
+  if (!file.exists(bimFile))
+    stop(paste("BIM file not found:", bimFile))
 
-classifyRuns <- function(runs, class_size=2) {
-  # calculate ROH sizes in MB
-  runs$MB <- runs$lengthBps/1000000
-
-  # this is required to classify runs in bins
-  range_mb <- c(0,0,0,0,0,99999)
-
-  for (i in seq(from = 2 , to = length(range_mb) - 1, by = 1) ) {
-    range_mb[i] <- class_size
-    class_size <- class_size * 2
-  }
-
-  # using intervals to construct labels
-  name_CLASS <- c(
-    paste(range_mb[1], "-", range_mb[2], sep = ''),
-    paste(range_mb[2], "-", range_mb[3], sep = ''),
-    paste(range_mb[3], "-", range_mb[4], sep = ''),
-    paste(range_mb[4], "-", range_mb[5], sep = ''),
-    paste(">", range_mb[5], sep = '')
+  bim <- data.table::fread(
+    bimFile, header = FALSE,
+    colClasses = c("character", "character", "numeric",
+                   "integer",   "character", "character")
   )
+  data.table::setnames(bim, c("chrom", "snp_id", "cm", "bp_pos", "a1", "a2"))
+  return(bim)
+}
 
-  message("Class created: ", paste(name_CLASS[0:5], collapse = ' '))
-  runs$CLASS <- cut(as.numeric(runs$MB), range_mb)
-  levels(runs$CLASS) <- name_CLASS
-  runs$CLASS <- factor(runs$CLASS)
 
-  return(list("runs" = runs, "range_mb" = range_mb))
+#' Read a PLINK FAM file
+#'
+#' Reads a PLINK .fam file and returns a \code{data.table} with one row per
+#' sample.  Useful for inspecting sample metadata before calling
+#' \code{scanRUNS()}.
+#'
+#' @param famFile Path to the .fam file.
+#' @return A \code{data.table} with columns:
+#'   \code{fid}, \code{iid}, \code{pat}, \code{mat}, \code{sex}, \code{pheno}.
+#' @export
+#'
+readFamFile <- function(famFile) {
+  if (!file.exists(famFile))
+    stop(paste("FAM file not found:", famFile))
+
+  fam <- data.table::fread(
+    famFile, header = FALSE,
+    colClasses = c("character", "character", "character",
+                   "character", "integer",   "numeric")
+  )
+  data.table::setnames(fam, c("fid", "iid", "pat", "mat", "sex", "pheno"))
+  return(fam)
 }

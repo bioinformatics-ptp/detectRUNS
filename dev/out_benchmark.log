@@ -1,0 +1,24 @@
+Using detectRUNS 1.0.0
+Machine: 14 cores
+
+Dataset        Params      1-CPU All-CPU   N runs
+---------------------------------------------------- 
+
+SELMOL  (44191 SNPs | 4095 ind)
+               default      1.6s   0.5s   1162765 runs
+               relaxed      2.6s   1.5s   5531894 runs
+
+ADAPTmap  (53347 SNPs | 4653 ind)
+               default      1.7s   0.6s   1031555 runs
+               relaxed      3.1s   1.8s   6205411 runs
+
+suini_12  (54089 SNPs | 1208 ind)
+               default      0.5s   0.2s    642569 runs
+               relaxed      0.8s   0.4s   1644397 runs
+
+Innovagen_HD  (777962 SNPs | 1009 ind)
+               default      7.3s   2.4s    329866 runs
+               relaxed      8.6s   3.3s   3939734 runs
+
+ ---------------------------------------------------- 
+All-CPU = 14 threads

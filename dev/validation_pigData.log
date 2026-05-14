@@ -1,0 +1,515 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: pigData
+
+
+ ====================================================================== 
+  DATASET: pigData | pig 
+====================================================================== 
+BED: Ext_Data/suini_12_plink.bed 
+
+[08:03:53] --- pigData | ROHom | sliding | very_lenient ---
+  scanRUNS: 4.9 s  |  RSS: 349 MB (delta +183 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 931594  across 18 chromosomes
+  Length   : mean 2391676 bp  |  total 2228070.93 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp | win=10 | thr=0.100
+  Scanned  : 2026-05-26 08:03:58 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_lenient.roh  (scan: 4.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 143 regions
+  tableRuns 25%: 300 regions
+  tableRuns 50%: 2378 regions
+  tableRuns 75%: 8185 regions
+  tableRuns 90%: 6703 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.7623  min=0.5870  max=0.8512
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_sliding_very_lenient.md 
+
+[08:05:25] --- pigData | ROHom | sliding | lenient ---
+  scanRUNS: 6.2 s  |  RSS: 1394 MB (delta +-15 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 712883  across 18 chromosomes
+  Length   : mean 2013775 bp  |  total 1435585.94 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 08:05:31 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_lenient.roh  (scan: 6.2 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 723 regions
+  tableRuns 25%: 1973 regions
+  tableRuns 50%: 5478 regions
+  tableRuns 75%: 1962 regions
+  tableRuns 90%: 754 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.4912  min=0.1434  max=0.6857
+  Froh OK
+  Plots...
+  Plots OK
+  runsIslands (p95, n_perm=100)...
+  Chromosome 1/18 (index 1, 7062 SNPs): running 100 permutations ... done (threshold = 1018.0)
+  Chromosome 2/18 (index 2, 3449 SNPs): running 100 permutations ... done (threshold = 834.0)
+  Chromosome 3/18 (index 3, 2926 SNPs): running 100 permutations ... done (threshold = 902.0)
+  Chromosome 4/18 (index 4, 3814 SNPs): running 100 permutations ... done (threshold = 931.0)
+  Chromosome 5/18 (index 5, 2520 SNPs): running 100 permutations ... done (threshold = 958.0)
+  Chromosome 6/18 (index 6, 3198 SNPs): running 100 permutations ... done (threshold = 813.0)
+  Chromosome 7/18 (index 7, 3585 SNPs): running 100 permutations ... done (threshold = 917.0)
+  Chromosome 8/18 (index 8, 2802 SNPs): running 100 permutations ... done (threshold = 864.0)
+  Chromosome 9/18 (index 9, 3295 SNPs): running 100 permutations ... done (threshold = 899.0)
+  Chromosome 10/18 (index 10, 1712 SNPs): running 100 permutations ... done (threshold = 794.0)
+  Chromosome 11/18 (index 11, 2007 SNPs): running 100 permutations ... done (threshold = 830.0)
+  Chromosome 12/18 (index 12, 1601 SNPs): running 100 permutations ... done (threshold = 777.0)
+  Chromosome 13/18 (index 13, 3930 SNPs): running 100 permutations ... done (threshold = 880.0)
+  Chromosome 14/18 (index 14, 4104 SNPs): running 100 permutations ... done (threshold = 925.0)
+  Chromosome 15/18 (index 15, 2996 SNPs): running 100 permutations ... done (threshold = 982.0)
+  Chromosome 16/18 (index 16, 1942 SNPs): running 100 permutations ... done (threshold = 868.0)
+  Chromosome 17/18 (index 17, 1772 SNPs): running 100 permutations ... done (threshold = 853.0)
+  Chromosome 18/18 (index 18, 1374 SNPs): running 100 permutations ... done (threshold = 863.0)
+  Islands (p95): 2680 SNPs across 18 chr
+  runsIslands (p99, n_perm=100)...
+  Chromosome 1/18 (index 1, 7062 SNPs): running 100 permutations ... done (threshold = 1118.0)
+  Chromosome 2/18 (index 2, 3449 SNPs): running 100 permutations ... done (threshold = 935.0)
+  Chromosome 3/18 (index 3, 2926 SNPs): running 100 permutations ... done (threshold = 986.0)
+  Chromosome 4/18 (index 4, 3814 SNPs): running 100 permutations ... done (threshold = 1052.0)
+  Chromosome 5/18 (index 5, 2520 SNPs): running 100 permutations ... done (threshold = 1049.0)
+  Chromosome 6/18 (index 6, 3198 SNPs): running 100 permutations ... done (threshold = 941.0)
+  Chromosome 7/18 (index 7, 3585 SNPs): running 100 permutations ... done (threshold = 1020.0)
+  Chromosome 8/18 (index 8, 2802 SNPs): running 100 permutations ... done (threshold = 963.0)
+  Chromosome 9/18 (index 9, 3295 SNPs): running 100 permutations ... done (threshold = 1000.0)
+  Chromosome 10/18 (index 10, 1712 SNPs): running 100 permutations ... done (threshold = 924.0)
+  Chromosome 11/18 (index 11, 2007 SNPs): running 100 permutations ... done (threshold = 922.0)
+  Chromosome 12/18 (index 12, 1601 SNPs): running 100 permutations ... done (threshold = 856.0)
+  Chromosome 13/18 (index 13, 3930 SNPs): running 100 permutations ... done (threshold = 1030.0)
+  Chromosome 14/18 (index 14, 4104 SNPs): running 100 permutations ... done (threshold = 1028.0)
+  Chromosome 15/18 (index 15, 2996 SNPs): running 100 permutations ... done (threshold = 1059.0)
+  Chromosome 16/18 (index 16, 1942 SNPs): running 100 permutations ... done (threshold = 1004.0)
+  Chromosome 17/18 (index 17, 1772 SNPs): running 100 permutations ... done (threshold = 1010.0)
+  Chromosome 18/18 (index 18, 1374 SNPs): running 100 permutations ... done (threshold = 953.0)
+  Islands (p99): 527 SNPs across 18 chr
+  reportRUNS...
+  Report: pigData_ROHom_sliding_lenient.md 
+
+[08:07:02] --- pigData | ROHom | sliding | strict ---
+  scanRUNS: 7.1 s  |  RSS: 1469 MB (delta +-70 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 386369  across 18 chromosomes
+  Length   : mean 2253785 bp  |  total 870792.75 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 08:07:09 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_strict.roh  (scan: 7.1 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 1602 regions
+  tableRuns 25%: 3189 regions
+  tableRuns 50%: 1476 regions
+  tableRuns 75%: 346 regions
+  tableRuns 90%: 94 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.2979  min=0.0086  max=0.5468
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_sliding_strict.md 
+
+[08:07:53] --- pigData | ROHom | sliding | very_strict ---
+  scanRUNS: 8.0 s  |  RSS: 1446 MB (delta +3 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 150739  across 18 chromosomes
+  Length   : mean 3158903 bp  |  total 476169.95 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp | win=25 | thr=0.050
+  Scanned  : 2026-05-26 08:08:01 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_strict.roh  (scan: 8.0 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 1676 regions
+  tableRuns 25%: 1016 regions
+  tableRuns 50%: 200 regions
+  tableRuns 75%: 38 regions
+  tableRuns 90%: 7 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_sliding_very_strict.md 
+
+[08:08:30] --- pigData | ROHom | consecutive | very_lenient ---
+  scanRUNS: 2.0 s  |  RSS: 2023 MB (delta +580 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 3449484  across 18 chromosomes
+  Length   : mean 659399 bp  |  total 2274584.75 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 08:08:32 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_lenient.roh  (scan: 2.0 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 162 regions
+  tableRuns 25%: 301 regions
+  tableRuns 50%: 2575 regions
+  tableRuns 75%: 21056 regions
+  tableRuns 90%: 34942 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.7782  min=0.6455  max=0.8467
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_consecutive_very_lenient.md 
+
+[08:12:57] --- pigData | ROHom | consecutive | lenient ---
+  scanRUNS: 1.4 s  |  RSS: 6053 MB (delta +259 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 1637471  across 18 chromosomes
+  Length   : mean 944729 bp  |  total 1546965.92 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp
+  Scanned  : 2026-05-26 08:12:59 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_lenient.roh  (scan: 1.4 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 645 regions
+  tableRuns 25%: 2466 regions
+  tableRuns 50%: 11959 regions
+  tableRuns 75%: 6710 regions
+  tableRuns 90%: 3098 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.5293  min=0.2196  max=0.6927
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_consecutive_lenient.md 
+
+[08:18:22] --- pigData | ROHom | consecutive | strict ---
+  scanRUNS: 1.1 s  |  RSS: 9982 MB (delta +-249 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 466154  across 18 chromosomes
+  Length   : mean 1650549 bp  |  total 769410.04 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp
+  Scanned  : 2026-05-26 08:18:23 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_strict.roh  (scan: 1.1 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 2630 regions
+  tableRuns 25%: 4081 regions
+  tableRuns 50%: 1465 regions
+  tableRuns 75%: 345 regions
+  tableRuns 90%: 82 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.2632  min=0.0054  max=0.5103
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_consecutive_strict.md 
+
+[08:34:13] --- pigData | ROHom | consecutive | very_strict ---
+  scanRUNS: 1.0 s  |  RSS: 10992 MB (delta +4 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 1208  (5 groups)
+  Runs     : 192213  across 18 chromosomes
+  Length   : mean 2375081 bp  |  total 456521.47 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 08:34:14 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_strict.roh  (scan: 1.0 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 2255 regions
+  tableRuns 25%: 1275 regions
+  tableRuns 50%: 274 regions
+  tableRuns 75%: 46 regions
+  tableRuns 90%: 10 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHom_consecutive_very_strict.md 
+
+[08:34:45] --- pigData | ROHet | sliding | very_lenient ---
+  scanRUNS: 4.6 s  |  RSS: 11089 MB (delta +145 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 792822  across 18 chromosomes
+  Length   : mean 770431 bp  |  total 610814.84 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp | win=10 | thr=0.100
+  Scanned  : 2026-05-26 08:34:50 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_very_lenient.roh  (scan: 4.6 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 4983 regions
+  tableRuns 25%: 6793 regions
+  tableRuns 50%: 3148 regions
+  tableRuns 75%: 220 regions
+  tableRuns 90%: 26 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.2090  min=0.1222  max=0.4436
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_sliding_very_lenient.md 
+
+[08:36:13] --- pigData | ROHet | sliding | lenient ---
+  scanRUNS: 5.6 s  |  RSS: 11173 MB (delta +0 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 126347  across 18 chromosomes
+  Length   : mean 755202 bp  |  total 95417.54 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 08:36:19 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_lenient.roh  (scan: 5.6 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 1865 regions
+  tableRuns 25%: 727 regions
+  tableRuns 50%: 68 regions
+  tableRuns 75%: 8 regions
+  tableRuns 90%: 2 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0326  min=0.0133  max=0.0705
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_sliding_lenient.md 
+
+[08:36:44] --- pigData | ROHet | sliding | strict ---
+  scanRUNS: 6.8 s  |  RSS: 10925 MB (delta +-48 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 9323  across 18 chromosomes
+  Length   : mean 865633 bp  |  total 8070.29 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 08:36:51 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_strict.roh  (scan: 6.8 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 130 regions
+  tableRuns 25%: 36 regions
+  tableRuns 50%: 5 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0028  min=0.0002  max=0.0078
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_sliding_strict.md 
+
+[08:37:09] --- pigData | ROHet | sliding | very_strict ---
+  scanRUNS: 7.9 s  |  RSS: 10952 MB (delta +0 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp | win=25 | thr=0.050
+  Scanned  : 2026-05-26 08:37:16 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_very_strict.roh  (scan: 7.9 s)
+  No runs detected — skipping downstream.
+
+[08:37:16] --- pigData | ROHet | consecutive | very_lenient ---
+  scanRUNS: 1.9 s  |  RSS: 11785 MB (delta +833 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 3625955  across 18 chromosomes
+  Length   : mean 297795 bp  |  total 1079791.67 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 08:37:18 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_lenient.roh  (scan: 1.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 4337 regions
+  tableRuns 25%: 10719 regions
+  tableRuns 50%: 24268 regions
+  tableRuns 75%: 5838 regions
+  tableRuns 90%: 1323 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.3694  min=0.2104  max=0.5522
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_consecutive_very_lenient.md 
+
+[09:15:56] --- pigData | ROHet | consecutive | lenient ---
+  scanRUNS: 1.1 s  |  RSS: 16151 MB (delta +70 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 532846  across 18 chromosomes
+  Length   : mean 436794 bp  |  total 232743.78 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp
+  Scanned  : 2026-05-26 09:15:57 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_lenient.roh  (scan: 1.1 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 7138 regions
+  tableRuns 25%: 4163 regions
+  tableRuns 50%: 447 regions
+  tableRuns 75%: 25 regions
+  tableRuns 90%: 8 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0796  min=0.0427  max=0.1536
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_consecutive_lenient.md 
+
+[09:33:08] --- pigData | ROHet | consecutive | strict ---
+  scanRUNS: 0.9 s  |  RSS: 15562 MB (delta +0 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 7180  across 17 chromosomes
+  Length   : mean 819988 bp  |  total 5887.51 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp
+  Scanned  : 2026-05-26 09:33:09 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_strict.roh  (scan: 0.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 100 regions
+  tableRuns 25%: 20 regions
+  tableRuns 50%: 5 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_consecutive_strict.md 
+
+[09:40:13] --- pigData | ROHet | consecutive | very_strict ---
+  scanRUNS: 0.9 s  |  RSS: 16187 MB (delta +-20 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 1208  (5 groups)
+  Runs     : 47  across 2 chromosomes
+  Length   : mean 1016855 bp  |  total 47.79 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 09:40:14 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_strict.roh  (scan: 0.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 1 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: pigData_ROHet_consecutive_very_strict.md 
+
+ ====================================================================== 
+  pigData — parameter comparison (ROHom sliding) 
+====================================================================== 
+calculating Froh on all genome
+  very_lenient    runs= 931594  Froh=0.7623
+calculating Froh on all genome
+  lenient         runs= 712883  Froh=0.4912
+calculating Froh on all genome
+  strict          runs= 386369  Froh=0.2979
+calculating Froh on all genome
+  very_strict     runs= 150739  Froh=NA
+  Run count monotonicity (vl>=l>=s>=vs): PASS
+
+ ====================================================================== 
+  pigData — BED vs PED cross-format comparison 
+====================================================================== 
+  Scanning PED (sliding, ROHom, lenient)...
+  BED runs: 712883  |  PED runs: 728813  |  ratio=1.022
+  Saved PED scan for comparison.
+
+pigData COMPLETE. Output in: Ext_Data/results/pigData/detectRUNS
+There were 50 or more warnings (use warnings() to see the first 50)
+
+ ====================================================================== 
+  DONE: pigData 
+====================================================================== 
+Total elapsed: 97.0 minutes
+
+  Summaries saved to: Ext_Data/results/pigData
+Sanity checks: 78 PASS  |  4 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type      method       params  n_runs scan_s total_s peak_mem_mb
+ pigData ROHom     sliding very_lenient  931594    4.9    92.6      1408.8
+ pigData ROHom     sliding      lenient  712883    6.2    96.4      1539.0
+ pigData ROHom     sliding       strict  386369    7.1    51.3      1469.4
+ pigData ROHom     sliding  very_strict  150739    8.0    36.7      1446.3
+ pigData ROHom consecutive very_lenient 3449484    2.0   267.4      5807.6
+ pigData ROHom consecutive      lenient 1637471    1.4   325.1     10627.2
+ pigData ROHom consecutive       strict  466154    1.1   950.8     10988.2
+ pigData ROHom consecutive  very_strict  192213    1.0    31.6     10992.1
+ pigData ROHet     sliding very_lenient  792822    4.6    88.1     11421.6
+ pigData ROHet     sliding      lenient  126347    5.6    31.0     11173.0
+ pigData ROHet     sliding       strict    9323    6.8    23.5     10952.5
+ pigData ROHet     sliding  very_strict       0    7.9     7.9     10952.5
+ pigData ROHet consecutive very_lenient 3625955    1.9  2319.4     16445.8
+ pigData ROHet consecutive      lenient  532846    1.1  1031.6     16210.7
+ pigData ROHet consecutive       strict    7180    0.9   425.2     16207.0
+ pigData ROHet consecutive  very_strict      47    0.9     4.1     16187.2
+  status
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+ NO_RUNS
+      OK
+      OK
+      OK
+      OK
+
+Done at 2026-05-26 09:40:51

@@ -1,0 +1,23 @@
+{
+    "r.lsp.diagnostics": false,
+    "files.watcherExclude": {
+        "**/Ext_Data/**": true,
+        "**/dev/test_output/**": true,
+        "**/*.roh": true,
+        "**/*.rds": true,
+        "**/*.bed": true,
+        "**/*.bim": true,
+        "**/*.fam": true,
+        "**/*.ped": true,
+        "**/*.map": true
+    },
+    "files.exclude": {
+        "**/Ext_Data/results/**": true,
+        "**/dev/test_output/**": true
+    },
+    "search.exclude": {
+        "**/Ext_Data/**": true,
+        "**/dev/test_output/**": true
+    },
+    "r.lsp.enabled": false
+}

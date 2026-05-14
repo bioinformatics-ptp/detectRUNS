@@ -17,13 +17,14 @@ slidingRUNS.run(
   minLengthBps = 1000,
   minDensity = 1/1000,
   maxOppRun = NULL,
-  maxMissRun = NULL
+  maxMissRun = NULL,
+  nCores = NULL
 )
 }
 \arguments{
 \item{genotypeFile}{genotype (.ped) file path}
 
-\item{mapFile}{map file (.map) file path (chromosomes should be numeric)}
+\item{mapFile}{map file (.map) file path}
 
 \item{windowSize}{the size of sliding window (number of SNP loci) (default = 15)}
 
@@ -49,60 +50,29 @@ potential run (default = 10^6 bps)}
 \item{maxOppRun}{max n. of opposite genotype SNPs in the run (optional)}
 
 \item{maxMissRun}{max n. of missing SNPs in the run (optional)}
+
+\item{nCores}{number of cores to use (deprecated, ignored)}
 }
 \value{
-A dataframe with RUNs of Homozygosity or Heterozygosity in the analysed dataset.
-The returned dataframe contains the following seven columns: "group", "id", "chrom",
-"nSNP", "from", "to", "lengthBps" (group: population, breed, case/control etc.;
-id: individual identifier; chrom: chromosome on which the run is located;
-nSNP: number of SNPs in the run; from: starting position of the run, in bps;
-to: end position of the run, in bps; lengthBps: size of the run)
+A dataframe with RUNs of Homozygosity or Heterozygosity.
 }
 \description{
-This is one of the main function of detectRUNS and is used to detect runs
-(of homozygosity or heterozygosity)
-in the genome (diploid) with the sliding-window method.
-All parameters to detect runs (e.g. minimum n. of SNP, max n. of missing genotypes,
-max n. of opposite genotypes etc.) are specified here.
-Input data are in the ped/map
-Plink format (https://www.cog-genomics.org/plink/1.9/input#ped)
-Chromosomes should be coded as numbers (e.g. 1-23)
+\strong{Deprecated.}
 }
 \details{
-This function scans the genome (diploid) for runs using the sliding-window method.
-This is a wrapper function for many component functions that handle the input data
-(ped/map files), perform internal conversions, accept parameters specifications,
-select whether runs of homozygosity (RoHom) or of heterozygosity (RoHet)
-are looked for.
-
-In the ped file, the groups samples belong to can be specified (first column).
-This is important if comparisons between human ethnic groups or between animal breeds
-or plant varieties or biological populations are to be performed.
-Also, if cases and controls are to be compared, this is the place where this
-information needs to be specified.
-
-This function returns a data frame with all runs detected in the dataset.
-This data frame can then be written out to a csv file.
-The data frame is, in turn, the input for other functions of the detectRUNS package
-that create plots and produce statistics from the results
-(see plots and statistics functions in this manual,
-and/or refer to the detectRUNS vignette).
+This function is deprecated. Use \code{\link{scanRUNS}} instead.
 }
 \examples{
 # getting map and ped paths
 genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-# calculating runs with sliding window approach
 \dontrun{
-# skipping runs calculation
 runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
 minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
 minLengthBps = 100000,  minDensity = 1/10000)
 }
-# loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,
-colClasses = colClasses)
+colClasses <- c(rep("character", 3), rep("numeric", 4))
+runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE, colClasses = colClasses)
 
 }

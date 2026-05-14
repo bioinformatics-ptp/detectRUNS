@@ -1,0 +1,120 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: Innovagen_HD
+
+Per-scan mode: Innovagen_HD | ROHom | sliding | lenient
+
+
+ ====================================================================== 
+  DATASET: Innovagen_HD | bovine 
+====================================================================== 
+BED: Ext_Data/Innovagen_HD.bed 
+
+[21:58:08] --- Innovagen_HD | ROHom | sliding | lenient ---
+  scanRUNS: 4.9 s  |  RSS: 1034 MB (delta +868 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 1009  (1 group)
+  Runs     : 4418022  across 30 chromosomes
+  Length   : mean 322938 bp  |  total 1426745.79 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 21:58:13 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_lenient.roh  (scan: 4.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 34 regions
+  tableRuns 25%: 2654 regions
+  tableRuns 50%: 9731 regions
+  tableRuns 75%: 2859 regions
+  tableRuns 90%: 879 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.5316  min=0.2957  max=0.6161
+  Froh OK
+  Plots...
+  Plots OK
+  runsIslands (p95, n_perm=100)...
+  Chromosome 1/32 (index 0, 2078 SNPs): running 100 permutations ... done (threshold = 0.0)
+  Chromosome 2/32 (index 1, 46495 SNPs): running 100 permutations ... done (threshold = 851.0)
+  Chromosome 3/32 (index 2, 40056 SNPs): running 100 permutations ... done (threshold = 855.0)
+  Chromosome 4/32 (index 3, 35579 SNPs): running 100 permutations ... done (threshold = 807.0)
+  Chromosome 5/32 (index 4, 34980 SNPs): running 100 permutations ... done (threshold = 832.0)
+  Chromosome 6/32 (index 5, 34842 SNPs): running 100 permutations ... done (threshold = 855.0)
+  Chromosome 7/32 (index 6, 35519 SNPs): running 100 permutations ... done (threshold = 784.0)
+  Chromosome 8/32 (index 7, 33168 SNPs): running 100 permutations ... done (threshold = 861.0)
+  Chromosome 9/32 (index 8, 33529 SNPs): running 100 permutations ... done (threshold = 917.0)
+  Chromosome 10/32 (index 9, 31060 SNPs): running 100 permutations ... done (threshold = 813.0)
+  Chromosome 11/32 (index 10, 30449 SNPs): running 100 permutations ... done (threshold = 837.0)
+  Chromosome 12/32 (index 11, 32015 SNPs): running 100 permutations ... done (threshold = 804.0)
+  Chromosome 13/32 (index 12, 26127 SNPs): running 100 permutations ... done (threshold = 801.0)
+  Chromosome 14/32 (index 13, 23594 SNPs): running 100 permutations ... done (threshold = 947.0)
+  Chromosome 15/32 (index 14, 24780 SNPs): running 100 permutations ... done (threshold = 947.0)
+  Chromosome 16/32 (index 15, 24755 SNPs): running 100 permutations ... done (threshold = 746.0)
+  Chromosome 17/32 (index 16, 24178 SNPs): running 100 permutations ... done (threshold = 897.0)
+  Chromosome 18/32 (index 17, 22266 SNPs): running 100 permutations ... done (threshold = 752.0)
+  Chromosome 19/32 (index 18, 19386 SNPs): running 100 permutations ... done (threshold = 741.0)
+  Chromosome 20/32 (index 19, 18908 SNPs): running 100 permutations ... done (threshold = 797.0)
+  Chromosome 21/32 (index 20, 21490 SNPs): running 100 permutations ... done (threshold = 830.0)
+  Chromosome 22/32 (index 21, 21175 SNPs): running 100 permutations ... done (threshold = 846.0)
+  Chromosome 23/32 (index 22, 18034 SNPs): running 100 permutations ... done (threshold = 752.0)
+  Chromosome 24/32 (index 23, 15215 SNPs): running 100 permutations ... done (threshold = 741.0)
+  Chromosome 25/32 (index 24, 18620 SNPs): running 100 permutations ... done (threshold = 851.0)
+  Chromosome 26/32 (index 25, 12931 SNPs): running 100 permutations ... done (threshold = 694.0)
+  Chromosome 27/32 (index 26, 15242 SNPs): running 100 permutations ... done (threshold = 768.0)
+  Chromosome 28/32 (index 27, 13152 SNPs): running 100 permutations ... done (threshold = 704.0)
+  Chromosome 29/32 (index 28, 13038 SNPs): running 100 permutations ... done (threshold = 714.0)
+  Chromosome 30/32 (index 29, 14710 SNPs): running 100 permutations ... done (threshold = 746.0)
+  Chromosome 31/32 (index 30, 39367 SNPs): running 100 permutations ... done (threshold = 1008.0)
+  Chromosome 32/32 (index 31, 1224 SNPs): running 100 permutations ... done (threshold = 0.0)
+  Islands (p95): 36871 SNPs across 30 chr
+  runsIslands (p99, n_perm=100)...
+  Chromosome 1/32 (index 0, 2078 SNPs): running 100 permutations ... done (threshold = 0.0)
+  Chromosome 2/32 (index 1, 46495 SNPs): running 100 permutations ... done (threshold = 965.0)
+  Chromosome 3/32 (index 2, 40056 SNPs): running 100 permutations ... done (threshold = 991.0)
+  Chromosome 4/32 (index 3, 35579 SNPs): running 100 permutations ... done (threshold = 953.0)
+  Chromosome 5/32 (index 4, 34980 SNPs): running 100 permutations ... done (threshold = 994.0)
+  Chromosome 6/32 (index 5, 34842 SNPs): running 100 permutations ... done (threshold = 967.0)
+  Chromosome 7/32 (index 6, 35519 SNPs): running 100 permutations ... done (threshold = 964.0)
+  Chromosome 8/32 (index 7, 33168 SNPs): running 100 permutations ... done (threshold = 983.0)
+  Chromosome 9/32 (index 8, 33529 SNPs): running 100 permutations ... done (threshold = 1005.0)
+  Chromosome 10/32 (index 9, 31060 SNPs): running 100 permutations ... done (threshold = 955.0)
+  Chromosome 11/32 (index 10, 30449 SNPs): running 100 permutations ... done (threshold = 989.0)
+  Chromosome 12/32 (index 11, 32015 SNPs): running 100 permutations ... done (threshold = 943.0)
+  Chromosome 13/32 (index 12, 26127 SNPs): running 100 permutations ... done (threshold = 947.0)
+  Chromosome 14/32 (index 13, 23594 SNPs): running 100 permutations ... done (threshold = 1007.0)
+  Chromosome 15/32 (index 14, 24780 SNPs): running 100 permutations ... done (threshold = 1008.0)
+  Chromosome 16/32 (index 15, 24755 SNPs): running 100 permutations ... done (threshold = 934.0)
+  Chromosome 17/32 (index 16, 24178 SNPs): running 100 permutations ... done (threshold = 1007.0)
+  Chromosome 18/32 (index 17, 22266 SNPs): running 100 permutations ... done (threshold = 924.0)
+  Chromosome 19/32 (index 18, 19386 SNPs): running 100 permutations ... done (threshold = 970.0)
+  Chromosome 20/32 (index 19, 18908 SNPs): running 100 permutations ... done (threshold = 950.0)
+  Chromosome 21/32 (index 20, 21490 SNPs): running 100 permutations ... done (threshold = 967.0)
+  Chromosome 22/32 (index 21, 21175 SNPs): running 100 permutations ... done (threshold = 987.0)
+  Chromosome 23/32 (index 22, 18034 SNPs): running 100 permutations ... done (threshold = 932.0)
+  Chromosome 24/32 (index 23, 15215 SNPs): running 100 permutations ... done (threshold = 899.0)
+  Chromosome 25/32 (index 24, 18620 SNPs): running 100 permutations ... done (threshold = 963.0)
+  Chromosome 26/32 (index 25, 12931 SNPs): running 100 permutations ... done (threshold = 841.0)
+  Chromosome 27/32 (index 26, 15242 SNPs): running 100 permutations ... done (threshold = 923.0)
+  Chromosome 28/32 (index 27, 13152 SNPs): running 100 permutations ... done (threshold = 814.0)
+  Chromosome 29/32 (index 28, 13038 SNPs): running 100 permutations ... done (threshold = 874.0)
+  Chromosome 30/32 (index 29, 14710 SNPs): running 100 permutations ... done (threshold = 917.0)
+  Chromosome 31/32 (index 30, 39367 SNPs): running 100 permutations ... done (threshold = 1009.0)
+  Chromosome 32/32 (index 31, 1224 SNPs): running 100 permutations ... done (threshold = 0.0)
+  Islands (p99): 7041 SNPs across 29 chr
+  reportRUNS...
+  Report: Innovagen_HD_ROHom_sliding_lenient.md 
+
+ ====================================================================== 
+  DONE: Innovagen_HD 
+====================================================================== 
+Total elapsed: 11.1 minutes
+
+  Summaries saved to: Ext_Data/results/Innovagen_HD
+Sanity checks: 7 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+      dataset  type  method  params  n_runs scan_s total_s peak_mem_mb status
+ Innovagen_HD ROHom sliding lenient 4418022    4.9   664.5      6702.6     OK
+
+Done at 2026-05-26 22:09:13

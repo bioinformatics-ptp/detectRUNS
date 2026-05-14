@@ -4,7 +4,7 @@
 \alias{Froh_inbreedingClass}
 \title{Function to calculated Froh using a ROH-class}
 \usage{
-Froh_inbreedingClass(runs, mapFile, Class = 2)
+Froh_inbreedingClass(runs, mapFile = NULL, Class = 2)
 }
 \arguments{
 \item{runs}{R object (dataframe) with ROH results}

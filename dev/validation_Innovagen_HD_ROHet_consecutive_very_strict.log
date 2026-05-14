@@ -1,0 +1,38 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: Innovagen_HD
+
+Per-scan mode: Innovagen_HD | ROHet | consecutive | very_strict
+
+
+ ====================================================================== 
+  DATASET: Innovagen_HD | bovine 
+====================================================================== 
+BED: Ext_Data/Innovagen_HD.bed 
+
+[22:49:21] --- Innovagen_HD | ROHet | consecutive | very_strict ---
+  scanRUNS: 2.7 s  |  RSS: 402 MB (delta +236 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 1009  (1 group)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 22:49:24 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_strict.roh  (scan: 2.7 s)
+  No runs detected — skipping downstream.
+
+ ====================================================================== 
+  DONE: Innovagen_HD 
+====================================================================== 
+Total elapsed: 0.1 minutes
+
+  Summaries saved to: Ext_Data/results/Innovagen_HD
+Sanity checks: 3 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+      dataset  type      method      params n_runs scan_s total_s peak_mem_mb
+ Innovagen_HD ROHet consecutive very_strict      0    2.7     2.7         402
+  status
+ NO_RUNS
+
+Done at 2026-05-26 22:49:25

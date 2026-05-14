@@ -5,14 +5,14 @@
 \title{Function to count number of times a SNP is in a RUN. Need to be called per
 chromosome (not using a dataframe with all results on all chromosomes)}
 \usage{
-snpInsideRuns(runsChrom, mapChrom, genotypeFile)
+snpInsideRuns(runsChrom, mapChrom, sample_info)
 }
 \arguments{
 \item{runsChrom}{R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")}
 
-\item{mapChrom}{R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","x","POSITION")}
+\item{mapChrom}{R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","POSITION")}
 
-\item{genotypeFile}{genotype (.ped) file location}
+\item{sample_info}{data.frame with columns group and id (one row per individual)}
 }
 \value{
 dataframe with counts per SNP in runs (per population)

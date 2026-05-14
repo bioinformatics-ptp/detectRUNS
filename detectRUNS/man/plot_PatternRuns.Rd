@@ -6,7 +6,7 @@
 \usage{
 plot_PatternRuns(
   runs,
-  mapFile,
+  mapFile = NULL,
   method = c("sum", "mean"),
   outputName = NULL,
   savePlots = FALSE,

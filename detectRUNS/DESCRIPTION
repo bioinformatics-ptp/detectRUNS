@@ -2,37 +2,35 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
-Version: 0.9.7
-Date: 2026-06-02
+Version: 1.0.0
+Date: 2026-05-13
 Authors@R: c(
-    person("Filippo","Biscarini", email="filippo.biscarini@gmail.com", role=c("aut", "cre")),
-    person("Paolo","Cozzi", email="paolo.cozzi@ibba.cnr.it", role="aut"),
-    person("Giustino","Gaspa", email="gigaspa@uniss.it", role="aut"),
-    person("Gabriele","Marras", email="gmarras@uoguelph.ca", role="aut")
+    person("Filippo",  "Biscarini", email="filippo.biscarini@gmail.com",    role=c("aut","cre")),
+    person("Paolo",    "Cozzi",     email="paolo.cozzi@ptp.it",             role="aut"),
+    person("Giustino", "Gaspa",     email="gigaspa@uniss.it",               role="aut"),
+    person("Gabriele", "Marras",    email="gabriele.marras85@gmail.com",    role="aut")
   )
+Author: Filippo Biscarini [aut, cre], Paolo Cozzi [aut], Giustino Gaspa [aut], Gabriele Marras [aut]
+Maintainer: Filippo Biscarini <filippo.biscarini@gmail.com>
 Description: Detection of runs of homozygosity and of heterozygosity
     in diploid genomes using two methods: sliding windows (Purcell et al (2007)
     <doi:10.1086/519795>) and consecutive runs (Marras et al (2015)
     <doi:10.1111/age.12259>).
 Depends:
-    R (>= 3.0.0)
+    R (>= 4.1.0)
 License: GPL-3
 LazyData: TRUE
 Encoding: UTF-8
 Imports:
-    plyr,
-    iterators,
-    itertools,
     ggplot2,
-    reshape2,
     Rcpp,
     gridExtra,
     data.table
 Suggests:
     testthat,
     knitr,
-    rmarkdown,
-    prettydoc
+    rmarkdown
+SystemRequirements: OpenMP (optional)
 LinkingTo: Rcpp
 VignetteBuilder: knitr
 URL: https://github.com/bioinformatics-ptp/detectRUNS/tree/master/detectRUNS

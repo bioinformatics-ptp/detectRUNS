@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>detectRUNS CPU Benchmark</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; margin: 30px; background: #f9f9f9; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  p.sub { color: #555; margin-top: 2px; margin-bottom: 20px; }
+  table { border-collapse: collapse; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  th, td { border: 1px solid #ddd; padding: 7px 12px; text-align: left; }
+  th { background: #2c3e50; color: #fff; font-size: 12px; }
+  tr:hover td { background: #f0f4f8; }
+  .ds-header td { background: #ecf0f1; font-weight: bold; font-size: 13px; padding: 6px 10px; }
+  .runs { color: #27ae60; font-weight: bold; }
+  .spd  { color: #e74c3c; font-weight: bold; }
+  td:nth-child(4), td:nth-child(5), td:nth-child(6) { text-align: right; font-family: monospace; }
+  .note { margin-top: 16px; font-size: 11px; color: #888; }
+</style>
+</head>
+<body>
+<h1>detectRUNS — CPU Scaling Benchmark (ROHom)</h1>
+<p class="sub">Generated: 2026-05-26 19:14:31 &nbsp;|&nbsp; scanRUNS() wall-clock time only, no downstream analysis</p>
+<table>
+<thead>
+  <tr>
+    <th>Method</th><th>Params</th><th>n_runs</th>
+    <th>1-CPU</th><th>10-CPU</th><th>14-CPU</th>
+    <th>Speedup (1→14)</th>
+  </tr>
+</thead>
+<tbody>
+<tr class="ds-header"><td colspan="8"><b>Innovagen_HD</b></td></tr>
+<tr><td>consecutive</td><td>very_lenient</td><td class="runs">10,774,610</td><td>10.44 s</td><td>4.56 s</td><td>4.81 s</td><td class="spd">2.2×</td></tr>
+<tr><td>consecutive</td><td>lenient</td><td class="runs">3,939,734</td><td>8.07 s</td><td>2.83 s</td><td>3.18 s</td><td class="spd">2.5×</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="runs">327,659</td><td>7.30 s</td><td>2.10 s</td><td>2.44 s</td><td class="spd">3.0×</td></tr>
+<tr><td>sliding</td><td>very_lenient</td><td class="runs">8,173,050</td><td>18.41 s</td><td>4.74 s</td><td>4.64 s</td><td class="spd">4.0×</td></tr>
+<tr><td>sliding</td><td>lenient</td><td class="runs">4,418,022</td><td>19.87 s</td><td>4.17 s</td><td>4.17 s</td><td class="spd">4.8×</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="runs">235,675</td><td>21.63 s</td><td>3.56 s</td><td>3.71 s</td><td class="spd">5.8×</td></tr>
+<tr class="ds-header"><td colspan="8"><b>SELMOL</b></td></tr>
+<tr><td>consecutive</td><td>very_lenient</td><td class="runs">11,815,142</td><td>4.34 s</td><td>2.83 s</td><td>2.85 s</td><td class="spd">1.5×</td></tr>
+<tr><td>consecutive</td><td>lenient</td><td class="runs">5,529,992</td><td>2.36 s</td><td>1.37 s</td><td>1.37 s</td><td class="spd">1.7×</td></tr>
+<tr><td>consecutive</td><td>strict</td><td class="runs">495,263</td><td>1.23 s</td><td>0.35 s</td><td>0.36 s</td><td class="spd">3.4×</td></tr>
+<tr><td>sliding</td><td>very_lenient</td><td class="runs">3,697,816</td><td>4.34 s</td><td>1.22 s</td><td>1.19 s</td><td class="spd">3.6×</td></tr>
+<tr><td>sliding</td><td>lenient</td><td class="runs">2,233,044</td><td>4.19 s</td><td>0.92 s</td><td>0.92 s</td><td class="spd">4.6×</td></tr>
+<tr><td>sliding</td><td>strict</td><td class="runs">541,227</td><td>4.38 s</td><td>0.66 s</td><td>0.63 s</td><td class="spd">7.0×</td></tr>
+</tbody>
+</table>
+<p class="note">
+  Datasets: SELMOL (4,095 animals, 44K SNPs, 5 breeds) &nbsp;|&nbsp;
+  Innovagen_HD (1,009 animals, 777K SNPs, 1 breed)<br>
+  n_runs shown is from the 1-CPU run (identical across thread counts if algorithm is deterministic).
+</p>
+</body>
+</html>

@@ -1,0 +1,52 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: SELMOL
+
+Per-scan mode: SELMOL | ROHom | consecutive | lenient
+
+
+ ====================================================================== 
+  DATASET: SELMOL | cattle 
+====================================================================== 
+BED: Ext_Data/SELMOL_codACGT.bed 
+
+[21:32:09] --- SELMOL | ROHom | consecutive | lenient ---
+  scanRUNS: 1.9 s  |  RSS: 1118 MB (delta +952 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 5529992  across 29 chromosomes
+  Length   : mean 894365 bp  |  total 4945832.09 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp
+  Scanned  : 2026-05-26 21:32:11 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_lenient.roh  (scan: 1.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 150 regions
+  tableRuns 25%: 254 regions
+  tableRuns 50%: 13076 regions
+  tableRuns 75%: 2977 regions
+  tableRuns 90%: 291 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.4821  min=0.3814  max=0.6367
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_consecutive_lenient.md 
+
+ ====================================================================== 
+  DONE: SELMOL 
+====================================================================== 
+Total elapsed: 2.9 minutes
+
+  Summaries saved to: Ext_Data/results/SELMOL
+Sanity checks: 5 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type      method  params  n_runs scan_s total_s peak_mem_mb status
+  SELMOL ROHom consecutive lenient 5529992    1.9   173.8      8364.3     OK
+
+Done at 2026-05-26 21:35:04
