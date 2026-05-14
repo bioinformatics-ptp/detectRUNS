@@ -1,0 +1,116 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: ADAPTmap
+
+Per-scan mode: ADAPTmap | ROHom | sliding | lenient
+
+
+ ====================================================================== 
+  DATASET: ADAPTmap | goat 
+====================================================================== 
+BED: Ext_Data/ADAPTmap_genotypeTOP_20161201.bed 
+
+[22:55:23] --- ADAPTmap | ROHom | sliding | lenient ---
+  scanRUNS: 1.3 s  |  RSS: 588 MB (delta +422 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 2034641  across 31 chromosomes
+  Length   : mean 1472521 bp  |  total 2996051.47 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 22:55:24 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_lenient.roh  (scan: 1.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 88681 regions
+  tableRuns 25%: 139792 regions
+  tableRuns 50%: 56149 regions
+  tableRuns 75%: 16655 regions
+  tableRuns 90%: 8656 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.2437  min=0.0000  max=0.8490
+  Froh OK
+  Plots...
+  Plots OK
+  runsIslands (p95, n_perm=100)...
+  Chromosome 1/31 (index 0, 809 SNPs): running 100 permutations ... done (threshold = 1838.0)
+  Chromosome 2/31 (index 1, 3271 SNPs): running 100 permutations ... done (threshold = 1578.0)
+  Chromosome 3/31 (index 2, 2832 SNPs): running 100 permutations ... done (threshold = 1488.0)
+  Chromosome 4/31 (index 3, 2437 SNPs): running 100 permutations ... done (threshold = 1641.0)
+  Chromosome 5/31 (index 4, 2484 SNPs): running 100 permutations ... done (threshold = 1607.0)
+  Chromosome 6/31 (index 5, 2287 SNPs): running 100 permutations ... done (threshold = 1561.0)
+  Chromosome 7/31 (index 6, 2487 SNPs): running 100 permutations ... done (threshold = 1855.0)
+  Chromosome 8/31 (index 7, 2223 SNPs): running 100 permutations ... done (threshold = 1744.0)
+  Chromosome 9/31 (index 8, 2350 SNPs): running 100 permutations ... done (threshold = 1618.0)
+  Chromosome 10/31 (index 9, 1902 SNPs): running 100 permutations ... done (threshold = 1398.0)
+  Chromosome 11/31 (index 10, 2118 SNPs): running 100 permutations ... done (threshold = 1606.0)
+  Chromosome 12/31 (index 11, 2148 SNPs): running 100 permutations ... done (threshold = 1682.0)
+  Chromosome 13/31 (index 12, 1802 SNPs): running 100 permutations ... done (threshold = 1976.0)
+  Chromosome 14/31 (index 13, 1672 SNPs): running 100 permutations ... done (threshold = 1735.0)
+  Chromosome 15/31 (index 14, 1941 SNPs): running 100 permutations ... done (threshold = 1661.0)
+  Chromosome 16/31 (index 15, 1686 SNPs): running 100 permutations ... done (threshold = 1602.0)
+  Chromosome 17/31 (index 16, 1609 SNPs): running 100 permutations ... done (threshold = 1569.0)
+  Chromosome 18/31 (index 17, 1448 SNPs): running 100 permutations ... done (threshold = 1657.0)
+  Chromosome 19/31 (index 18, 1392 SNPs): running 100 permutations ... done (threshold = 1994.0)
+  Chromosome 20/31 (index 19, 1236 SNPs): running 100 permutations ... done (threshold = 1666.0)
+  Chromosome 21/31 (index 20, 1497 SNPs): running 100 permutations ... done (threshold = 1503.0)
+  Chromosome 22/31 (index 21, 1478 SNPs): running 100 permutations ... done (threshold = 1599.0)
+  Chromosome 23/31 (index 22, 1171 SNPs): running 100 permutations ... done (threshold = 1623.0)
+  Chromosome 24/31 (index 23, 1038 SNPs): running 100 permutations ... done (threshold = 1695.0)
+  Chromosome 25/31 (index 24, 1328 SNPs): running 100 permutations ... done (threshold = 1618.0)
+  Chromosome 26/31 (index 25, 888 SNPs): running 100 permutations ... done (threshold = 1581.0)
+  Chromosome 27/31 (index 26, 1060 SNPs): running 100 permutations ... done (threshold = 1576.0)
+  Chromosome 28/31 (index 27, 934 SNPs): running 100 permutations ... done (threshold = 1638.0)
+  Chromosome 29/31 (index 28, 931 SNPs): running 100 permutations ... done (threshold = 1425.0)
+  Chromosome 30/31 (index 29, 1018 SNPs): running 100 permutations ... done (threshold = 1657.0)
+  Chromosome 31/31 (index 30, 1870 SNPs): running 100 permutations ... done (threshold = 3187.0)
+  Islands (p95): 2643 SNPs across 31 chr
+  runsIslands (p99, n_perm=100)...
+  Chromosome 1/31 (index 0, 809 SNPs): running 100 permutations ... done (threshold = 2540.0)
+  Chromosome 2/31 (index 1, 3271 SNPs): running 100 permutations ... done (threshold = 1868.0)
+  Chromosome 3/31 (index 2, 2832 SNPs): running 100 permutations ... done (threshold = 1722.0)
+  Chromosome 4/31 (index 3, 2437 SNPs): running 100 permutations ... done (threshold = 1919.0)
+  Chromosome 5/31 (index 4, 2484 SNPs): running 100 permutations ... done (threshold = 1902.0)
+  Chromosome 6/31 (index 5, 2287 SNPs): running 100 permutations ... done (threshold = 1804.0)
+  Chromosome 7/31 (index 6, 2487 SNPs): running 100 permutations ... done (threshold = 2359.0)
+  Chromosome 8/31 (index 7, 2223 SNPs): running 100 permutations ... done (threshold = 1991.0)
+  Chromosome 9/31 (index 8, 2350 SNPs): running 100 permutations ... done (threshold = 1972.0)
+  Chromosome 10/31 (index 9, 1902 SNPs): running 100 permutations ... done (threshold = 1633.0)
+  Chromosome 11/31 (index 10, 2118 SNPs): running 100 permutations ... done (threshold = 1775.0)
+  Chromosome 12/31 (index 11, 2148 SNPs): running 100 permutations ... done (threshold = 1991.0)
+  Chromosome 13/31 (index 12, 1802 SNPs): running 100 permutations ... done (threshold = 2778.0)
+  Chromosome 14/31 (index 13, 1672 SNPs): running 100 permutations ... done (threshold = 2883.0)
+  Chromosome 15/31 (index 14, 1941 SNPs): running 100 permutations ... done (threshold = 2095.0)
+  Chromosome 16/31 (index 15, 1686 SNPs): running 100 permutations ... done (threshold = 1886.0)
+  Chromosome 17/31 (index 16, 1609 SNPs): running 100 permutations ... done (threshold = 1773.0)
+  Chromosome 18/31 (index 17, 1448 SNPs): running 100 permutations ... done (threshold = 1860.0)
+  Chromosome 19/31 (index 18, 1392 SNPs): running 100 permutations ... done (threshold = 2665.0)
+  Chromosome 20/31 (index 19, 1236 SNPs): running 100 permutations ... done (threshold = 2108.0)
+  Chromosome 21/31 (index 20, 1497 SNPs): running 100 permutations ... done (threshold = 1730.0)
+  Chromosome 22/31 (index 21, 1478 SNPs): running 100 permutations ... done (threshold = 2140.0)
+  Chromosome 23/31 (index 22, 1171 SNPs): running 100 permutations ... done (threshold = 2115.0)
+  Chromosome 24/31 (index 23, 1038 SNPs): running 100 permutations ... done (threshold = 1862.0)
+  Chromosome 25/31 (index 24, 1328 SNPs): running 100 permutations ... done (threshold = 1836.0)
+  Chromosome 26/31 (index 25, 888 SNPs): running 100 permutations ... done (threshold = 1903.0)
+  Chromosome 27/31 (index 26, 1060 SNPs): running 100 permutations ... done (threshold = 1784.0)
+  Chromosome 28/31 (index 27, 934 SNPs): running 100 permutations ... done (threshold = 1885.0)
+  Chromosome 29/31 (index 28, 931 SNPs): running 100 permutations ... done (threshold = 1502.0)
+  Chromosome 30/31 (index 29, 1018 SNPs): running 100 permutations ... done (threshold = 1796.0)
+  Chromosome 31/31 (index 30, 1870 SNPs): running 100 permutations ... done (threshold = 3409.0)
+  Islands (p99): 520 SNPs across 31 chr
+
+ ====================================================================== 
+  DONE: ADAPTmap 
+====================================================================== 
+Total elapsed: 5.5 minutes
+
+  Summaries saved to: Ext_Data/results/ADAPTmap
+Sanity checks: 7 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+  dataset  type  method  params  n_runs scan_s total_s peak_mem_mb status
+ ADAPTmap ROHom sliding lenient 2034641    1.3   329.9      3836.8     OK
+
+Done at 2026-05-26 23:00:53

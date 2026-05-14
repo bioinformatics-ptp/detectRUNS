@@ -1,0 +1,50 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: ADAPTmap
+
+Per-scan mode: ADAPTmap | ROHom | sliding | strict
+
+
+ ====================================================================== 
+  DATASET: ADAPTmap | goat 
+====================================================================== 
+BED: Ext_Data/ADAPTmap_genotypeTOP_20161201.bed 
+
+[23:00:53] --- ADAPTmap | ROHom | sliding | strict ---
+  scanRUNS: 0.9 s  |  RSS: 267 MB (delta +101 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 474377  across 31 chromosomes
+  Length   : mean 2776286 bp  |  total 1317006.34 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 23:00:54 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_strict.roh  (scan: 0.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 48495 regions
+  tableRuns 25%: 25855 regions
+  tableRuns 50%: 7385 regions
+  tableRuns 75%: 2809 regions
+  tableRuns 90%: 2116 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.1071  min=0.0000  max=0.7741
+  Froh OK
+  Plots...
+  Plots OK
+
+ ====================================================================== 
+  DONE: ADAPTmap 
+====================================================================== 
+Total elapsed: 2.8 minutes
+
+  Summaries saved to: Ext_Data/results/ADAPTmap
+Sanity checks: 5 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+  dataset  type  method params n_runs scan_s total_s peak_mem_mb status
+ ADAPTmap ROHom sliding strict 474377    0.9   167.1      2132.3     OK
+
+Done at 2026-05-26 23:03:41

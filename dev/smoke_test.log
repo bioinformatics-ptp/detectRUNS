@@ -1,0 +1,40 @@
+
+[22:49:41]  SMOKE TEST — all Ext_Data datasets (max 14 cores)
+================================================================================ 
+
+[22:49:41]  SELMOL  (44191 SNPs | 4095 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding    1,274,826      19.3      18.6      18.4       457
+  default   consecutive   1,162,765       3.0       3.0       3.0       494
+  strict    sliding      156,693      21.9      22.0      22.0       150
+  strict    consecutive     135,774       2.8       2.8       2.8       303
+
+[22:52:01]  ADAPTmap  (53347 SNPs | 4653 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding    1,027,255      31.1      30.5      30.6       290
+  default   consecutive   1,031,555       4.2       4.1       4.1       447
+  strict    sliding      283,722      37.3      37.1      37.1       162
+  strict    consecutive     318,302       4.0       4.0       4.0       293
+
+[22:55:51]  suini_12  (54089 SNPs | 1208 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding      536,964       6.5       6.2       6.2       284
+  default   consecutive     642,569       1.2       1.2       1.2       324
+  strict    sliding      201,582       7.2       7.2       7.2       225
+  strict    consecutive     222,344       1.1       1.1       1.1       293
+
+[22:56:40]  Innovagen_HD  (777962 SNPs | 1009 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding      243,880      66.8      64.9      64.4       473
+  default   consecutive     329,866      15.3      12.1      12.2       448
+  strict    sliding       86,784      77.4      77.1      77.7       371
+  strict    consecutive     153,617      12.0      12.4      12.2       389
+
+[23:05:06]  DONE
+Machine: 14 physical cores
+
+Results saved to dev/smoke_test_results.csv

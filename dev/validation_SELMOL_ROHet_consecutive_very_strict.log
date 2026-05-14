@@ -1,0 +1,38 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: SELMOL
+
+Per-scan mode: SELMOL | ROHet | consecutive | very_strict
+
+
+ ====================================================================== 
+  DATASET: SELMOL | cattle 
+====================================================================== 
+BED: Ext_Data/SELMOL_codACGT.bed 
+
+[21:44:35] --- SELMOL | ROHet | consecutive | very_strict ---
+  scanRUNS: 0.3 s  |  RSS: 186 MB (delta +20 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 21:44:35 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_strict.roh  (scan: 0.3 s)
+  No runs detected — skipping downstream.
+
+ ====================================================================== 
+  DONE: SELMOL 
+====================================================================== 
+Total elapsed: 0.0 minutes
+
+  Summaries saved to: Ext_Data/results/SELMOL
+Sanity checks: 3 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type      method      params n_runs scan_s total_s peak_mem_mb
+  SELMOL ROHet consecutive very_strict      0    0.3     0.3       186.1
+  status
+ NO_RUNS
+
+Done at 2026-05-26 21:44:35

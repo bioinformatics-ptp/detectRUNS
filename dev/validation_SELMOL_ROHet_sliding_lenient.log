@@ -1,0 +1,68 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: SELMOL
+
+Per-scan mode: SELMOL | ROHet | sliding | lenient
+
+
+ ====================================================================== 
+  DATASET: SELMOL | cattle 
+====================================================================== 
+BED: Ext_Data/SELMOL_codACGT.bed 
+
+[21:37:23] --- SELMOL | ROHet | sliding | lenient ---
+  scanRUNS: 0.5 s  |  RSS: 196 MB (delta +30 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 54918  across 29 chromosomes
+  Length   : mean 867885 bp  |  total 47662.52 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 21:37:23 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_lenient.roh  (scan: 0.5 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 79 regions
+  tableRuns 25%: 4 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0046  min=0.0003  max=0.0114
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_sliding_lenient.md 
+Warning messages:
+1: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+2: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+3: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+4: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+5: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+6: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+7: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+8: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+9: Removed 1 row containing missing values or values outside the scale range
+(`geom_hline()`). 
+
+ ====================================================================== 
+  DONE: SELMOL 
+====================================================================== 
+Total elapsed: 0.3 minutes
+
+  Summaries saved to: Ext_Data/results/SELMOL
+Sanity checks: 5 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type  method  params n_runs scan_s total_s peak_mem_mb status
+  SELMOL ROHet sliding lenient  54918    0.5    15.6       531.1     OK
+
+Done at 2026-05-26 21:37:38

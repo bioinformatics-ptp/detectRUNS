@@ -6,7 +6,7 @@
 \usage{
 plot_InbreedingChr(
   runs,
-  mapFile,
+  mapFile = NULL,
   groupSplit = TRUE,
   style = c("ChrBarPlot", "ChrBoxPlot", "FrohBoxPlot", "All"),
   outputName = NULL,

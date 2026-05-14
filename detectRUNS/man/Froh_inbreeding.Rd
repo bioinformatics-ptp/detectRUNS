@@ -4,7 +4,7 @@
 \alias{Froh_inbreeding}
 \title{Function to calculated Froh genome-wide or chromosome-wide}
 \usage{
-Froh_inbreeding(runs, mapFile, genome_wide = TRUE)
+Froh_inbreeding(runs, mapFile = NULL, genome_wide = TRUE)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on runs}

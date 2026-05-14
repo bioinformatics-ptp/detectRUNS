@@ -1,0 +1,182 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+
+ ====================================================================== 
+  DATASET: ADAPTmap | goat 
+====================================================================== 
+BED: Ext_Data/ADAPTmap_genotypeTOP_20161201.bed 
+
+[07:37:44] --- ADAPTmap | ROHom | sliding | very_lenient ---
+  scanRUNS: 25.3 s  |  RSS: 1058 MB (delta +892 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 5505023  across 31 chromosomes
+  Length   : mean 1556083 bp  |  total 8566273.02 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp | win=10 | thr=0.100
+  Scanned  : 2026-05-26 07:38:10 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_lenient.roh  (scan: 25.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 11895 regions
+  tableRuns 25%: 18259 regions
+  tableRuns 50%: 107672 regions
+  tableRuns 75%: 322517 regions
+  tableRuns 90%: 206305 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.6968  min=0.0042  max=0.9353
+  Froh OK
+  Plots...
+  Plots OK
+
+[07:44:13] --- ADAPTmap | ROHom | sliding | lenient ---
+  scanRUNS: 31.5 s  |  RSS: 5579 MB (delta +-1014 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 2034641  across 31 chromosomes
+  Length   : mean 1472521 bp  |  total 2996051.47 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 07:44:45 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_lenient.roh  (scan: 31.5 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 88681 regions
+  tableRuns 25%: 139792 regions
+  tableRuns 50%: 56149 regions
+  tableRuns 75%: 16655 regions
+  tableRuns 90%: 8656 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  runsIslands (p95, n_perm=100)...
+  Chromosome 1/31 (index 0, 809 SNPs): running 100 permutations ... done (threshold = 1838.0)
+  Chromosome 2/31 (index 1, 3271 SNPs): running 100 permutations ... done (threshold = 1578.0)
+  Chromosome 3/31 (index 2, 2832 SNPs): running 100 permutations ... done (threshold = 1488.0)
+  Chromosome 4/31 (index 3, 2437 SNPs): running 100 permutations ... done (threshold = 1641.0)
+  Chromosome 5/31 (index 4, 2484 SNPs): running 100 permutations ... done (threshold = 1607.0)
+  Chromosome 6/31 (index 5, 2287 SNPs): running 100 permutations ... done (threshold = 1561.0)
+  Chromosome 7/31 (index 6, 2487 SNPs): running 100 permutations ... done (threshold = 1855.0)
+  Chromosome 8/31 (index 7, 2223 SNPs): running 100 permutations ... done (threshold = 1744.0)
+  Chromosome 9/31 (index 8, 2350 SNPs): running 100 permutations ... done (threshold = 1618.0)
+  Chromosome 10/31 (index 9, 1902 SNPs): running 100 permutations ... done (threshold = 1398.0)
+  Chromosome 11/31 (index 10, 2118 SNPs): running 100 permutations ... done (threshold = 1606.0)
+  Chromosome 12/31 (index 11, 2148 SNPs): running 100 permutations ... done (threshold = 1682.0)
+  Chromosome 13/31 (index 12, 1802 SNPs): running 100 permutations ... done (threshold = 1976.0)
+  Chromosome 14/31 (index 13, 1672 SNPs): running 100 permutations ... done (threshold = 1735.0)
+  Chromosome 15/31 (index 14, 1941 SNPs): running 100 permutations ... done (threshold = 1661.0)
+  Chromosome 16/31 (index 15, 1686 SNPs): running 100 permutations ... done (threshold = 1602.0)
+  Chromosome 17/31 (index 16, 1609 SNPs): running 100 permutations ... done (threshold = 1569.0)
+  Chromosome 18/31 (index 17, 1448 SNPs): running 100 permutations ... done (threshold = 1657.0)
+  Chromosome 19/31 (index 18, 1392 SNPs): running 100 permutations ... done (threshold = 1994.0)
+  Chromosome 20/31 (index 19, 1236 SNPs): running 100 permutations ... done (threshold = 1666.0)
+  Chromosome 21/31 (index 20, 1497 SNPs): running 100 permutations ... done (threshold = 1503.0)
+  Chromosome 22/31 (index 21, 1478 SNPs): running 100 permutations ... done (threshold = 1599.0)
+  Chromosome 23/31 (index 22, 1171 SNPs): running 100 permutations ... done (threshold = 1623.0)
+  Chromosome 24/31 (index 23, 1038 SNPs): running 100 permutations ... done (threshold = 1695.0)
+  Chromosome 25/31 (index 24, 1328 SNPs): running 100 permutations ... done (threshold = 1618.0)
+  Chromosome 26/31 (index 25, 888 SNPs): running 100 permutations ... done (threshold = 1581.0)
+  Chromosome 27/31 (index 26, 1060 SNPs): running 100 permutations ... done (threshold = 1576.0)
+  Chromosome 28/31 (index 27, 934 SNPs): running 100 permutations ... done (threshold = 1638.0)
+  Chromosome 29/31 (index 28, 931 SNPs): running 100 permutations ... done (threshold = 1425.0)
+  Chromosome 30/31 (index 29, 1018 SNPs): running 100 permutations ... done (threshold = 1657.0)
+  Chromosome 31/31 (index 30, 1870 SNPs): running 100 permutations ... done (threshold = 3187.0)
+  Islands (p95): 2643 SNPs across 31 chr
+  runsIslands (p99, n_perm=100)...
+  Chromosome 1/31 (index 0, 809 SNPs): running 100 permutations ... done (threshold = 2540.0)
+  Chromosome 2/31 (index 1, 3271 SNPs): running 100 permutations ... done (threshold = 1868.0)
+  Chromosome 3/31 (index 2, 2832 SNPs): running 100 permutations ... done (threshold = 1722.0)
+  Chromosome 4/31 (index 3, 2437 SNPs): running 100 permutations ... done (threshold = 1919.0)
+  Chromosome 5/31 (index 4, 2484 SNPs): running 100 permutations ... done (threshold = 1902.0)
+  Chromosome 6/31 (index 5, 2287 SNPs): running 100 permutations ... done (threshold = 1804.0)
+  Chromosome 7/31 (index 6, 2487 SNPs): running 100 permutations ... done (threshold = 2359.0)
+  Chromosome 8/31 (index 7, 2223 SNPs): running 100 permutations ... done (threshold = 1991.0)
+  Chromosome 9/31 (index 8, 2350 SNPs): running 100 permutations ... done (threshold = 1972.0)
+  Chromosome 10/31 (index 9, 1902 SNPs): running 100 permutations ... done (threshold = 1633.0)
+  Chromosome 11/31 (index 10, 2118 SNPs): running 100 permutations ... done (threshold = 1775.0)
+  Chromosome 12/31 (index 11, 2148 SNPs): running 100 permutations ... done (threshold = 1991.0)
+  Chromosome 13/31 (index 12, 1802 SNPs): running 100 permutations ... done (threshold = 2778.0)
+  Chromosome 14/31 (index 13, 1672 SNPs): running 100 permutations ... done (threshold = 2883.0)
+  Chromosome 15/31 (index 14, 1941 SNPs): running 100 permutations ... done (threshold = 2095.0)
+  Chromosome 16/31 (index 15, 1686 SNPs): running 100 permutations ... done (threshold = 1886.0)
+  Chromosome 17/31 (index 16, 1609 SNPs): running 100 permutations ... done (threshold = 1773.0)
+  Chromosome 18/31 (index 17, 1448 SNPs): running 100 permutations ... done (threshold = 1860.0)
+  Chromosome 19/31 (index 18, 1392 SNPs): running 100 permutations ... done (threshold = 2665.0)
+  Chromosome 20/31 (index 19, 1236 SNPs): running 100 permutations ... done (threshold = 2108.0)
+  Chromosome 21/31 (index 20, 1497 SNPs): running 100 permutations ... done (threshold = 1730.0)
+  Chromosome 22/31 (index 21, 1478 SNPs): running 100 permutations ... done (threshold = 2140.0)
+  Chromosome 23/31 (index 22, 1171 SNPs): running 100 permutations ... done (threshold = 2115.0)
+  Chromosome 24/31 (index 23, 1038 SNPs): running 100 permutations ... done (threshold = 1862.0)
+  Chromosome 25/31 (index 24, 1328 SNPs): running 100 permutations ... done (threshold = 1836.0)
+  Chromosome 26/31 (index 25, 888 SNPs): running 100 permutations ... done (threshold = 1903.0)
+  Chromosome 27/31 (index 26, 1060 SNPs): running 100 permutations ... done (threshold = 1784.0)
+  Chromosome 28/31 (index 27, 934 SNPs): running 100 permutations ... done (threshold = 1885.0)
+  Chromosome 29/31 (index 28, 931 SNPs): running 100 permutations ... done (threshold = 1502.0)
+  Chromosome 30/31 (index 29, 1018 SNPs): running 100 permutations ... done (threshold = 1796.0)
+  Chromosome 31/31 (index 30, 1870 SNPs): running 100 permutations ... done (threshold = 3409.0)
+  Islands (p99): 520 SNPs across 31 chr
+
+[07:50:24] --- ADAPTmap | ROHom | sliding | strict ---
+  scanRUNS: 37.5 s  |  RSS: 5888 MB (delta +35 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 474377  across 31 chromosomes
+  Length   : mean 2776286 bp  |  total 1317006.34 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 07:51:02 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_strict.roh  (scan: 37.5 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 48495 regions
+  tableRuns 25%: 25855 regions
+  tableRuns 50%: 7385 regions
+  tableRuns 75%: 2809 regions
+  tableRuns 90%: 2116 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+
+[07:53:46] --- ADAPTmap | ROHom | sliding | very_strict ---
+  scanRUNS: 43.4 s  |  RSS: 7134 MB (delta +-453 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 201735  across 31 chromosomes
+  Length   : mean 4380880 bp  |  total 883776.88 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp | win=25 | thr=0.050
+  Scanned  : 2026-05-26 07:54:30 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_strict.roh  (scan: 43.4 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 20298 regions
+  tableRuns 25%: 7963 regions
+  tableRuns 50%: 2002 regions
+  tableRuns 75%: 1270 regions
+  tableRuns 90%: 1047 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+
+[07:56:42] --- ADAPTmap | ROHom | consecutive | very_lenient ---
+  scanRUNS: 9.1 s  |  RSS: 11005 MB (delta +2804 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4653  (144 groups)
+  Runs     : 17588661  across 31 chromosomes
+  Length   : mean 519130 bp  |  total 9130799.17 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 07:56:51 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_lenient.roh  (scan: 9.1 s)
+  summaryRuns...

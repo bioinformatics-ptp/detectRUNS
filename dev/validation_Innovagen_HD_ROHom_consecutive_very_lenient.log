@@ -1,0 +1,54 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: Innovagen_HD
+
+Per-scan mode: Innovagen_HD | ROHom | consecutive | very_lenient
+
+
+ ====================================================================== 
+  DATASET: Innovagen_HD | bovine 
+====================================================================== 
+BED: Ext_Data/Innovagen_HD.bed 
+
+[22:11:00] --- Innovagen_HD | ROHom | consecutive | very_lenient ---
+  scanRUNS: 5.4 s  |  RSS: 2263 MB (delta +2096 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 1009  (1 group)
+  Runs     : 10774610  across 30 chromosomes
+  Length   : mean 159598 bp  |  total 1719605.07 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 22:11:06 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_lenient.roh  (scan: 5.4 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 35 regions
+  tableRuns 25%: 931 regions
+  tableRuns 50%: 17686 regions
+  tableRuns 75%: 13812 regions
+  tableRuns 90%: 8508 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.6407  min=0.4645  max=0.7042
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: Innovagen_HD_ROHom_consecutive_very_lenient.md 
+
+ ====================================================================== 
+  DONE: Innovagen_HD 
+====================================================================== 
+Total elapsed: 17.0 minutes
+
+  Summaries saved to: Ext_Data/results/Innovagen_HD
+Sanity checks: 5 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+      dataset  type      method       params   n_runs scan_s total_s
+ Innovagen_HD ROHom consecutive very_lenient 10774610    5.4  1018.9
+ peak_mem_mb status
+     13946.6     OK
+
+Done at 2026-05-26 22:27:59

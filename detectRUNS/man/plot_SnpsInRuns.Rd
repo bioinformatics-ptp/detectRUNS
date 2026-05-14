@@ -6,8 +6,8 @@
 \usage{
 plot_SnpsInRuns(
   runs,
-  genotypeFile,
-  mapFile,
+  genotypeFile = NULL,
+  mapFile = NULL,
   savePlots = FALSE,
   separatePlots = FALSE,
   outputName = NULL

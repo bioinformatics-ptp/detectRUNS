@@ -1,0 +1,49 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: SELMOL
+
+Per-scan mode: SELMOL | ROHet | consecutive | strict
+
+
+ ====================================================================== 
+  DATASET: SELMOL | cattle 
+====================================================================== 
+BED: Ext_Data/SELMOL_codACGT.bed 
+
+[21:44:26] --- SELMOL | ROHet | consecutive | strict ---
+  scanRUNS: 0.3 s  |  RSS: 186 MB (delta +20 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 969  across 22 chromosomes
+  Length   : mean 961445 bp  |  total 931.64 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp
+  Scanned  : 2026-05-26 21:44:26 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_strict.roh  (scan: 0.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  [FAIL] tableRuns_produced_output: no regions at any threshold 
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0001  min=0.0000  max=0.0015
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_consecutive_strict.md 
+There were 20 warnings (use warnings() to see them)
+
+ ====================================================================== 
+  DONE: SELMOL 
+====================================================================== 
+Total elapsed: 0.1 minutes
+
+  Summaries saved to: Ext_Data/results/SELMOL
+Sanity checks: 4 PASS  |  1 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type      method params n_runs scan_s total_s peak_mem_mb status
+  SELMOL ROHet consecutive strict    969    0.3     8.1       417.6     OK
+
+Done at 2026-05-26 21:44:34

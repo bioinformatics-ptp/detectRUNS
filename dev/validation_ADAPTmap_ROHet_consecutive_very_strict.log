@@ -1,0 +1,38 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: ADAPTmap
+
+Per-scan mode: ADAPTmap | ROHet | consecutive | very_strict
+
+
+ ====================================================================== 
+  DATASET: ADAPTmap | goat 
+====================================================================== 
+BED: Ext_Data/ADAPTmap_genotypeTOP_20161201.bed 
+
+[23:53:06] --- ADAPTmap | ROHet | consecutive | very_strict ---
+  scanRUNS: 0.4 s  |  RSS: 185 MB (delta +19 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4653  (144 groups)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 23:53:06 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_strict.roh  (scan: 0.4 s)
+  No runs detected — skipping downstream.
+
+ ====================================================================== 
+  DONE: ADAPTmap 
+====================================================================== 
+Total elapsed: 0.0 minutes
+
+  Summaries saved to: Ext_Data/results/ADAPTmap
+Sanity checks: 3 PASS  |  0 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+  dataset  type      method      params n_runs scan_s total_s peak_mem_mb
+ ADAPTmap ROHet consecutive very_strict      0    0.4     0.4       185.5
+  status
+ NO_RUNS
+
+Done at 2026-05-26 23:53:06

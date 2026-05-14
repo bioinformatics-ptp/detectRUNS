@@ -1,0 +1,507 @@
+Working directory set to: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+Single-dataset mode: SELMOL
+
+
+ ====================================================================== 
+  DATASET: SELMOL | cattle 
+====================================================================== 
+BED: Ext_Data/SELMOL_codACGT.bed 
+
+[09:40:52] --- SELMOL | ROHom | sliding | very_lenient ---
+  scanRUNS: 15.5 s  |  RSS: 741 MB (delta +575 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 3697816  across 29 chromosomes
+  Length   : mean 2212629 bp  |  total 8181895.58 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp | win=10 | thr=0.100
+  Scanned  : 2026-05-26 09:41:08 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_lenient.roh  (scan: 15.5 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 145 regions
+  tableRuns 25%: 145 regions
+  tableRuns 50%: 183 regions
+  tableRuns 75%: 7016 regions
+  tableRuns 90%: 7690 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.7976  min=0.7457  max=0.8820
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_sliding_very_lenient.md 
+
+[09:58:56] --- SELMOL | ROHom | sliding | lenient ---
+  scanRUNS: 17.6 s  |  RSS: 5743 MB (delta +-138 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 2233044  across 29 chromosomes
+  Length   : mean 1627862 bp  |  total 3635086.85 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 09:59:13 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_lenient.roh  (scan: 17.6 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 151 regions
+  tableRuns 25%: 3402 regions
+  tableRuns 50%: 2994 regions
+  tableRuns 75%: 194 regions
+  tableRuns 90%: 14 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.3544  min=0.2328  max=0.5528
+  Froh OK
+  Plots...
+  Plots OK
+  runsIslands (p95, n_perm=100)...
+  Chromosome 1/29 (index 1, 2878 SNPs): running 100 permutations ... done (threshold = 2334.0)
+  Chromosome 2/29 (index 2, 2357 SNPs): running 100 permutations ... done (threshold = 2227.0)
+  Chromosome 3/29 (index 3, 2226 SNPs): running 100 permutations ... done (threshold = 2176.0)
+  Chromosome 4/29 (index 4, 2154 SNPs): running 100 permutations ... done (threshold = 2264.0)
+  Chromosome 5/29 (index 5, 1831 SNPs): running 100 permutations ... done (threshold = 2299.0)
+  Chromosome 6/29 (index 6, 2209 SNPs): running 100 permutations ... done (threshold = 2320.0)
+  Chromosome 7/29 (index 7, 1926 SNPs): running 100 permutations ... done (threshold = 2459.0)
+  Chromosome 8/29 (index 8, 2057 SNPs): running 100 permutations ... done (threshold = 2330.0)
+  Chromosome 9/29 (index 9, 1743 SNPs): running 100 permutations ... done (threshold = 2249.0)
+  Chromosome 10/29 (index 10, 1849 SNPs): running 100 permutations ... done (threshold = 2325.0)
+  Chromosome 11/29 (index 11, 1937 SNPs): running 100 permutations ... done (threshold = 2170.0)
+  Chromosome 12/29 (index 12, 1415 SNPs): running 100 permutations ... done (threshold = 2058.0)
+  Chromosome 13/29 (index 13, 1523 SNPs): running 100 permutations ... done (threshold = 2162.0)
+  Chromosome 14/29 (index 14, 1482 SNPs): running 100 permutations ... done (threshold = 2105.0)
+  Chromosome 15/29 (index 15, 1457 SNPs): running 100 permutations ... done (threshold = 2016.0)
+  Chromosome 16/29 (index 16, 1359 SNPs): running 100 permutations ... done (threshold = 2303.0)
+  Chromosome 17/29 (index 17, 1386 SNPs): running 100 permutations ... done (threshold = 2100.0)
+  Chromosome 18/29 (index 18, 1164 SNPs): running 100 permutations ... done (threshold = 2071.0)
+  Chromosome 19/29 (index 19, 1189 SNPs): running 100 permutations ... done (threshold = 2010.0)
+  Chromosome 20/29 (index 20, 1378 SNPs): running 100 permutations ... done (threshold = 2171.0)
+  Chromosome 21/29 (index 21, 1197 SNPs): running 100 permutations ... done (threshold = 2268.0)
+  Chromosome 22/29 (index 22, 1126 SNPs): running 100 permutations ... done (threshold = 2098.0)
+  Chromosome 23/29 (index 23, 924 SNPs): running 100 permutations ... done (threshold = 1977.0)
+  Chromosome 24/29 (index 24, 1106 SNPs): running 100 permutations ... done (threshold = 2107.0)
+  Chromosome 25/29 (index 25, 843 SNPs): running 100 permutations ... done (threshold = 1751.0)
+  Chromosome 26/29 (index 26, 924 SNPs): running 100 permutations ... done (threshold = 2102.0)
+  Chromosome 27/29 (index 27, 835 SNPs): running 100 permutations ... done (threshold = 2087.0)
+  Chromosome 28/29 (index 28, 817 SNPs): running 100 permutations ... done (threshold = 1877.0)
+  Chromosome 29/29 (index 29, 899 SNPs): running 100 permutations ... done (threshold = 2064.0)
+  Islands (p95): 2222 SNPs across 29 chr
+  runsIslands (p99, n_perm=100)...
+  Chromosome 1/29 (index 1, 2878 SNPs): running 100 permutations ... done (threshold = 2708.0)
+  Chromosome 2/29 (index 2, 2357 SNPs): running 100 permutations ... done (threshold = 2608.0)
+  Chromosome 3/29 (index 3, 2226 SNPs): running 100 permutations ... done (threshold = 2630.0)
+  Chromosome 4/29 (index 4, 2154 SNPs): running 100 permutations ... done (threshold = 2569.0)
+  Chromosome 5/29 (index 5, 1831 SNPs): running 100 permutations ... done (threshold = 2716.0)
+  Chromosome 6/29 (index 6, 2209 SNPs): running 100 permutations ... done (threshold = 2545.0)
+  Chromosome 7/29 (index 7, 1926 SNPs): running 100 permutations ... done (threshold = 2770.0)
+  Chromosome 8/29 (index 8, 2057 SNPs): running 100 permutations ... done (threshold = 2635.0)
+  Chromosome 9/29 (index 9, 1743 SNPs): running 100 permutations ... done (threshold = 2734.0)
+  Chromosome 10/29 (index 10, 1849 SNPs): running 100 permutations ... done (threshold = 2686.0)
+  Chromosome 11/29 (index 11, 1937 SNPs): running 100 permutations ... done (threshold = 2771.0)
+  Chromosome 12/29 (index 12, 1415 SNPs): running 100 permutations ... done (threshold = 2453.0)
+  Chromosome 13/29 (index 13, 1523 SNPs): running 100 permutations ... done (threshold = 2434.0)
+  Chromosome 14/29 (index 14, 1482 SNPs): running 100 permutations ... done (threshold = 2318.0)
+  Chromosome 15/29 (index 15, 1457 SNPs): running 100 permutations ... done (threshold = 2379.0)
+  Chromosome 16/29 (index 16, 1359 SNPs): running 100 permutations ... done (threshold = 2720.0)
+  Chromosome 17/29 (index 17, 1386 SNPs): running 100 permutations ... done (threshold = 2332.0)
+  Chromosome 18/29 (index 18, 1164 SNPs): running 100 permutations ... done (threshold = 2456.0)
+  Chromosome 19/29 (index 19, 1189 SNPs): running 100 permutations ... done (threshold = 2457.0)
+  Chromosome 20/29 (index 20, 1378 SNPs): running 100 permutations ... done (threshold = 2619.0)
+  Chromosome 21/29 (index 21, 1197 SNPs): running 100 permutations ... done (threshold = 2778.0)
+  Chromosome 22/29 (index 22, 1126 SNPs): running 100 permutations ... done (threshold = 2297.0)
+  Chromosome 23/29 (index 23, 924 SNPs): running 100 permutations ... done (threshold = 2177.0)
+  Chromosome 24/29 (index 24, 1106 SNPs): running 100 permutations ... done (threshold = 2309.0)
+  Chromosome 25/29 (index 25, 843 SNPs): running 100 permutations ... done (threshold = 1926.0)
+  Chromosome 26/29 (index 26, 924 SNPs): running 100 permutations ... done (threshold = 2600.0)
+  Chromosome 27/29 (index 27, 835 SNPs): running 100 permutations ... done (threshold = 2346.0)
+  Chromosome 28/29 (index 28, 817 SNPs): running 100 permutations ... done (threshold = 2291.0)
+  Chromosome 29/29 (index 29, 899 SNPs): running 100 permutations ... done (threshold = 2344.0)
+  Islands (p99): 438 SNPs across 29 chr
+  reportRUNS...
+  Report: SELMOL_ROHom_sliding_lenient.md 
+
+[10:12:49] --- SELMOL | ROHom | sliding | strict ---
+  scanRUNS: 38.1 s  |  RSS: 5301 MB (delta +-128 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 541227  across 29 chromosomes
+  Length   : mean 2650408 bp  |  total 1434472.46 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 10:13:27 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_strict.roh  (scan: 38.1 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 3039 regions
+  tableRuns 25%: 795 regions
+  tableRuns 50%: 44 regions
+  tableRuns 75%: 6 regions
+  tableRuns 90%: 1 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.1398  min=0.0263  max=0.3864
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_sliding_strict.md 
+
+[10:14:02] --- SELMOL | ROHom | sliding | very_strict ---
+  scanRUNS: 507.3 s  |  RSS: 5309 MB (delta +13 MB)
+RUNS object  [method: sliding | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 155145  across 29 chromosomes
+  Length   : mean 5181180 bp  |  total 803834.22 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp | win=25 | thr=0.050
+  Scanned  : 2026-05-26 10:22:29 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_sliding_very_strict.roh  (scan: 507.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 863 regions
+  tableRuns 25%: 58 regions
+  tableRuns 50%: 7 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0784  min=0.0005  max=0.3351
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_sliding_very_strict.md 
+
+[10:22:51] --- SELMOL | ROHom | consecutive | very_lenient ---
+  scanRUNS: 6.3 s  |  RSS: 7029 MB (delta +1891 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 11815142  across 29 chromosomes
+  Length   : mean 690562 bp  |  total 8159086.68 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 10:22:57 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_lenient.roh  (scan: 6.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 145 regions
+  tableRuns 25%: 145 regions
+  tableRuns 50%: 166 regions
+  tableRuns 75%: 9451 regions
+  tableRuns 90%: 36165 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.7954  min=0.7658  max=0.8617
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_consecutive_very_lenient.md 
+
+[10:29:45] --- SELMOL | ROHom | consecutive | lenient ---
+  scanRUNS: 4.1 s  |  RSS: 15424 MB (delta +253 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 5529992  across 29 chromosomes
+  Length   : mean 894365 bp  |  total 4945832.09 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp
+  Scanned  : 2026-05-26 10:29:49 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_lenient.roh  (scan: 4.1 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 150 regions
+  tableRuns 25%: 254 regions
+  tableRuns 50%: 13076 regions
+  tableRuns 75%: 2977 regions
+  tableRuns 90%: 291 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.4821  min=0.3814  max=0.6367
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_consecutive_lenient.md 
+
+[10:44:31] --- SELMOL | ROHom | consecutive | strict ---
+  scanRUNS: 2.7 s  |  RSS: 14523 MB (delta +21 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 495263  across 29 chromosomes
+  Length   : mean 2652798 bp  |  total 1313832.52 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp
+  Scanned  : 2026-05-26 10:44:34 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_strict.roh  (scan: 2.7 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 3167 regions
+  tableRuns 25%: 576 regions
+  tableRuns 50%: 34 regions
+  tableRuns 75%: 6 regions
+  tableRuns 90%: 1 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.1281  min=0.0201  max=0.3735
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_consecutive_strict.md 
+
+[11:00:05] --- SELMOL | ROHom | consecutive | very_strict ---
+  scanRUNS: 2.5 s  |  RSS: 14724 MB (delta +-0 MB)
+RUNS object  [method: consecutive | type: ROHom]
+  Samples  : 4095  (5 groups)
+  Runs     : 167536  across 29 chromosomes
+  Length   : mean 4983924 bp  |  total 834986.63 Mbp
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 11:00:08 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHom_consecutive_very_strict.roh  (scan: 2.5 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 956 regions
+  tableRuns 25%: 65 regions
+  tableRuns 50%: 10 regions
+  tableRuns 75%: 1 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0814  min=0.0005  max=0.3382
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHom_consecutive_very_strict.md 
+
+[11:15:30] --- SELMOL | ROHet | sliding | very_lenient ---
+  scanRUNS: 13.3 s  |  RSS: 15050 MB (delta +447 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 1996155  across 29 chromosomes
+  Length   : mean 748262 bp  |  total 1493646.29 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp | win=10 | thr=0.100
+  Scanned  : 2026-05-26 11:15:43 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_very_lenient.roh  (scan: 13.3 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 6455 regions
+  tableRuns 25%: 3758 regions
+  tableRuns 50%: 106 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.1456  min=0.0757  max=0.2713
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_sliding_very_lenient.md 
+
+[11:32:52] --- SELMOL | ROHet | sliding | lenient ---
+  scanRUNS: 16.2 s  |  RSS: 13647 MB (delta +0 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 54918  across 29 chromosomes
+  Length   : mean 867885 bp  |  total 47662.52 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp | win=15 | thr=0.050
+  Scanned  : 2026-05-26 11:33:08 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_lenient.roh  (scan: 16.2 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 79 regions
+  tableRuns 25%: 4 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0046  min=0.0003  max=0.0114
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_sliding_lenient.md 
+
+[11:33:22] --- SELMOL | ROHet | sliding | strict ---
+  scanRUNS: 19.8 s  |  RSS: 14138 MB (delta +-146 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 1152  across 22 chromosomes
+  Length   : mean 988915 bp  |  total 1139.23 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp | win=20 | thr=0.050
+  Scanned  : 2026-05-26 11:33:41 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_strict.roh  (scan: 19.8 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  [FAIL] tableRuns_produced_output: no regions at any threshold 
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_sliding_strict.md 
+
+[11:33:49] --- SELMOL | ROHet | sliding | very_strict ---
+  scanRUNS: 23.1 s  |  RSS: 14256 MB (delta +0 MB)
+RUNS object  [method: sliding | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp | win=25 | thr=0.050
+  Scanned  : 2026-05-26 11:34:12 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_sliding_very_strict.roh  (scan: 23.1 s)
+  No runs detected — skipping downstream.
+
+[11:34:12] --- SELMOL | ROHet | consecutive | very_lenient ---
+  scanRUNS: 6.4 s  |  RSS: 16013 MB (delta +1757 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 13454548  across 29 chromosomes
+  Length   : mean 341962 bp  |  total 4600949.61 Mbp
+  Params   : minSNP=5 | maxOpp=3 | maxMiss=3 | minLen=50,000 bp | maxGap=2,000,000 bp
+  Scanned  : 2026-05-26 11:34:18 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_lenient.roh  (scan: 6.4 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 704 regions
+  tableRuns 25%: 4037 regions
+  tableRuns 50%: 23012 regions
+  tableRuns 75%: 1489 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.4485  min=0.3092  max=0.5216
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_consecutive_very_lenient.md 
+
+[12:13:42] --- SELMOL | ROHet | consecutive | lenient ---
+  scanRUNS: 2.9 s  |  RSS: 16323 MB (delta +91 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 719501  across 29 chromosomes
+  Length   : mean 547038 bp  |  total 393594.37 Mbp
+  Params   : minSNP=10 | maxOpp=2 | maxMiss=2 | minLen=100,000 bp | maxGap=1,500,000 bp
+  Scanned  : 2026-05-26 12:13:45 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_lenient.roh  (scan: 2.9 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  tableRuns 10%: 2444 regions
+  tableRuns 25%: 248 regions
+  tableRuns OK
+  Froh...
+  Froh: mean=0.0384  min=0.0180  max=0.0569
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_consecutive_lenient.md 
+
+[12:14:15] --- SELMOL | ROHet | consecutive | strict ---
+  scanRUNS: 2.6 s  |  RSS: 14062 MB (delta +0 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 969  across 22 chromosomes
+  Length   : mean 961445 bp  |  total 931.64 Mbp
+  Params   : minSNP=20 | maxOpp=1 | maxMiss=1 | minLen=500,000 bp | maxGap=1,000,000 bp
+  Scanned  : 2026-05-26 12:14:18 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_strict.roh  (scan: 2.6 s)
+  summaryRuns...
+  summaryRuns OK
+  tableRuns...
+  [FAIL] tableRuns_produced_output: no regions at any threshold 
+  tableRuns OK
+  Froh...
+  Froh: mean=NA  min=NA  max=NA
+  [FAIL] Froh_in_01: range=[NA, NA] 
+  Froh OK
+  Plots...
+  Plots OK
+  reportRUNS...
+  Report: SELMOL_ROHet_consecutive_strict.md 
+
+[12:17:11] --- SELMOL | ROHet | consecutive | very_strict ---
+  scanRUNS: 2.4 s  |  RSS: 14507 MB (delta +0 MB)
+RUNS object  [method: consecutive | type: ROHet]
+  Samples  : 4095  (5 groups)
+  Runs     : 0  across 0 chromosomes
+  Params   : minSNP=30 | maxOpp=0 | maxMiss=1 | minLen=1,000,000 bp | maxGap=500,000 bp
+  Scanned  : 2026-05-26 12:17:14 CDT  [detectRUNS 1.0.0 | R 4.6.0]
+  Saved ROHet_consecutive_very_strict.roh  (scan: 2.4 s)
+  No runs detected — skipping downstream.
+
+ ====================================================================== 
+  SELMOL — parameter comparison (ROHom sliding) 
+====================================================================== 
+calculating Froh on all genome
+  very_lenient    runs=3697816  Froh=0.7976
+calculating Froh on all genome
+  lenient         runs=2233044  Froh=0.3544
+calculating Froh on all genome
+  strict          runs= 541227  Froh=0.1398
+calculating Froh on all genome
+  very_strict     runs= 155145  Froh=0.0784
+  Run count monotonicity (vl>=l>=s>=vs): PASS
+
+ ====================================================================== 
+  SELMOL — BED vs PED cross-format comparison 
+====================================================================== 
+  Scanning PED (sliding, ROHom, lenient)...
+  BED runs: 2233044  |  PED runs: 2247679  |  ratio=1.007
+  Saved PED scan for comparison.
+
+SELMOL COMPLETE. Output in: Ext_Data/results/SELMOL/detectRUNS
+There were 50 or more warnings (use warnings() to see the first 50)
+
+ ====================================================================== 
+  DONE: SELMOL 
+====================================================================== 
+Total elapsed: 172.8 minutes
+
+  Summaries saved to: Ext_Data/results/SELMOL
+Sanity checks: 76 PASS  |  4 FAIL  |  0 ERROR
+
+Validation report written: Ext_Data/results/validation_report.md
+
+Master scan summary (n_runs | scan_s | total_s | peak_mem_mb | status):
+ dataset  type      method       params   n_runs scan_s total_s peak_mem_mb
+  SELMOL ROHom     sliding very_lenient  3697816   15.5  1083.5      5881.2
+  SELMOL ROHom     sliding      lenient  2233044   17.6   833.4      5743.0
+  SELMOL ROHom     sliding       strict   541227   38.1    72.9      5300.9
+  SELMOL ROHom     sliding  very_strict   155145  507.3   528.5      5309.0
+  SELMOL ROHom consecutive very_lenient 11815142    6.3   414.6     16079.1
+  SELMOL ROHom consecutive      lenient  5529992    4.1   885.6     15502.0
+  SELMOL ROHom consecutive       strict   495263    2.7   934.0     14763.8
+  SELMOL ROHom consecutive  very_strict   167536    2.5   924.2     14724.4
+  SELMOL ROHet     sliding very_lenient  1996155   13.3  1041.9     15049.7
+  SELMOL ROHet     sliding      lenient    54918   16.2    29.4     14314.5
+  SELMOL ROHet     sliding       strict     1152   19.8    26.9     14255.9
+  SELMOL ROHet     sliding  very_strict        0   23.1    23.1     14255.9
+  SELMOL ROHet consecutive very_lenient 13454548    6.4  2370.0     17777.3
+  SELMOL ROHet consecutive      lenient   719501    2.9    33.0     16322.8
+  SELMOL ROHet consecutive       strict      969    2.6   175.8     14528.0
+  SELMOL ROHet consecutive  very_strict        0    2.4     2.4     14507.0
+  status
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+      OK
+ NO_RUNS
+      OK
+      OK
+      OK
+ NO_RUNS
+
+Done at 2026-05-26 12:33:41

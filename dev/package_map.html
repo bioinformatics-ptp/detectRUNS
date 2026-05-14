@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>detectRUNS — Workflow</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1117;color:#e8eaf0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 32px}
+h1{font-size:1.8rem;font-weight:700;background:linear-gradient(90deg,#4f8ef7,#1abc9c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.sub{color:#8b8fa8;font-size:.88rem;margin-bottom:36px}
+
+/* ── grid layout ── */
+.diagram{display:grid;grid-template-columns:1fr 80px 1fr 80px 1fr;grid-template-rows:auto;gap:0;align-items:start;max-width:1080px;margin:0 auto}
+
+/* ── columns ── */
+.col{display:flex;flex-direction:column;gap:16px}
+.col-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:60px;gap:0;color:#5a5d7a;font-size:1.4rem}
+
+/* ── nodes ── */
+.node{border-radius:10px;padding:14px 16px;border:1px solid}
+.node-title{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.node-name{font-size:.95rem;font-weight:600;margin-bottom:6px}
+.node-desc{font-size:.74rem;line-height:1.45;color:#8b8fa8}
+.pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.pill{font-family:'SF Mono','Fira Code',monospace;font-size:.7rem;padding:2px 8px;border-radius:5px;border:1px solid}
+
+/* colors */
+.blue  {background:#0d1a2e;border-color:#4f8ef7}.blue   .node-title{color:#4f8ef7}.blue   .pill{color:#7ab0ff;border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.08)}
+.cpp   {background:#1e1200;border-color:#f39c12}.cpp    .node-title{color:#f39c12}.cpp    .pill{color:#ffd080;border-color:rgba(243,156,18,.3);background:rgba(243,156,18,.08)}
+.green {background:#071a10;border-color:#2ecc71}.green  .node-title{color:#2ecc71}.green  .pill{color:#80ffa8;border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.08)}
+.teal  {background:#051a18;border-color:#1abc9c}.teal   .node-title{color:#1abc9c}.teal   .pill{color:#80ffe8;border-color:rgba(26,188,156,.3);background:rgba(26,188,156,.08)}
+.orange{background:#1e1000;border-color:#e67e22}.orange .node-title{color:#e67e22}.orange .pill{color:#ffd0a0;border-color:rgba(230,126,34,.3);background:rgba(230,126,34,.08)}
+.purple{background:#160a22;border-color:#9b59b6}.purple .node-title{color:#9b59b6}.purple .pill{color:#d4a0ff;border-color:rgba(155,89,182,.3);background:rgba(155,89,182,.08)}
+.red   {background:#1e0808;border-color:#e74c3c}.red    .node-title{color:#e74c3c}.red    .pill{color:#ff9090;border-color:rgba(231,76,60,.3);background:rgba(231,76,60,.08)}
+.grey  {background:#12141f;border-color:#3a3d55}.grey   .node-title{color:#8b8fa8}.grey   .pill{color:#a0a3b8;border-color:rgba(90,93,122,.4);background:rgba(90,93,122,.08)}
+
+/* RUNS special */
+.runs-obj{background:linear-gradient(135deg,#0d1a2e 0%,#0a1a20 100%);border:2px solid #4f8ef7;border-radius:12px;padding:18px 20px}
+.runs-obj .node-title{color:#4f8ef7;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.runs-obj .node-name{font-size:1.1rem;font-weight:700;color:#e8eaf0;margin-bottom:12px}
+.runs-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.runs-field{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:6px;padding:6px 10px}
+.runs-field .fn{font-family:monospace;font-size:.72rem;color:#7ab0ff;font-weight:600}
+.runs-field .fd{font-size:.68rem;color:#8b8fa8;margin-top:1px}
+
+/* arrows */
+.arr{color:#5a5d7a;font-size:1.6rem;text-align:center;line-height:1}
+.arr-label{font-size:.65rem;color:#5a5d7a;text-align:center;margin-top:2px}
+
+/* vertical arrow column */
+.varr{writing-mode:horizontal-tb;font-size:1.6rem;color:#5a5d7a;padding:8px 0}
+
+/* section header */
+.sec-hdr{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3a3d55;text-align:center;margin-bottom:8px}
+
+hr.sep{border:none;border-top:1px solid #1e2235;margin:16px 0}
+</style>
+</head>
+<body>
+
+<h1>detectRUNS — Workflow Diagram</h1>
+<p class="sub">Data flow · function calls · S3 classes &nbsp;·&nbsp; v1.0.0</p>
+
+<div style="max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:0">
+
+  <!-- ROW: INPUT -->
+  <p class="sec-hdr">INPUT</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+    <div class="node blue">
+      <div class="node-title">PLINK binary</div>
+      <div class="node-name">.bed / .bim / .fam</div>
+      <div class="node-desc">Main format — processed by C++ engine</div>
+    </div>
+    <div class="node blue">
+      <div class="node-title">PLINK text</div>
+      <div class="node-name">.ped / .map</div>
+      <div class="node-desc">Processed by R-level functions</div>
+    </div>
+    <div class="node grey">
+      <div class="node-title">External runs</div>
+      <div class="node-name">readExternalRuns()</div>
+      <div class="node-desc">Import from PLINK · BCFtools · old detectRUNS CSV</div>
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ROW: SCAN + CPP -->
+  <p class="sec-hdr">ENTRY POINT</p>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+    <div class="node blue">
+      <div class="node-title">Main function</div>
+      <div class="node-name">scanRUNS()</div>
+      <div class="node-desc">Unified entry point. Dispatches to C++ for BED, R for PED.</div>
+      <div class="pills">
+        <span class="pill blue">method = "sliding" | "consecutive"</span>
+        <span class="pill blue">ROHet = TRUE | FALSE</span>
+        <span class="pill blue">nThreads = N</span>
+        <span class="pill blue">minSNP · maxOpp · maxMiss · minLen · maxGap</span>
+      </div>
+    </div>
+    <div class="node cpp">
+      <div class="node-title">C++ / OpenMP engine</div>
+      <div class="node-name">BED Scanner</div>
+      <div class="node-desc">Parallel over chromosomes. Zero-copy BED decoding.</div>
+      <div class="pills">
+        <span class="pill cpp">C_scan_roh_bed()</span>
+        <span class="pill cpp">C_perm_roh_islands()</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ROW: RUNS OBJECT -->
+  <p class="sec-hdr">S3 CLASS</p>
+  <div class="runs-obj">
+    <div class="node-title">Core data structure</div>
+    <div class="node-name">RUNS object</div>
+    <div class="runs-grid">
+      <div class="runs-field"><div class="fn">$runs</div><div class="fd">detected runs data.frame</div></div>
+      <div class="runs-field"><div class="fn">$summary</div><div class="fd">per-sample statistics</div></div>
+      <div class="runs-field"><div class="fn">$chrom_lengths</div><div class="fd">chromosome lengths</div></div>
+      <div class="runs-field"><div class="fn">$sample_info</div><div class="fd">group / id table</div></div>
+      <div class="runs-field"><div class="fn">$snp_map</div><div class="fd">CHR · SNP_NAME · POSITION</div></div>
+      <div class="runs-field"><div class="fn">$scan_params</div><div class="fd">all parameters used</div></div>
+      <div class="runs-field"><div class="fn">$method</div><div class="fd">sliding | consecutive</div></div>
+      <div class="runs-field"><div class="fn">$type</div><div class="fd">ROHom | ROHet</div></div>
+    </div>
+    <div class="pills">
+      <span class="pill blue">print.RUNS()</span>
+      <span class="pill blue">as.data.frame.RUNS()</span>
+      <span class="pill blue">as_RUNS()</span>
+      <span class="pill blue">saveRUNS()</span>
+      <span class="pill blue">loadRUNS()</span>
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ROW: ANALYSIS + PLOTS + ISLANDS -->
+  <p class="sec-hdr">ANALYSIS · VISUALISATION · ISLAND DETECTION</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+
+    <div class="node green">
+      <div class="node-title">Statistical Analysis</div>
+      <div class="node-name">RUNS → data.frame</div>
+      <div class="pills">
+        <span class="pill green">summaryRuns()</span>
+        <span class="pill green">tableRuns()</span>
+        <span class="pill green">Froh_inbreeding()</span>
+        <span class="pill green">Froh_inbreedingClass()</span>
+        <span class="pill green">runsAssociation()</span>
+      </div>
+    </div>
+
+    <div class="node orange">
+      <div class="node-title">Visualisation</div>
+      <div class="node-name">RUNS → ggplot2</div>
+      <div class="pills">
+        <span class="pill orange">plot_Runs()</span>
+        <span class="pill orange">plot_StackedRuns()</span>
+        <span class="pill orange">plot_SnpsInRuns()</span>
+        <span class="pill orange">plot_manhattanRuns()</span>
+        <span class="pill orange">plot_ViolinRuns()</span>
+        <span class="pill orange">plot_InbreedingChr()</span>
+        <span class="pill orange">plot_DistributionRuns()</span>
+        <span class="pill orange">plot_PatternRuns()</span>
+      </div>
+    </div>
+
+    <div class="node teal">
+      <div class="node-title">Island Detection</div>
+      <div class="node-name">runsIslands()</div>
+      <div class="node-desc">Permutation test · C++ accelerated<br>Returns RunsIslands S3 object</div>
+      <div class="pills" style="margin-top:10px">
+        <span class="pill teal">$islands</span>
+        <span class="pill teal">$thresholds</span>
+        <span class="pill teal">$snp_table</span>
+        <span class="pill teal">print.RunsIslands()</span>
+        <span class="pill teal">summary.RunsIslands()</span>
+        <span class="pill teal">plot.RunsIslands()</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="arr">↓<div class="arr-label">all feed into</div></div>
+
+  <!-- ROW: REPORT -->
+  <p class="sec-hdr">REPORTING</p>
+  <div class="node purple">
+    <div class="node-title">Comprehensive report generator</div>
+    <div class="node-name">reportRUNS() &nbsp;→&nbsp; HTML · Markdown · PDF</div>
+    <div class="node-desc" style="margin-bottom:10px">Calls summaryRuns · Froh_inbreeding · Froh_inbreedingClass · tableRuns · plots internally. All plots embedded as base64. Optional RunsIslands section.</div>
+    <div class="pills">
+      <span class="pill purple">Executive Summary</span>
+      <span class="pill purple">Scan Parameters</span>
+      <span class="pill purple">Dataset Overview</span>
+      <span class="pill purple">RUNS Overview</span>
+      <span class="pill purple">Per-Chromosome Coverage</span>
+      <span class="pill purple">Class Distribution</span>
+      <span class="pill purple">Top SNPs in RUNS</span>
+      <span class="pill purple">Common Regions (by chr)</span>
+      <span class="pill purple">F_ROH · Outliers</span>
+      <span class="pill purple">ROH Islands</span>
+      <span class="pill purple">Methods</span>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- DEPRECATED -->
+  <p class="sec-hdr">Deprecated</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="node red">
+      <div class="node-title">Deprecated wrapper — kept for backward compat</div>
+      <div class="node-name">slidingRUNS.run()</div>
+      <div class="node-desc">Old PED entry point → wraps scanRUNS() internally</div>
+    </div>
+    <div class="node red">
+      <div class="node-title">Deprecated wrapper — kept for backward compat</div>
+      <div class="node-name">consecutiveRUNS.run()</div>
+      <div class="node-desc">Old PED entry point → wraps scanRUNS() internally</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,234 @@
+Working directory: /Users/gabrielemarras/Documents/PROJECT/Project_DetectRuns_2.0/detectRUNS 
+
+========================================================================
+[20:53:55]  Sweeping minSNP
+========================================================================
+  minSNP = 3
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=1189  PED_consec=1189
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minSNP = 5
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minSNP = 10
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=176  PED_consec=176
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 90.4% any-overlap  88.2% >=50%-overlap
+  minSNP = 15
+    PLINK: 83 runs
+    BED_slide=83  PED_slide=83  BED_consec=50  PED_consec=50
+    BED_slide: 83 exact (100.0% of PLINK)  |  BED_consec: 60.2% any-overlap  60.2% >=50%-overlap
+  minSNP = 20
+    PLINK: 39 runs
+    BED_slide=39  PED_slide=39  BED_consec=25  PED_consec=25
+    BED_slide: 39 exact (100.0% of PLINK)  |  BED_consec: 64.1% any-overlap  64.1% >=50%-overlap
+
+========================================================================
+[20:53:55]  Sweeping maxOpp
+========================================================================
+  maxOpp = 0
+    PLINK: 68 runs
+    BED_slide=68  PED_slide=68  BED_consec=399  PED_consec=399
+    BED_slide: 68 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  100.0% >=50%-overlap
+  maxOpp = 1
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxOpp = 2
+    PLINK: 264 runs
+    BED_slide=264  PED_slide=264  BED_consec=880  PED_consec=880
+    BED_slide: 264 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  81.1% >=50%-overlap
+  maxOpp = 3
+    PLINK: 253 runs
+    BED_slide=253  PED_slide=253  BED_consec=800  PED_consec=800
+    BED_slide: 253 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  56.9% >=50%-overlap
+
+========================================================================
+[20:53:55]  Sweeping maxMiss
+========================================================================
+  maxMiss = 0
+    PLINK: 185 runs
+    BED_slide=185  PED_slide=185  BED_consec=741  PED_consec=741
+    BED_slide: 185 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.6% >=50%-overlap
+  maxMiss = 1
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxMiss = 2
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxMiss = 3
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+
+========================================================================
+[20:53:56]  Sweeping minLengthBps
+========================================================================
+  minLengthBps = 1000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minLengthBps = 25000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minLengthBps = 50000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minLengthBps = 100000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minLengthBps = 250000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=635  PED_consec=635
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+
+========================================================================
+[20:53:56]  Sweeping maxGap
+========================================================================
+  maxGap = 100000
+    PLINK: 309 runs
+    BED_slide=309  PED_slide=309  BED_consec=599  PED_consec=599
+    BED_slide: 309 exact (100.0% of PLINK)  |  BED_consec: 99.4% any-overlap  97.7% >=50%-overlap
+  maxGap = 500000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxGap = 1000000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxGap = 2000000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  maxGap = 5000000
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+
+========================================================================
+[20:53:57]  Sweeping minDensity
+========================================================================
+  minDensity = 0
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minDensity = 0.001
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187  BED_consec=744  PED_consec=744
+    BED_slide: 187 exact (100.0% of PLINK)  |  BED_consec: 100.0% any-overlap  94.7% >=50%-overlap
+  minDensity = 0.01
+    PLINK: 181 runs
+    BED_slide=181  PED_slide=181  BED_consec=692  PED_consec=692
+    BED_slide: 181 exact (100.0% of PLINK)  |  BED_consec: 99.4% any-overlap  90.1% >=50%-overlap
+  minDensity = 0.02
+    PLINK: 26 runs
+    BED_slide=26  PED_slide=26  BED_consec=223  PED_consec=223
+    BED_slide: 26 exact (100.0% of PLINK)  |  BED_consec: 96.2% any-overlap  88.5% >=50%-overlap
+
+========================================================================
+[20:53:57]  Sweeping windowSize  [sliding only]
+========================================================================
+  windowSize = 5
+    PLINK: 580 runs
+    BED_slide=580  PED_slide=580
+    BED_slide: 580 exact (100.0% of PLINK)
+  windowSize = 10
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187
+    BED_slide: 187 exact (100.0% of PLINK)
+  windowSize = 15
+    PLINK: 54 runs
+    BED_slide=54  PED_slide=54
+    BED_slide: 54 exact (100.0% of PLINK)
+  windowSize = 20
+    PLINK: 27 runs
+    BED_slide=27  PED_slide=27
+    BED_slide: 27 exact (100.0% of PLINK)
+  windowSize = 30
+    PLINK: 16 runs
+    BED_slide=16  PED_slide=16
+    BED_slide: 16 exact (100.0% of PLINK)
+
+========================================================================
+[20:53:57]  Sweeping threshold  [sliding only]
+========================================================================
+  threshold = 0.05
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187
+    BED_slide: 187 exact (100.0% of PLINK)
+  threshold = 0.1
+    PLINK: 187 runs
+    BED_slide=187  PED_slide=187
+    BED_slide: 187 exact (100.0% of PLINK)
+  threshold = 0.2
+    PLINK: 145 runs
+    BED_slide=145  PED_slide=145
+    BED_slide: 145 exact (100.0% of PLINK)
+  threshold = 0.5
+    PLINK: 84 runs
+    BED_slide=84  PED_slide=84
+    BED_slide: 84 exact (100.0% of PLINK)
+
+========================================================================
+SUMMARY
+========================================================================
+  param           value          PLINK    BS_n   BS_%P  BS_%DR    PS_n   PS_%P  PS_%DR    BC_n  BC_any  BC_50%
+------------------------------------------------------------------------------------------------------------------------ 
+
+  minSNP          3                187     187  100.0%  100.0%     187  100.0%  100.0%    1189  100.0%   94.7%
+  minSNP          5                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minSNP          10               187     187  100.0%  100.0%     187  100.0%  100.0%     176   90.4%   88.2%
+  minSNP          15                83      83  100.0%  100.0%      83  100.0%  100.0%      50   60.2%   60.2%
+  minSNP          20                39      39  100.0%  100.0%      39  100.0%  100.0%      25   64.1%   64.1%
+
+  maxOpp          0                 68      68  100.0%  100.0%      68  100.0%  100.0%     399  100.0%  100.0%
+  maxOpp          1                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxOpp          2                264     264  100.0%  100.0%     264  100.0%  100.0%     880  100.0%   81.1%
+  maxOpp          3                253     253  100.0%  100.0%     253  100.0%  100.0%     800  100.0%   56.9%
+
+  maxMiss         0                185     185  100.0%  100.0%     185  100.0%  100.0%     741  100.0%   94.6%
+  maxMiss         1                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxMiss         2                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxMiss         3                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+
+  minLengthBps    1000             187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minLengthBps    25000            187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minLengthBps    50000            187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minLengthBps    100000           187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minLengthBps    250000           187     187  100.0%  100.0%     187  100.0%  100.0%     635  100.0%   94.7%
+
+  maxGap          100000           309     309  100.0%  100.0%     309  100.0%  100.0%     599   99.4%   97.7%
+  maxGap          500000           187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxGap          1000000          187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxGap          2000000          187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  maxGap          5000000          187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+
+  minDensity      0                187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minDensity      0.001            187     187  100.0%  100.0%     187  100.0%  100.0%     744  100.0%   94.7%
+  minDensity      0.01             181     181  100.0%  100.0%     181  100.0%  100.0%     692   99.4%   90.1%
+  minDensity      0.02              26      26  100.0%  100.0%      26  100.0%  100.0%     223   96.2%   88.5%
+
+  windowSize      5                580     580  100.0%  100.0%     580  100.0%  100.0%      NA     n/a     n/a
+  windowSize      10               187     187  100.0%  100.0%     187  100.0%  100.0%      NA     n/a     n/a
+  windowSize      15                54      54  100.0%  100.0%      54  100.0%  100.0%      NA     n/a     n/a
+  windowSize      20                27      27  100.0%  100.0%      27  100.0%  100.0%      NA     n/a     n/a
+  windowSize      30                16      16  100.0%  100.0%      16  100.0%  100.0%      NA     n/a     n/a
+
+  threshold       0.05             187     187  100.0%  100.0%     187  100.0%  100.0%      NA     n/a     n/a
+  threshold       0.1              187     187  100.0%  100.0%     187  100.0%  100.0%      NA     n/a     n/a
+  threshold       0.2              145     145  100.0%  100.0%     145  100.0%  100.0%      NA     n/a     n/a
+  threshold       0.5               84      84  100.0%  100.0%      84  100.0%  100.0%      NA     n/a     n/a
+
+========================================================================
+Writing report
+========================================================================
+
+Report written: Ext_Data/results/param_sweep/param_sweep_report_plink_compat.md
+Done at 2026-05-26 20:53:57

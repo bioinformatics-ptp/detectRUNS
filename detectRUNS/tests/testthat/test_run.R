@@ -52,6 +52,6 @@ test_that("Marker differ in size", {
 
 test_that("No file path throws error", {
   # test for errors
-  expect_error(slidingRUNS.run("fake_genotype", mapFile), "doesn't exists")
+  expect_error(slidingRUNS.run("fake_genotype", mapFile), "File not found")
   expect_error(slidingRUNS.run(genotypeFile, "fake_map"), "doesn't exists")
 })

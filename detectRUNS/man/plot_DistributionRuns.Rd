@@ -6,7 +6,7 @@
 \usage{
 plot_DistributionRuns(
   runs,
-  mapFile,
+  mapFile = NULL,
   groupSplit = TRUE,
   style = c("MeanClass", "MeanChr", "RunsPCT", "RunsPCT_Chr", "All"),
   savePlots = FALSE,
