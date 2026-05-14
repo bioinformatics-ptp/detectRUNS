@@ -1,6 +1,8 @@
 ---
-title: "detectRUNS: detecting runs of homozygosity and heterozygosity in diploid genomes"
-author: "Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras"
+title: "detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes"
+author:
+  - name: "Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras"
+    affiliation: "IBBA-CNR, PTP, Università degli Studi di Sassari, University of Guelph"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
@@ -17,23 +19,39 @@ knitr::opts_chunk$set(
   collapse  = TRUE,
   comment   = "#>",
   message   = FALSE,
-  warning   = FALSE
+  warning   = FALSE,
+  fig.width = 6,
+  fig.height = 4
 )
 library(detectRUNS)
 ```
 
 # Overview
 
-**detectRUNS** is an R package for detecting **Runs of Homozygosity** (ROH/ROHom) and **Runs of Heterozygosity** (ROHet) in diploid genomes. It supports two detection methods:
+**detectRUNS** is an R package for the detection of **Runs of Homozygosity** (**ROH/ROHom**) and of **Runs of Heterozygosity** (**ROHet**, a.k.a. "heterozygosity-rich regions") in diploid genomes.
 
-1. **Sliding-window method** — similar to PLINK `--homozyg` (Bjelland et al. 2013)
-2. **Consecutive method** — window-free, SNP-by-SNP scan (Marras et al. 2015)
+ROH/ROHom were first studied in humans (McQuillan et al. 2008) and rapidly found applications in animal genetics (e.g. Ferencakovic et al. 2011 in *Bos taurus*). More recently, the idea of looking at "runs of heterozygosity" (ROHet, or more precisely "heterozygosity-rich regions") was proposed (Williams et al. 2016).
 
-Both methods are implemented in a high-performance C++ engine that reads PLINK binary (BED/BIM/FAM) files directly and runs in parallel using OpenMP. PLINK text (PED/MAP) files are also supported.
+detectRUNS supports two detection methods:
 
-# Quick start
+1. **Sliding-window method** — similar to the approach implemented in PLINK `--homozyg` (Bjelland et al. 2013). A sliding window scans the genome and the characteristics of consecutive overlapping windows determine whether a SNP is in a run.
+2. **Consecutive method** — window-free, SNP-by-SNP scan first proposed by Marras et al. (2015). Only run-level parameters need to be specified.
 
-The main entry point is `scanRUNS()`. It auto-detects the file format from the file extension and returns an `ROH` object containing the detected runs and all metadata needed for downstream analysis.
+Both methods are implemented in a high-performance C++ engine that reads PLINK binary (BED/BIM/FAM) files natively and runs in parallel using OpenMP. PLINK text (PED/MAP) files are also supported.
+
+Beyond detecting genomic runs, **detectRUNS** can:
+
+- Plot runs along the genome (per individual, stacked, SNP-in-run frequency)
+- Generate descriptive statistics on detected runs
+- Calculate ROH-based inbreeding coefficients ($F_{ROH}$), genome-wide and chromosome-wide
+- Plot $F_{ROH}$ per chromosome
+- Import run results from PLINK, BCFtools, or a previous detectRUNS session
+
+**detectRUNS** can be used with genotype data from any diploid organism: humans, animals or plants.
+
+# Sample data
+
+To illustrate the functionalities of **detectRUNS**, we use data on sheep (*Ovis aries*) SNP genotypes from Kijas et al. (2016). A subset with two breeds ("Jacobs" and "Navajo-Churro", 100 animals) and two chromosomes (4,841 SNPs from OAR 2 and 24) is included in the package.
 
 ```{r file-paths}
 bedFile <- system.file("extdata", "Kijas2016_Sheep_subset.bed",
@@ -44,16 +62,35 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map",
                         package = "detectRUNS")
 ```
 
-## Detect ROH with the sliding-window method (BED input)
+# Detecting runs with `scanRUNS()`
+
+The main entry point is `scanRUNS()`. It auto-detects the file format from the extension (`.bed` → BED engine, `.ped` → PED engine) and returns an `ROH` S3 object containing the detected runs and all metadata for downstream analysis.
+
+## Sliding-window method (BED input)
+
+The sliding-window method scans the genome with an overlapping window of `windowSize` SNPs. For each SNP, the fraction of windows in which the SNP falls in a run-compatible state (homozygous for ROHom, heterozygous for ROHet) is computed. If this fraction exceeds `1 - threshold`, the SNP is called "in run". Consecutive SNPs in run are merged into a single run if they satisfy the run-level filters.
+
+Key parameters:
+
+| Parameter | Description | Default |
+|---|---|---|
+| `windowSize` | Number of SNPs in the sliding window | 15 |
+| `threshold` | Max fraction of non-run windows to still call a SNP in run | 0.05 |
+| `minSNP` | Minimum number of SNPs in a run | 3 |
+| `maxOpp` | Max opposite-genotype SNPs allowed in the window | 1 |
+| `maxMiss` | Max missing genotypes allowed in the window | 1 |
+| `maxGap` | Max gap (bp) between consecutive SNPs in a run | 10^6 |
+| `minLengthBps` | Minimum run length (bp) | 1000 |
+| `ROHet` | Detect runs of heterozygosity instead of homozygosity | FALSE |
 
 ```{r scan-sliding, results='hide'}
-roh <- scanRUNS(
+roh_sliding <- scanRUNS(
   bedFile,
   method       = "sliding",
-  minSNP       = 15,
+  minSNP       = 20,
   maxOpp       = 1,
   maxMiss      = 1,
-  minLengthBps = 100000,
+  minLengthBps = 250000,
   maxGap       = 1e6,
   windowSize   = 15,
   threshold    = 0.05,
@@ -61,28 +98,46 @@ roh <- scanRUNS(
 )
 ```
 
-```{r print-roh}
-print(roh)
+```{r print-sliding}
+print(roh_sliding)
 ```
 
-## Detect ROH with the consecutive method (PED input)
+## Consecutive method (PED input)
+
+The consecutive method scans SNPs one by one, without a sliding window. A run starts when a SNP satisfies the genotype criterion (homozygous for ROHom) and ends when the criterion is violated. Run-level filters then apply.
+
+Key parameters (no window parameters needed):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `minSNP` | Minimum number of SNPs in a run | 3 |
+| `maxOpp` | Max opposite-genotype SNPs allowed in the run | 0 |
+| `maxMiss` | Max missing genotypes allowed in the run | 0 |
+| `maxGap` | Max gap (bp) between consecutive SNPs | 10^6 |
+| `minLengthBps` | Minimum run length (bp) | 1000 |
 
 ```{r scan-consecutive, results='hide'}
 roh_cons <- scanRUNS(
   pedFile,
   method       = "consecutive",
-  minSNP       = 15,
-  maxOpp       = 0,
-  maxMiss      = 0,
-  minLengthBps = 100000,
+  minSNP       = 20,
+  maxOpp       = 1,
+  maxMiss      = 1,
+  minLengthBps = 250000,
   maxGap       = 1e6,
   verbose      = FALSE
 )
 ```
 
-## Detect ROHet (runs of heterozygosity)
+```{r print-consecutive}
+print(roh_cons)
+```
 
-Set `ROHet = TRUE` to detect heterozygosity-rich regions instead:
+The sliding-window method detected **`r nrow(roh_sliding$runs)`** ROH; the consecutive method detected **`r nrow(roh_cons$runs)`** ROH.
+
+## Runs of heterozygosity (ROHet)
+
+By setting `ROHet = TRUE`, heterozygosity-rich regions are detected instead of homozygosity runs. These are genomic regions where an individual is heterozygous at an unusually high proportion of loci — potentially indicating balancing selection, recent admixture, or structural variation.
 
 ```{r scan-rohet, results='hide'}
 roh_het <- scanRUNS(
@@ -94,135 +149,207 @@ roh_het <- scanRUNS(
   maxMiss      = 1,
   minLengthBps = 10000,
   maxGap       = 1e6,
+  windowSize   = 10,
+  threshold    = 0.05,
   verbose      = FALSE
 )
 ```
 
+`r nrow(roh_het$runs)` ROHet regions were detected across the two chromosomes.
+
 # The ROH object
 
-`scanRUNS()` returns an `ROH` S3 object — a named list carrying the detected runs and all associated metadata:
+`scanRUNS()` returns an `ROH` S3 object — a named list carrying the detected runs and all associated metadata. Once you have an `ROH` object, no file paths are needed for any downstream function.
 
 ```{r roh-structure}
-names(roh)
+names(roh_sliding)
 ```
 
 | Element | Content |
 |---|---|
-| `$runs` | One row per detected run: group, id, chrom, nSNP, from, to, lengthBps |
-| `$summary` | Per-individual summary: n_ROH, total_length_bp, mean_length, n_snps_in_roh |
-| `$chrom_lengths` | Chromosome lengths derived from the map |
-| `$sample_info` | All individuals (group + id), including those with 0 runs |
-| `$snp_map` | Full SNP map: CHR, SNP_NAME, POSITION |
-| `$method` | Detection method used |
+| `$runs` | One row per run: group, id, chrom, nSNP, from, to, lengthBps |
+| `$summary` | Per-individual summary: n_ROH, total_length_bp, mean_length |
+| `$chrom_lengths` | Chromosome lengths derived from the SNP map |
+| `$sample_info` | All samples (group + id), including those with 0 runs |
+| `$snp_map` | Full SNP map (CHR, SNP_NAME, POSITION) |
+| `$method` | Detection method |
 | `$type` | ROHom or ROHet |
 | `$snp_freq` | Per-SNP ROH frequency (BED engine only) |
 
 ```{r roh-access}
-head(as.data.frame(roh), 3)
+head(as.data.frame(roh_sliding), 4)
+```
+
+```{r sample-info}
+head(roh_sliding$sample_info)
+table(roh_sliding$sample_info$group)
 ```
 
 ## Save and reload results
 
-Large datasets can take minutes to scan. Save the `ROH` object once and reload it instantly in future sessions:
+Large datasets can take minutes to scan. Save the result once and reload instantly in future sessions:
 
 ```{r save-load, eval=FALSE}
-saveROH(roh, "mydata_roh.roh")
-roh <- loadROH("mydata_roh.roh")
-```
-
-# Sample data
-
-The example dataset is a subset of sheep (*Ovis aries*) SNP genotypes from Kijas et al. (2016): 100 animals from two breeds (Jacobs and Navajo-Churro), 4,841 SNPs on chromosomes 2 and 24.
-
-```{r sample-info}
-head(roh$sample_info)
-table(roh$sample_info$group)
+saveROH(roh_sliding, "sheep_roh.roh")
+roh_sliding <- loadROH("sheep_roh.roh")
 ```
 
 # Summary statistics
 
-`summaryRuns()` computes descriptive statistics on detected runs. When an `ROH` object is passed, no file paths are needed:
+`summaryRuns()` computes descriptive statistics on detected runs. It accepts an `ROH` object directly — no file paths needed.
 
 ```{r summary, results='hide'}
-summ <- summaryRuns(roh_cons, Class = 2, snpInRuns = TRUE)
+summ <- summaryRuns(roh_sliding, Class = 6, snpInRuns = TRUE)
 ```
 
-```{r summary-show}
+The returned list includes `r length(summ)` data frames:
+
+```{r summary-names}
 names(summ)
-summ$summary_ROH_count
-summ$summary_ROH_mean_chr
-head(summ$SNPinRun, 3)
 ```
 
-The `SNPinRun` element gives, for each SNP, the proportion of times it falls inside a run in each population/group.
+For instance, the number of runs per size-class (Mbps) per breed:
 
-`tableRuns()` reports genomic regions where a high proportion of individuals share a run — useful for identifying selection signatures:
+```{r summary-count}
+summ$summary_ROH_count
+```
+
+The average ROH length (Mb) per chromosome and breed:
+
+```{r summary-mean-chr}
+summ$summary_ROH_mean_chr
+```
+
+The `SNPinRun` element gives, for each SNP and each population, the proportion of individuals that carry a run overlapping that SNP:
+
+```{r summary-snpinrun}
+head(summ$SNPinRun)
+```
+
+`tableRuns()` identifies genomic regions where a run is shared by a high fraction of individuals — useful for detecting selection signatures:
 
 ```{r table-runs}
-topRuns <- tableRuns(roh_cons, threshold = 0.5)
-head(topRuns, 5)
+topRuns <- tableRuns(roh_sliding, threshold = 0.7)
+print(topRuns)
 ```
 
 # Inbreeding ($F_{ROH}$)
 
-Individual inbreeding coefficients based on ROH are calculated as:
+Individual inbreeding coefficients from ROH are:
 
 $$F_{ROH} = \frac{\sum L_{ROH}}{L_{genome}}$$
 
+where $\sum L_{ROH}$ is the total length of all ROH in an individual and $L_{genome}$ is the total surveyed genome length.
+
 ```{r froh}
-froh <- Froh_inbreeding(roh_cons, genome_wide = TRUE)
-head(froh[order(froh$Froh_genome, decreasing = TRUE), ], 5)
+froh <- Froh_inbreeding(roh_sliding, genome_wide = TRUE)
+head(froh[order(froh$Froh_genome, decreasing = TRUE), ], 6)
 ```
 
-Chromosome-level inbreeding:
+Setting `genome_wide = FALSE` returns per-chromosome estimates:
 
 ```{r froh-chr}
-froh_chr <- Froh_inbreeding(roh_cons, genome_wide = FALSE)
-head(froh_chr, 3)
+froh_chr <- Froh_inbreeding(roh_sliding, genome_wide = FALSE)
+head(froh_chr, 4)
 ```
 
-Inbreeding can also be summarised by ROH length class:
+Inbreeding can also be partitioned by ROH length class, which reflects the age of the inbreeding event (short ROH = ancient, long ROH = recent):
 
 ```{r froh-class}
-froh_class <- Froh_inbreedingClass(roh_cons, Class = 2)
-head(froh_class, 3)
+froh_class <- Froh_inbreedingClass(roh_sliding, Class = 6)
+head(froh_class, 4)
 ```
 
 # Plots
 
-All plot functions accept the `ROH` object directly:
+All plot functions accept the `ROH` object directly.
 
-```{r plots, eval=FALSE}
-# Individual runs per chromosome
-plot_Runs(roh_cons, suppressInds = TRUE, savePlots = FALSE)
+## Runs per individual
 
-# Stacked runs (regions with excess ROH are easily visible)
-plot_StackedRuns(roh_cons, savePlots = FALSE)
+`plot_Runs()` plots detected runs for each individual along the chromosome. Different groups/populations are coloured differently, making it easy to contrast patterns between breeds.
 
-# Run length distribution by group
-plot_ViolinRuns(roh_cons, method = "sum", savePlots = FALSE)
+```{r plot-runs, fig.cap="Detected ROH per individual along the chromosome."}
+plot_Runs(roh_sliding, suppressInds = FALSE, savePlots = FALSE)
+```
 
-# Run length distribution and Froh by class
-plot_DistributionRuns(roh_cons, style = "All", Class = 2, savePlots = FALSE)
+## Stacked runs
 
-# Froh per chromosome
-plot_InbreedingChr(roh_cons, style = "FrohBoxPlot", savePlots = FALSE)
+`plot_StackedRuns()` stacks all runs on top of each other, making regions with an excess of ROH visually prominent. Separate plots are produced per chromosome and per group.
 
-# SNP-in-run frequency per chromosome
-plot_SnpsInRuns(roh_cons, savePlots = FALSE)
+```{r plot-stacked, fig.cap="Stacked ROH — regions enriched for runs stand out clearly.", results='hide'}
+plot_StackedRuns(roh_sliding, savePlots = FALSE)
+```
 
-# Manhattan-style plot of SNP-in-run frequency
-plot_manhattanRuns(roh_cons, savePlots = FALSE)
+## SNP-in-run frequency
+
+`plot_SnpsInRuns()` plots, for each SNP, the proportion of individuals in each group that carry a run overlapping that SNP position. This highlights genomic regions under selection or with population-specific autozygosity.
+
+```{r plot-snps-chr2, fig.cap="Proportion of individuals with a run at each SNP — OAR2.", results='hide'}
+plot_SnpsInRuns(
+  runs    = roh_sliding$runs[roh_sliding$runs$chrom == 2, ],
+  mapFile = mapFile,
+  genotypeFile = pedFile,
+  savePlots = FALSE
+)
+```
+
+```{r plot-snps-chr24, fig.cap="Proportion of individuals with a run at each SNP — OAR24.", results='hide'}
+plot_SnpsInRuns(
+  runs    = roh_sliding$runs[roh_sliding$runs$chrom == 24, ],
+  mapFile = mapFile,
+  genotypeFile = pedFile,
+  savePlots = FALSE
+)
+```
+
+In the Jacob breed a clear peak of ROH is visible approximately halfway along OAR2. This corresponds to the strong GWAS signal reported by Kijas et al. (2016) on OAR2 associated with the four-horns phenotype — a striking example of selection leaving a footprint of autozygosity.
+
+## Manhattan plot of SNP-in-run frequency
+
+`plot_manhattanRuns()` displays the SNP-in-run frequency across all chromosomes simultaneously, in the style of a GWAS Manhattan plot:
+
+```{r plot-manhattan, fig.cap="Manhattan plot of SNP-in-run frequency (Jacobs breed).", results='hide'}
+plot_manhattanRuns(
+  runs         = roh_sliding$runs[roh_sliding$runs$group == "Jacobs", ],
+  genotypeFile = pedFile,
+  mapFile      = mapFile,
+  savePlots    = FALSE
+)
+```
+
+## Run length distribution
+
+`plot_DistributionRuns()` visualises the distribution of run lengths in several styles (`MeanClass`, `MeanChr`, `RunsPCT`, `RunsPCT_Chr`, or `All`):
+
+```{r plot-distribution, fig.cap="Run length distribution by group and class.", results='hide'}
+plot_DistributionRuns(roh_sliding, style = "MeanClass", Class = 6,
+                      savePlots = FALSE)
+```
+
+## Inbreeding per chromosome
+
+`plot_InbreedingChr()` plots $F_{ROH}$ per chromosome, for example as a box-plot by group:
+
+```{r plot-inbreeding-chr, fig.cap="Froh per chromosome by breed (box-plot)."}
+plot_InbreedingChr(roh_sliding, style = "FrohBoxPlot", savePlots = FALSE)
+```
+
+## Violin plot of run length vs number of runs
+
+`plot_ViolinRuns()` shows the distribution of total or mean run length against the number of runs per individual, useful for comparing inbreeding patterns between populations:
+
+```{r plot-violin, fig.cap="Violin plot: total ROH length by group."}
+plot_ViolinRuns(roh_sliding, method = "sum", savePlots = FALSE)
 ```
 
 # Importing external results
 
-Run results from PLINK (`--homozyg`), BCFtools (`roh`), or a previous detectRUNS session saved to CSV can be imported via `readExternalRuns()` and wrapped into an `ROH` object with `as_ROH()`:
+Run results from PLINK (`--homozyg`), BCFtools (`roh`), or a previous detectRUNS session saved to CSV can be imported with `readExternalRuns()` and wrapped into an `ROH` object using `as_ROH()`:
 
 ```{r import}
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv",
                          package = "detectRUNS")
-ext_runs <- readExternalRuns(runsFile, program = "detectRUNS")
+ext_runs <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 head(ext_runs, 3)
 ```
 
@@ -237,22 +364,25 @@ print(roh_ext)
 
 # Backward compatibility
 
-Code written for previous versions of detectRUNS continues to work. The deprecated functions `slidingRUNS.run()` and `consecutiveRUNS.run()` still exist and return plain data.frames. All statistics and plot functions still accept a plain data.frame alongside explicit `mapFile=` and `genotypeFile=` arguments:
+Code written for earlier versions of detectRUNS continues to work. The deprecated functions `slidingRUNS.run()` and `consecutiveRUNS.run()` still exist and return plain data.frames. All statistics and plot functions still accept a plain data.frame alongside explicit `mapFile=` and `genotypeFile=` arguments:
 
 ```{r backward-compat, eval=FALSE}
-# Old-style (still works, but deprecated)
+# Old API — still works, but deprecated
 old_runs <- suppressWarnings(
-  slidingRUNS.run(pedFile, mapFile, windowSize = 15, threshold = 0.05,
-                  minSNP = 15, minLengthBps = 100000)
+  slidingRUNS.run(pedFile, mapFile,
+                  windowSize = 15, threshold = 0.05,
+                  minSNP = 20, minLengthBps = 250000)
 )
 Froh_inbreeding(old_runs, mapFile = mapFile)
+plot_Runs(old_runs)
 ```
 
 # References
 
-- Bjelland, D.W. et al. (2013). *J. Dairy Sci.* 96(7):4697–4706.
-- Kijas, J.W. et al. (2016). *Animal Genetics* 47(2):258–262.
-- Marras, G. et al. (2015). *Animal Genetics* 46(2):110–121.
-- McQuillan, R. et al. (2008). *Am. J. Hum. Genet.* 83(3):359–372.
-- Purcell, S. et al. (2007). *Am. J. Hum. Genet.* 81(3):559–575.
-- Williams, J.L. et al. (2016). *Animal Genetics* 47(1):19–27.
+- Bjelland, D.W., Weigel, K.A., Vukasinovic, N., Nkrumah, J.D. (2013). Evaluation of inbreeding depression in Holstein cattle using whole-genome SNP markers and alternative measures of genomic inbreeding. *Journal of Dairy Science*, 96(7):4697–4706.
+- Ferencakovic, M., Hamzic, E., Gredler, B., Curik, I., Sölkner, J. (2011). Runs of homozygosity reveal genome-wide autozygosity in the Austrian Fleckvieh cattle. *Agriculturae Conspectus Scientificus*, 76(4):325–329.
+- Kijas, J.W., Hadfield, T., Naval Sanchez, M., Cockett, N. (2016). Genome-wide association reveals the locus responsible for four-horned ruminant. *Animal Genetics*, 47(2):258–262.
+- Marras, G., Gaspa, G., Sorbolini, S., Dimauro, C., Ajmone-Marsan, P., Valentini, A., Williams, J.L., Macciotta, N.P.P. (2015). Analysis of runs of homozygosity and their relationship with inbreeding in five cattle breeds farmed in Italy. *Animal Genetics*, 46(2):110–121.
+- McQuillan, R., Leutenegger, A.L., Abdel-Rahman, R., Franklin, C.S., et al. (2008). Runs of homozygosity in European populations. *The American Journal of Human Genetics*, 83(3):359–372.
+- Purcell, S., Neale, B., Todd-Brown, K., Thomas, L., et al. (2007). PLINK: a tool set for whole-genome association and population-based linkage analyses. *The American Journal of Human Genetics*, 81(3):559–575.
+- Williams, J.L., Hall, S.J.G., Del Corvo, M., Ballingall, K.T., Colli, L., Ajmone Marsan, P., Biscarini, F. (2016). Inbreeding and purging at the genomic level: the Chillingham cattle reveal extensive, non-random SNP heterozygosity. *Animal Genetics*, 47(1):19–27.
