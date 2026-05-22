@@ -871,8 +871,11 @@ test_that("Testing snpInsideRuns", {
                              stringsAsFactors=FALSE)
 
   # get snps inside runs
+  pops <- data.frame(POP = sample_info$group, ID = sample_info$id,
+                     stringsAsFactors = FALSE)
   reference <- snpInsideRuns(runsChrom, mapChrom, sample_info)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
+  test$Number <- NULL   # C++ returns extra sequential-index column not in R version
 
   # testing functions
   expect_equivalent(test, reference)
@@ -914,8 +917,11 @@ test_that("Testing snpInsideRuns with CHR as strings", {
                              stringsAsFactors=FALSE)
 
   # get snps inside runs
+  pops <- data.frame(POP = sample_info$group, ID = sample_info$id,
+                     stringsAsFactors = FALSE)
   reference <- snpInsideRuns(runsChrom, mapChrom, sample_info)
-  test <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+  test <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
+  test$Number <- NULL   # C++ returns extra sequential-index column not in R version
 
   # testing functions
   expect_equivalent(test, reference)
