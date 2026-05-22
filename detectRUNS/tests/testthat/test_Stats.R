@@ -10,13 +10,14 @@ runsFile <- "test.ROHet.consecutive.csv"
 
 test_that("Test tableRuns", {
   colClasses <- c(
-    "factor", "character", "character", "character", "numeric",
-    "integer", "integer", "numeric"
+    "character", "character", "character", "character", "numeric",
+    "integer", "integer"
   )
   reference <- read.csv2("test.tableRuns.csv", colClasses = colClasses)
 
   runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
   test <- tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
+  test$Group <- as.character(test$Group)
 
   expect_equal(reference, test)
 

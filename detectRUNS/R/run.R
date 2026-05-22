@@ -11,13 +11,13 @@
 .consecutive_ped <- function(ped_file, map_df, ROHet,
                               maxOppRun, maxMissRun,
                               minSNP, minLengthBps, maxGap,
-                              nCores = 1L) {
+                              nCores = 1L, verbose = FALSE) {
 
-    # Convert to plain data.frame — readMapFile returns a data.table whose
-    # external reference pointer is invalidated in forked child processes.
+    # map_df must be a plain data.frame — no data.table, safe to fork
     map_df <- as.data.frame(map_df)
     lines  <- readLines(ped_file)
     n_snp  <- nrow(map_df)
+    N      <- length(lines)
 
     .process_one <- function(oneLine) {
         geno <- as.character(strsplit(oneLine, " ")[[1]])
@@ -37,10 +37,32 @@
         )
     }
 
-    # mclapply is unsafe with Rcpp on Mac (fork invalidates data.table pointers
-    # and R's memory allocator state).  The BED engine handles parallelism via
-    # OpenMP; the PED engine stays single-threaded.
-    results <- lapply(lines, .process_one)
+    # mclapply (fork) is efficient here: map_df is already a plain data.frame,
+    # no data.table pointers, copy-on-write — no serialisation overhead.
+    # Falls back to progress-bar lapply on Windows (no fork support).
+    # Parallel path: process in chunks so the progress bar advances between batches.
+    if (verbose)
+        pb <- utils::txtProgressBar(min = 0, max = N, style = 3,
+                                    char = "#", width = 50)
+    results <- vector("list", N)
+
+    if (nCores > 1L && .Platform$OS.type == "unix") {
+        chunk_size <- max(nCores * 4L, 20L)
+        chunks     <- split(seq_len(N), ceiling(seq_len(N) / chunk_size))
+        done       <- 0L
+        for (ch in chunks) {
+            results[ch] <- parallel::mclapply(lines[ch], .process_one,
+                                              mc.cores = nCores)
+            done <- done + length(ch)
+            if (verbose) utils::setTxtProgressBar(pb, done)
+        }
+    } else {
+        for (i in seq_len(N)) {
+            results[[i]] <- .process_one(lines[[i]])
+            if (verbose) utils::setTxtProgressBar(pb, i)
+        }
+    }
+    if (verbose) { close(pb); cat("\n") }
 
     RUNs <- do.call(rbind, results)
     if (is.null(RUNs))
@@ -60,7 +82,7 @@
                           maxOppWindow, maxMissWindow,
                           maxGap, minLengthBps, minDensity,
                           maxOppRun, maxMissRun,
-                          nCores = 1L) {
+                          nCores = 1L, verbose = FALSE) {
 
     parameters <- list(
         windowSize    = windowSize,
@@ -76,21 +98,51 @@
         maxMissRun    = maxMissRun
     )
 
+    # map_df must be a plain data.frame — no data.table, safe to fork
     map_df <- as.data.frame(map_df)
     lines  <- readLines(ped_file)
     n_snp  <- nrow(map_df)
+    N      <- length(lines)
+
+    # Validate marker count on the first line before spawning parallel workers
+    # so the error propagates directly rather than being wrapped by mclapply.
+    first_geno <- as.character(strsplit(lines[1L], " ")[[1]])
+    if (length(first_geno) - 6L != n_snp * 2L)
+        stop("Number of markers differ in mapFile and genotype: are those the same dataset?")
 
     .process_one <- function(oneLine) {
         geno <- as.character(strsplit(oneLine, " ")[[1]])
-        if (length(geno) - 6 != n_snp * 2)
-            stop("Number of markers differ in mapFile and genotype: are those the same dataset?")
         animal <- list(FID = geno[1], IID = geno[2])
         geno   <- pedConvertCpp(geno[7:length(geno)])
         slidingRuns(geno, animal, map_df, gaps, parameters)
     }
 
-    # See note in .consecutive_ped: mclapply is unsafe with Rcpp on Mac.
-    results <- lapply(lines, .process_one)
+    # mclapply (fork) is efficient here: map_df is already a plain data.frame,
+    # no data.table pointers, copy-on-write — no serialisation overhead.
+    # Falls back to progress-bar lapply on Windows (no fork support).
+    # Parallel path: process in chunks so the progress bar advances between batches.
+    if (verbose)
+        pb <- utils::txtProgressBar(min = 0, max = N, style = 3,
+                                    char = "#", width = 50)
+    results <- vector("list", N)
+
+    if (nCores > 1L && .Platform$OS.type == "unix") {
+        chunk_size <- max(nCores * 4L, 20L)
+        chunks     <- split(seq_len(N), ceiling(seq_len(N) / chunk_size))
+        done       <- 0L
+        for (ch in chunks) {
+            results[ch] <- parallel::mclapply(lines[ch], .process_one,
+                                              mc.cores = nCores)
+            done <- done + length(ch)
+            if (verbose) utils::setTxtProgressBar(pb, done)
+        }
+    } else {
+        for (i in seq_len(N)) {
+            results[[i]] <- .process_one(lines[[i]])
+            if (verbose) utils::setTxtProgressBar(pb, i)
+        }
+    }
+    if (verbose) { close(pb); cat("\n") }
 
     RUNs <- do.call(rbind, results)
     if (is.null(RUNs))

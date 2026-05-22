@@ -420,6 +420,9 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
 #'
 
 tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile=NULL, mapFile=NULL, threshold = 0.5) {
+  if (!is.numeric(threshold) || length(threshold) != 1L || threshold < 0 || threshold > 1)
+    stop("Threshold must be between 0 and 1")
+
   runs_input <- runs
   if (!is.null(runs)) runs <- .get_runs(runs)
 
