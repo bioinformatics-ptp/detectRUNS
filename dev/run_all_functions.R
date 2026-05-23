@@ -2,19 +2,18 @@
 ## detectRUNS — comprehensive function exercise script
 ##
 ## Change the paths in the CONFIG section below, then source the whole file.
-## The script runs every exported function with both methods and both ROH types,
-## saves all plots and tables, and generates a full HTML report.
+## The script runs every exported function, saves all plots and tables,
+## and generates HTML reports for ROHom, ROHet, and PED-format scans.
 ###############################################################################
 
 # =============================================================================
 # CONFIG — edit these paths before running
 # =============================================================================
 
-BED_FILE   <- "Ext_Data/SELMOL_codACGT.bed"    # BED/BIM/FAM (no extension needed)
-PED_FILE   <- "Ext_Data/pigData.ped"            # PED + MAP
-MAP_FILE   <- "Ext_Data/pigData.map"            # MAP for PED format
-OUT_DIR    <- "dev/test_output"                 # all results go here
-N_CORES    <- parallel::detectCores() - 1L      # threads for BED scans
+BED_FILE   <- "Ext_Data/SELMOL_codACGT.bed"   # BED/BIM/FAM prefix
+PED_FILE   <- "Ext_Data/pigData.ped"           # PED file
+MAP_FILE   <- "Ext_Data/pigData.map"           # MAP file matching PED
+OUT_DIR    <- "dev/test_output"                # all results land here
 
 # =============================================================================
 # Setup
@@ -27,15 +26,12 @@ suppressPackageStartupMessages({
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 cat("Output directory:", normalizePath(OUT_DIR), "\n")
 
-.save_pdf <- function(p, name, w = 10, h = 6) {
+# Thin wrapper: open PDF, call fn (which prints to device), close
+.pdf <- function(name, fn, w = 10, h = 6) {
     path <- file.path(OUT_DIR, paste0(name, ".pdf"))
-    if (inherits(p, "gg") || inherits(p, "ggplot")) {
-        ggplot2::ggsave(path, plot = p, width = w, height = h)
-    } else {
-        grDevices::pdf(path, width = w, height = h)
-        tryCatch(print(p), finally = grDevices::dev.off())
-    }
-    cat("  saved:", path, "\n")
+    grDevices::pdf(path, width = w, height = h)
+    tryCatch(fn(), finally = grDevices::dev.off())
+    cat("  saved:", basename(path), "\n")
     invisible(path)
 }
 
@@ -50,66 +46,64 @@ cat("Output directory:", normalizePath(OUT_DIR), "\n")
 # =============================================================================
 .section("1. scanRUNS | BED | sliding | ROHom")
 
-roh_bed_slide <- scanRUNS(
+roh_slide <- scanRUNS(
     BED_FILE,
-    method        = "sliding",
-    minSNP        = 15,
-    maxOpp        = 1,
-    maxMiss       = 1,
-    minLengthBps  = 1e5,
-    maxGap        = 1e6,
-    windowSize    = 15,
-    threshold     = 0.05,
-    nCores        = N_CORES
+    method       = "sliding",
+    minSNP       = 15,
+    maxOpp       = 1,
+    maxMiss      = 1,
+    minLengthBps = 1e5,
+    maxGap       = 1e6,
+    windowSize   = 15,
+    threshold    = 0.05
 )
-print(roh_bed_slide)
-cat("Runs:", nrow(roh_bed_slide$runs), "\n")
+print(roh_slide)
+cat("Total runs:", nrow(roh_slide$runs), "\n")
 
 # =============================================================================
 # 2. Scan — BED, consecutive, ROHom
 # =============================================================================
 .section("2. scanRUNS | BED | consecutive | ROHom")
 
-roh_bed_cons <- scanRUNS(
+roh_cons <- scanRUNS(
     BED_FILE,
-    method        = "consecutive",
-    minSNP        = 15,
-    maxOpp        = 1,
-    maxMiss       = 1,
-    minLengthBps  = 1e5,
-    maxGap        = 1e6,
-    nCores        = N_CORES
+    method       = "consecutive",
+    minSNP       = 15,
+    maxOpp       = 1,
+    maxMiss      = 1,
+    minLengthBps = 1e5,
+    maxGap       = 1e6
 )
-print(roh_bed_cons)
-cat("Runs:", nrow(roh_bed_cons$runs), "\n")
+print(roh_cons)
+cat("Total runs:", nrow(roh_cons$runs), "\n")
 
 # =============================================================================
 # 3. Scan — BED, sliding, ROHet
 # =============================================================================
 .section("3. scanRUNS | BED | sliding | ROHet")
 
-roh_bed_rohet <- scanRUNS(
+roh_het <- scanRUNS(
     BED_FILE,
-    method        = "sliding",
-    ROHet         = TRUE,
-    minSNP        = 15,
-    maxOpp        = 1,
-    maxMiss       = 1,
-    minLengthBps  = 1e5,
-    maxGap        = 1e6,
-    windowSize    = 15,
-    threshold     = 0.05,
-    nCores        = N_CORES
+    method       = "sliding",
+    ROHet        = TRUE,
+    minSNP       = 15,
+    maxOpp       = 1,
+    maxMiss      = 1,
+    minLengthBps = 1e5,
+    maxGap       = 1e6,
+    windowSize   = 15,
+    threshold    = 0.05
 )
-print(roh_bed_rohet)
-cat("ROHet runs:", nrow(roh_bed_rohet$runs), "\n")
+print(roh_het)
+cat("ROHet runs:", nrow(roh_het$runs), "\n")
 
 # =============================================================================
-# 4. Scan — PED format (if file available)
+# 4. Scan — PED format
 # =============================================================================
+roh_ped <- NULL
 if (file.exists(PED_FILE)) {
     .section("4. scanRUNS | PED | sliding | ROHom")
-    roh_ped_slide <- scanRUNS(
+    roh_ped <- scanRUNS(
         PED_FILE,
         mapFile      = MAP_FILE,
         method       = "sliding",
@@ -121,11 +115,8 @@ if (file.exists(PED_FILE)) {
         windowSize   = 15,
         threshold    = 0.05
     )
-    print(roh_ped_slide)
-    cat("PED runs:", nrow(roh_ped_slide$runs), "\n")
-} else {
-    roh_ped_slide <- NULL
-    cat("Skipping PED scan: file not found\n")
+    print(roh_ped)
+    cat("PED runs:", nrow(roh_ped$runs), "\n")
 }
 
 # =============================================================================
@@ -133,246 +124,267 @@ if (file.exists(PED_FILE)) {
 # =============================================================================
 .section("5. saveROH / loadROH")
 
-roh_file <- file.path(OUT_DIR, "roh_bed_slide.roh")
-saveROH(roh_bed_slide, roh_file)
-roh_reloaded <- loadROH(roh_file)
+roh_file <- file.path(OUT_DIR, "roh_slide.roh")
+saveROH(roh_slide, roh_file)
+roh2 <- loadROH(roh_file)
 cat("Round-trip OK:", isTRUE(all.equal(
-    roh_bed_slide$runs, roh_reloaded$runs, check.attributes = FALSE)), "\n")
+    roh_slide$runs, roh2$runs, check.attributes = FALSE)), "\n")
+cat("method preserved:", roh2$method, "\n")
+cat("type preserved  :", roh2$type, "\n")
 
 # =============================================================================
 # 6. summaryRuns
 # =============================================================================
-.section("6. summaryRuns | ROHom")
+.section("6. summaryRuns | ROHom sliding")
 
-summ <- summaryRuns(roh_bed_slide, Class = 2, snpInRuns = TRUE)
+summ <- summaryRuns(roh_slide, Class = 2, snpInRuns = TRUE)
 cat("summaryRuns elements:", paste(names(summ), collapse = ", "), "\n")
-cat("\nMean run length per group (Mb):\n")
-print(summ$summary_ROH_mean[, c("group", "mean_run_Mbps")])
+cat("Groups summarised   :", unique(summ$summary_ROH_count$group), "\n")
+cat("SNPinRun rows       :", nrow(summ$SNPinRun), "\n")
 
-# with snpInRuns on ROHet
-summ_het <- summaryRuns(roh_bed_rohet, Class = 2, snpInRuns = FALSE)
-cat("\nROHet summaryRuns OK:", !is.null(summ_het), "\n")
+summ2 <- summaryRuns(roh_slide, Class = 4, snpInRuns = FALSE)
+cat("Class=4 Froh_class cols:", ncol(summ2$result_Froh_class), "\n")
+
+summ_het <- summaryRuns(roh_het, Class = 2, snpInRuns = FALSE)
+cat("ROHet summaryRuns OK:", !is.null(summ_het), "\n")
 
 # =============================================================================
 # 7. tableRuns
 # =============================================================================
-.section("7. tableRuns")
+.section("7. tableRuns — multiple thresholds")
 
-tbl <- tableRuns(roh_bed_slide, threshold = 0.50)
-cat("Common ROH regions (>= 50%):", nrow(tbl), "\n")
-if (nrow(tbl) > 0) print(head(tbl, 5))
-
-tbl25 <- tableRuns(roh_bed_slide, threshold = 0.25)
-cat("Common ROH regions (>= 25%):", nrow(tbl25), "\n")
+for (thr in c(0.25, 0.50, 0.75)) {
+    tbl <- tableRuns(roh_slide, threshold = thr)
+    cat(sprintf("  threshold=%.0f%%: %d common ROH regions\n", thr*100, nrow(tbl)))
+}
 
 # =============================================================================
 # 8. Froh functions
 # =============================================================================
 .section("8. Froh_inbreeding / Froh_inbreedingClass")
 
-froh <- Froh_inbreeding(roh_bed_slide)
-cat("Froh columns:", paste(names(froh), collapse = ", "), "\n")
-cat("Froh range: [", round(min(froh$Froh_genome), 4),
-    ",", round(max(froh$Froh_genome), 4), "]\n")
+froh_gw  <- Froh_inbreeding(roh_slide, genome_wide = TRUE)
+froh_chr <- Froh_inbreeding(roh_slide, genome_wide = FALSE)
+cat("Genome-wide Froh: mean =", round(mean(froh_gw$Froh_genome), 4),
+    "  range [", round(min(froh_gw$Froh_genome), 4),
+    ",", round(max(froh_gw$Froh_genome), 4), "]\n")
+cat("Froh_chr rows:", nrow(froh_chr), "\n")
 
-froh_cls <- Froh_inbreedingClass(roh_bed_slide, Class = 2)
-cat("Froh by class columns:", paste(names(froh_cls), collapse = ", "), "\n")
+for (cls in c(2, 4, 8)) {
+    f <- Froh_inbreedingClass(roh_slide, Class = cls)
+    cat(sprintf("  Froh_inbreedingClass(Class=%d): %d rows, %d cols\n",
+                cls, nrow(f), ncol(f)))
+}
 
 # =============================================================================
 # 9. Plots — ROHom sliding
 # =============================================================================
 .section("9. Plots | ROHom | sliding")
 
-cat("  violin (sum)...\n")
-p <- plot_DistRuns(roh_bed_slide, style = "violin", plotType = "sum")
-.save_pdf(p, "01_violin_sum")
+cat("  plot_ViolinRuns (sum)...\n")
+.pdf("01_violin_sum", function() plot_ViolinRuns(roh_slide, method = "sum"))
 
-cat("  violin (mean)...\n")
-p <- plot_DistRuns(roh_bed_slide, style = "violin", plotType = "mean")
-.save_pdf(p, "02_violin_mean")
+cat("  plot_ViolinRuns (mean)...\n")
+.pdf("02_violin_mean", function() plot_ViolinRuns(roh_slide, method = "mean"))
 
-cat("  histogram (RunsPCT)...\n")
-p <- plot_DistRuns(roh_bed_slide, style = "histogram", plotType = "RunsPCT")
-.save_pdf(p, "03_hist_runspct")
+cat("  plot_DistributionRuns (MeanClass)...\n")
+.pdf("03_dist_MeanClass",
+     function() plot_DistributionRuns(roh_slide, style = "MeanClass"))
 
-cat("  class distribution (MeanClass)...\n")
-p <- plot_DistRuns(roh_bed_slide, style = "ChrBarPlot", plotType = "MeanClass")
-.save_pdf(p, "04_dist_meanclass")
+cat("  plot_DistributionRuns (MeanChr)...\n")
+.pdf("04_dist_MeanChr",
+     function() plot_DistributionRuns(roh_slide, style = "MeanChr"))
 
-cat("  Froh distribution...\n")
-p <- plot_Froh(roh_bed_slide)
-.save_pdf(p, "05_froh")
+cat("  plot_DistributionRuns (RunsPCT)...\n")
+.pdf("05_dist_RunsPCT",
+     function() plot_DistributionRuns(roh_slide, style = "RunsPCT"))
 
-cat("  Froh barplot...\n")
-p <- plot_Froh(roh_bed_slide, plotType = "BarPlot")
-.save_pdf(p, "06_froh_barplot")
+cat("  plot_InbreedingChr (FrohBoxPlot)...\n")
+.pdf("06_froh_boxplot",
+     function() plot_InbreedingChr(roh_slide, style = "FrohBoxPlot"))
 
-cat("  Froh boxplot...\n")
-p <- plot_Froh(roh_bed_slide, plotType = "BoxPlot")
-.save_pdf(p, "07_froh_boxplot")
+cat("  plot_InbreedingChr (ChrBarPlot)...\n")
+.pdf("07_froh_chr_barplot",
+     function() plot_InbreedingChr(roh_slide, style = "ChrBarPlot"))
 
-cat("  SNPs in runs Manhattan...\n")
-grps <- unique(roh_bed_slide$runs$group)
-for (g in grps) {
-    p <- plot_manhattanRuns(roh_bed_slide, group = g)
-    .save_pdf(p, paste0("08_manhattan_sliding - ", g))
-}
+cat("  plot_InbreedingChr (ChrBoxPlot)...\n")
+.pdf("08_froh_chr_boxplot",
+     function() plot_InbreedingChr(roh_slide, style = "ChrBoxPlot"))
 
-cat("  Stacked runs per group...\n")
-for (g in grps) {
-    p <- plot_StackedRuns(roh_bed_slide, group = g)
-    .save_pdf(p, paste0("09_stacked_runs_", g))
-}
+cat("  plot_manhattanRuns...\n")
+.pdf("09_manhattan_sliding",
+     function() plot_manhattanRuns(roh_slide), w = 14, h = 6)
 
-cat("  All-chromosome run plot...\n")
-p <- plot_Runs(roh_bed_slide)
-.save_pdf(p, "10_plot_runs_AllChromosomes", w = 14, h = 10)
+cat("  plot_SnpsInRuns...\n")
+.pdf("10_snps_in_runs",
+     function() plot_SnpsInRuns(roh_slide), w = 14, h = 8)
+
+cat("  plot_StackedRuns...\n")
+.pdf("11_stacked_runs",
+     function() plot_StackedRuns(roh_slide), w = 14, h = 8)
+
+cat("  plot_Runs (all chromosomes)...\n")
+.pdf("12_plot_runs_AllChromosomes",
+     function() plot_Runs(roh_slide), w = 16, h = 10)
 
 # =============================================================================
 # 10. Plots — ROHom consecutive
 # =============================================================================
 .section("10. Plots | ROHom | consecutive")
 
-for (g in unique(roh_bed_cons$runs$group)) {
-    p <- plot_manhattanRuns(roh_bed_cons, group = g)
-    .save_pdf(p, paste0("11_manhattan_cons - ", g))
-}
+cat("  plot_manhattanRuns (consecutive)...\n")
+.pdf("13_manhattan_consecutive",
+     function() plot_manhattanRuns(roh_cons), w = 14, h = 6)
+
+cat("  plot_ViolinRuns (consecutive)...\n")
+.pdf("14_violin_sum_consecutive",
+     function() plot_ViolinRuns(roh_cons, method = "sum"))
 
 # =============================================================================
 # 11. Plots — ROHet
 # =============================================================================
 .section("11. Plots | ROHet")
 
-p <- plot_DistRuns(roh_bed_rohet, style = "violin", plotType = "sum")
-.save_pdf(p, "12_rohet_violin_sum")
+cat("  plot_ViolinRuns (ROHet)...\n")
+.pdf("15_rohet_violin_sum",
+     function() plot_ViolinRuns(roh_het, method = "sum"))
 
-p <- plot_DistRuns(roh_bed_rohet, style = "ChrBarPlot", plotType = "MeanClass")
-.save_pdf(p, "13_rohet_dist")
+cat("  plot_DistributionRuns (ROHet, MeanClass)...\n")
+.pdf("16_rohet_dist_MeanClass",
+     function() plot_DistributionRuns(roh_het, style = "MeanClass"))
+
+cat("  plot_manhattanRuns (ROHet)...\n")
+.pdf("17_rohet_manhattan",
+     function() plot_manhattanRuns(roh_het), w = 14, h = 6)
 
 # =============================================================================
-# 12. rohIslands
+# 12. rohIslands — two methods and percentiles
 # =============================================================================
 .section("12. rohIslands | sliding | p99 | n_perm=500")
 
-islands_slide <- rohIslands(
-    roh_bed_slide,
+isl_slide_p99 <- rohIslands(
+    roh_slide,
     n_perm     = 500,
     percentile = 0.99,
     seed       = 42
 )
-print(islands_slide)
-cat("ROH islands:", sum(islands_slide$island), "\n")
+print(isl_slide_p99)
+cat("Islands (sliding p99):", nrow(isl_slide_p99$islands), "\n")
 
 .section("12b. rohIslands | consecutive | p95 | n_perm=500")
 
-islands_cons <- rohIslands(
-    roh_bed_cons,
+isl_cons_p95 <- rohIslands(
+    roh_cons,
     n_perm     = 500,
     percentile = 0.95,
     seed       = 42
 )
-cat("ROH islands (cons, p95):", sum(islands_cons$island), "\n")
+cat("Islands (consecutive p95):", nrow(isl_cons_p95$islands), "\n")
 
-cat("  ROH island Manhattan plot (sliding)...\n")
-p <- plot(islands_slide)
-.save_pdf(p, "14_islands_slide_p99", w = 14, h = 5)
+cat("  summary.ROHIslands...\n")
+print(summary(isl_slide_p99))
 
-p <- plot(islands_cons)
-.save_pdf(p, "15_islands_cons_p95", w = 14, h = 5)
+cat("  plot.ROHIslands (sliding p99)...\n")
+.pdf("18_islands_sliding_p99",
+     function() print(plot(isl_slide_p99)), w = 16, h = 5)
 
-# =============================================================================
-# 13. Froh by chromosome
-# =============================================================================
-.section("13. Froh_inbreeding chromosome-by-chromosome")
-
-froh_chr <- Froh_inbreeding(roh_bed_slide, genome_wide = FALSE)
-cat("Froh_chr rows:", nrow(froh_chr), "\n")
-print(head(froh_chr, 5))
-
-p <- plot_Froh(roh_bed_slide, genome_wide = FALSE, plotType = "BoxPlot")
-.save_pdf(p, "16_froh_chr_boxplot")
-
-p <- plot_Froh(roh_bed_slide, genome_wide = FALSE, plotType = "BarPlot")
-.save_pdf(p, "17_froh_chr_barplot")
+cat("  plot.ROHIslands (consecutive p95)...\n")
+.pdf("19_islands_consecutive_p95",
+     function() print(plot(isl_cons_p95)), w = 16, h = 5)
 
 # =============================================================================
-# 14. as_ROH and as.data.frame
+# 13. as_ROH / as.data.frame
 # =============================================================================
-.section("14. as_ROH / as.data.frame.ROH")
+.section("13. as_ROH / as.data.frame.ROH")
 
-df <- as.data.frame(roh_bed_slide)
-cat("as.data.frame rows:", nrow(df), "cols:", ncol(df), "\n")
+df <- as.data.frame(roh_slide)
+cat("as.data.frame: rows =", nrow(df), "  cols =", ncol(df), "\n")
 
-roh_rebuilt <- as_ROH(roh_bed_slide$runs, roh_bed_slide$snp_map,
-                      roh_bed_slide$sample_info)
-cat("as_ROH rebuild OK:", inherits(roh_rebuilt, "ROH"), "\n")
+roh_rebuilt <- as_ROH(roh_slide$runs, bedFile = BED_FILE,
+                      method = "sliding", type = "ROHom")
+cat("as_ROH S3 class:", inherits(roh_rebuilt, "ROH"), "\n")
+cat("runs identical  :", isTRUE(all.equal(
+    roh_slide$runs, roh_rebuilt$runs, check.attributes = FALSE)), "\n")
 
 # =============================================================================
-# 15. reportRUNS — Markdown + HTML
+# 14. reportRUNS — ROHom sliding, all formats
 # =============================================================================
-.section("15. reportRUNS | markdown")
+.section("14. reportRUNS | ROHom | markdown")
 
 out_md <- reportRUNS(
-    roh_bed_slide,
-    islands    = islands_slide,
+    roh_slide,
+    islands    = isl_slide_p99,
     format     = "markdown",
     output_dir = OUT_DIR,
-    prefix     = "test_report_md",
-    overwrite  = TRUE,
-    verbose    = TRUE
+    prefix     = "report_rohom_md",
+    overwrite  = TRUE
 )
-cat("Markdown report:", out_md$report_file, "\n")
-cat("Plots:", length(out_md$plots), "\n")
+cat("Markdown report:", basename(out_md$report_file), "\n")
+cat("Plots generated:", length(out_md$plots), "\n")
 
-.section("15b. reportRUNS | html (self-contained)")
+.section("14b. reportRUNS | ROHom | html (self-contained)")
 
 out_html <- reportRUNS(
-    roh_bed_slide,
-    islands    = islands_slide,
+    roh_slide,
+    islands    = isl_slide_p99,
     format     = "html",
     output_dir = OUT_DIR,
-    prefix     = "test_report_html",
-    overwrite  = TRUE,
-    verbose    = TRUE
+    prefix     = "report_rohom_html",
+    overwrite  = TRUE
 )
-cat("HTML report:", out_html$report_file, "\n")
-cat("File size:", round(file.info(out_html$report_file)$size / 1024), "KB\n")
+cat("HTML report  :", basename(out_html$report_file), "\n")
+cat("File size    :", round(file.info(out_html$report_file)$size / 1024), "KB\n")
+cat("Base64 plots :", length(out_html$plots), "\n")
 
 # =============================================================================
-# 16. reportRUNS — ROHet
+# 15. reportRUNS — ROHet
 # =============================================================================
-.section("16. reportRUNS | ROHet | html")
+.section("15. reportRUNS | ROHet | html")
 
-out_het <- reportRUNS(
-    roh_bed_rohet,
+out_het_html <- reportRUNS(
+    roh_het,
     format     = "html",
     output_dir = OUT_DIR,
-    prefix     = "test_report_rohet",
-    overwrite  = TRUE,
-    verbose    = TRUE
+    prefix     = "report_rohet_html",
+    overwrite  = TRUE
 )
-cat("ROHet HTML report:", out_het$report_file, "\n")
+cat("ROHet HTML   :", basename(out_het_html$report_file), "\n")
 
 # =============================================================================
-# 17. PED format report (if available)
+# 16. reportRUNS — consecutive
 # =============================================================================
-if (!is.null(roh_ped_slide)) {
+.section("16. reportRUNS | consecutive | html")
+
+out_cons_html <- reportRUNS(
+    roh_cons,
+    islands    = isl_cons_p95,
+    format     = "html",
+    output_dir = OUT_DIR,
+    prefix     = "report_cons_html",
+    overwrite  = TRUE
+)
+cat("Consecutive HTML:", basename(out_cons_html$report_file), "\n")
+
+# =============================================================================
+# 17. reportRUNS — PED format (if available)
+# =============================================================================
+if (!is.null(roh_ped)) {
     .section("17. reportRUNS | PED scan | html")
     out_ped <- reportRUNS(
-        roh_ped_slide,
+        roh_ped,
         format     = "html",
         output_dir = OUT_DIR,
-        prefix     = "test_report_ped",
-        overwrite  = TRUE,
-        verbose    = TRUE
+        prefix     = "report_ped_html",
+        overwrite  = TRUE
     )
-    cat("PED HTML report:", out_ped$report_file, "\n")
+    cat("PED HTML report:", basename(out_ped$report_file), "\n")
 }
 
 # =============================================================================
 # Done
 # =============================================================================
 .section("DONE")
-cat("All results saved in:", normalizePath(OUT_DIR), "\n")
-cat("\nFiles generated:\n")
-cat(paste(" ", list.files(OUT_DIR, recursive = FALSE)), sep = "\n")
+cat("All results saved in:", normalizePath(OUT_DIR), "\n\n")
+all_files <- list.files(OUT_DIR, recursive = FALSE)
+cat("Files generated (", length(all_files), "):\n")
+cat(paste(" ", all_files), sep = "\n")
