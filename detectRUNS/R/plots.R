@@ -95,7 +95,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = from, y = id, xend = to,
-                                                     yend = id,colour=as.factor(group)),alpha=alfa, size=grosse)
+                                                     yend = id,colour=as.factor(group)),alpha=alfa, linewidth=grosse)
     p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome ',chromosome))
     p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
     p <- p + theme(plot.title = element_text(hjust = 0.5))
@@ -230,7 +230,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
       p <- p + ggplot2::geom_segment(data=krom, aes(x = from/(10^6), y = ypos, xend = to/(10^6), yend = ypos),
-                                     colour="lightcoral", alpha=1, size=0.75)
+                                     colour="lightcoral", alpha=1, linewidth=0.75)
       p <- p + xlim(0, max(krom$to/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggplot2::ggtitle(paste("Group: ",rasse,'\nChromosome:',chromosome))
