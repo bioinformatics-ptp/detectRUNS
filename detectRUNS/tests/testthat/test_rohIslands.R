@@ -302,10 +302,97 @@ test_that("print.ROHIslands invisibly returns x", {
 
 
 # ===========================================================================
-# 9. Integration test (slow — skipped on CRAN)
+# 9. summary.ROHIslands
 # ===========================================================================
 
-test_that("rohIslands with n_perm=100 completes and produces stable islands", {
+test_that("summary.ROHIslands returns a data.table", {
+    out <- summary(.islands_ref)
+    expect_s3_class(out, "data.table")
+})
+
+test_that("summary.ROHIslands has required columns", {
+    out <- summary(.islands_ref)
+    expect_true(all(c("CHR", "start_bp", "end_bp", "n_snps",
+                       "peak_pct", "width_mb") %in% names(out)))
+})
+
+test_that("summary.ROHIslands start_bp <= end_bp for all regions", {
+    out <- summary(.islands_ref)
+    if (nrow(out) == 0L) skip("no islands detected")
+    expect_true(all(out$start_bp <= out$end_bp))
+})
+
+test_that("summary.ROHIslands n_snps >= 1 for all regions", {
+    out <- summary(.islands_ref)
+    if (nrow(out) == 0L) skip("no islands detected")
+    expect_true(all(out$n_snps >= 1L))
+})
+
+test_that("summary.ROHIslands peak_pct in [0, 100]", {
+    out <- summary(.islands_ref)
+    if (nrow(out) == 0L) skip("no islands detected")
+    expect_true(all(out$peak_pct >= 0 & out$peak_pct <= 100))
+})
+
+test_that("summary.ROHIslands width_mb >= 0", {
+    out <- summary(.islands_ref)
+    if (nrow(out) == 0L) skip("no islands detected")
+    expect_true(all(out$width_mb >= 0))
+})
+
+test_that("summary.ROHIslands total SNP count matches islands data.table", {
+    out <- summary(.islands_ref)
+    if (nrow(out) == 0L) skip("no islands detected")
+    expect_equal(sum(out$n_snps), nrow(.islands_ref$islands))
+})
+
+test_that("summary.ROHIslands returns empty data.table when no islands", {
+    roh_no_isl <- .islands_ref
+    snp_copy <- as.data.frame(.islands_ref$snp_table)
+    snp_copy$is_island <- FALSE
+    roh_no_isl$snp_table <- data.table::as.data.table(snp_copy)
+    out <- summary(roh_no_isl)
+    expect_s3_class(out, "data.table")
+    expect_equal(nrow(out), 0L)
+})
+
+
+# ===========================================================================
+# 10. plot.ROHIslands
+# ===========================================================================
+
+test_that("plot.ROHIslands returns a ggplot object", {
+    p <- plot(.islands_ref)
+    expect_s3_class(p, "gg")
+})
+
+test_that("plot.ROHIslands returns invisibly", {
+    out <- withVisible(plot(.islands_ref))
+    expect_false(out$visible)
+})
+
+test_that("plot.ROHIslands accepts custom colours without error", {
+    expect_no_error(plot(.islands_ref,
+                         col_island    = "darkgreen",
+                         col_snp       = c("black", "grey40"),
+                         col_threshold = "orange"))
+})
+
+test_that("plot.ROHIslands works when no islands are present", {
+    roh_no_isl <- .islands_ref
+    snp_copy <- as.data.frame(.islands_ref$snp_table)
+    snp_copy$is_island <- FALSE
+    roh_no_isl$snp_table <- data.table::as.data.table(snp_copy)
+    roh_no_isl$islands   <- roh_no_isl$snp_table[integer(0), ]
+    expect_no_error(plot(roh_no_isl))
+})
+
+
+# ===========================================================================
+# 11. Integration test (slow — skipped on CRAN)
+# ===========================================================================
+
+test_that("rohIslands with n_perm=100 completes and produces stable islands (integration)", {
     skip_on_cran()
     isl_100 <- rohIslands(.roh_bed, n_perm = 100L, seed = 42L, verbose = FALSE)
     expect_s3_class(isl_100, "ROHIslands")
