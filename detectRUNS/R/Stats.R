@@ -241,8 +241,16 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
 #' size-class
 #'
 #' @return A list of dataframes containing the most relevant descriptives
-#' statistics on detected runs. The list conveniently contains 9 dataframes that can
-#' be used for further processing and visualization, or can be written out to text files
+#' statistics on detected runs. The list contains 9 dataframes:
+#' 1) summary_ROH_count_chr: n. of runs per chromosome and breed/group;
+#' 2) summary_ROH_percentage_chr: percent distribution of runs per chromosome in each breed/group (sum to 1);
+#' 3) summary_ROH_count: n. of runs per size-class (Mb) in each breed/group;
+#' 4) summary_ROH_percentage: percent distribution of runs per size-class (Mb) in each breed/group (sum to 1);
+#' 5) summary_ROH_mean_chr: average size of runs (Mb) per chromosome and breed/group;
+#' 6) summary_ROH_mean_class: average size of runs (Mb) per size-class (Mb) in each breed/group;
+#' 7) result_Froh_genome_wide: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual;
+#' 8) result_Froh_chromosome_wide: inbreeding (\eqn{F_{ROH}}) per individual and chromosome;
+#' 9) result_Froh_class: genome-wide inbreeding (\eqn{F_{ROH}}) per individual and size-class (Mb) of runs.
 #' @importFrom stats aggregate
 #' @export
 #'
