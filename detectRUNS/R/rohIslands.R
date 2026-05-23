@@ -222,3 +222,199 @@ print.ROHIslands <- function(x, ...) {
     }
     invisible(x)
 }
+
+
+#' Summarise ROH islands as contiguous genomic regions
+#'
+#' Groups consecutive island SNPs (adjacent in BIM order, on the same
+#' chromosome) into contiguous regions and returns one row per region with
+#' start/end coordinates, SNP count, peak SNPROH percentage, and region width.
+#'
+#' @param object An \code{ROHIslands} object returned by
+#'   \code{\link{rohIslands}}.
+#' @param ...    Ignored.
+#'
+#' @return A \code{data.table} with columns:
+#' \describe{
+#'   \item{CHR}{Chromosome name.}
+#'   \item{start_bp}{Start position of the island region (bp).}
+#'   \item{end_bp}{End position of the island region (bp).}
+#'   \item{n_snps}{Number of island SNPs in the region.}
+#'   \item{peak_pct}{Highest SNPROH percentage observed in the region.}
+#'   \item{width_mb}{Region width in megabases (\code{end_bp - start_bp}).}
+#' }
+#'
+#' @seealso \code{\link{rohIslands}}, \code{\link{plot.ROHIslands}}
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' bedFile <- system.file("extdata", "Kijas2016_Sheep_subset.bed",
+#'                         package = "detectRUNS")
+#' roh     <- scanRUNS(bedFile, method = "consecutive", minSNP = 15,
+#'                     maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
+#' islands <- rohIslands(roh, n_perm = 100, seed = 42)
+#' summary(islands)
+#' }
+summary.ROHIslands <- function(object, ...) {
+    df <- as.data.frame(object$snp_table)   # BIM order preserved
+
+    empty <- data.table::data.table(
+        CHR      = character(),
+        start_bp = integer(),
+        end_bp   = integer(),
+        n_snps   = integer(),
+        peak_pct = numeric(),
+        width_mb = numeric()
+    )
+
+    if (nrow(df) == 0L || sum(df$is_island) == 0L) return(empty)
+
+    # Assign a region ID: increment when transitioning FALSE→TRUE or chr changes.
+    chr_vec     <- as.character(df$CHR)
+    isl_vec     <- df$is_island
+    chr_change  <- c(TRUE, chr_vec[-1] != chr_vec[-length(chr_vec)])
+    prev_false  <- c(TRUE, !isl_vec[-length(isl_vec)])
+    new_region  <- isl_vec & (prev_false | chr_change)
+    df$region_id <- cumsum(new_region)
+    df$region_id[!isl_vec] <- NA_integer_
+
+    island_df <- df[!is.na(df$region_id), ]
+
+    regions <- lapply(split(island_df, island_df$region_id), function(g) {
+        data.frame(
+            CHR      = as.character(g$CHR[1]),
+            start_bp = min(g$POSITION),
+            end_bp   = max(g$POSITION),
+            n_snps   = nrow(g),
+            peak_pct = round(max(g$pct_animals), 2),
+            width_mb = round((max(g$POSITION) - min(g$POSITION)) / 1e6, 3),
+            stringsAsFactors = FALSE
+        )
+    })
+
+    out <- do.call(rbind, regions)
+    out <- out[order(out$CHR, out$start_bp), ]
+    row.names(out) <- NULL
+    data.table::as.data.table(out)
+}
+
+
+#' Manhattan plot of ROH island detection results
+#'
+#' Plots SNPROH frequency (percentage of individuals with a given SNP inside a
+#' ROH) across the genome, with chromosome-specific permutation thresholds
+#' shown as dashed lines and island SNPs highlighted in a distinct colour.
+#' The plot mirrors Fig. 1 of Falchi et al. (2026, \emph{BMC Genomics}).
+#'
+#' @param x          An \code{ROHIslands} object returned by
+#'   \code{\link{rohIslands}}.
+#' @param col_island Colour for island SNPs.  Default \code{"firebrick"}.
+#' @param col_snp    Two-element character vector of alternating colours for
+#'   non-island SNPs (one per chromosome, alternating).
+#'   Default \code{c("grey60", "grey80")}.
+#' @param col_threshold Colour for the per-chromosome threshold lines.
+#'   Default \code{"steelblue"}.
+#' @param title      Plot title.  Default \code{"ROH Island Detection"}.
+#' @param pt_size    Point size for SNPs.  Default \code{0.6}.
+#' @param pt_alpha   Point transparency.  Default \code{0.8}.
+#' @param ...        Ignored.
+#'
+#' @return A \code{ggplot2} object (invisible).  The plot is printed as a
+#'   side-effect.
+#'
+#' @seealso \code{\link{rohIslands}}, \code{\link{summary.ROHIslands}}
+#'
+#' @importFrom ggplot2 ggplot aes geom_point geom_segment scale_x_continuous scale_y_continuous expansion labs theme_bw theme element_blank element_text
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' bedFile <- system.file("extdata", "Kijas2016_Sheep_subset.bed",
+#'                         package = "detectRUNS")
+#' roh     <- scanRUNS(bedFile, method = "consecutive", minSNP = 15,
+#'                     maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
+#' islands <- rohIslands(roh, n_perm = 100, seed = 42)
+#' plot(islands)
+#' }
+plot.ROHIslands <- function(
+    x,
+    col_island     = "firebrick",
+    col_snp        = c("grey60", "grey80"),
+    col_threshold  = "steelblue",
+    title          = "ROH Island Detection",
+    pt_size        = 0.6,
+    pt_alpha       = 0.8,
+    ...)
+{
+    df   <- as.data.frame(x$snp_table)
+    chrs <- unique(as.character(df$CHR))   # BIM order
+
+    # Compute cumulative x-axis offsets (small gap of 2% max_pos between chroms)
+    chr_maxpos <- sapply(chrs, function(ch)
+        max(df$POSITION[as.character(df$CHR) == ch]))
+    gap     <- sum(chr_maxpos) * 0.02 / max(length(chrs) - 1L, 1L)
+    offsets <- c(0, cumsum(chr_maxpos[-length(chr_maxpos)] + gap))
+    names(offsets) <- chrs
+
+    df$cum_pos  <- df$POSITION + offsets[as.character(df$CHR)]
+    chr_idx     <- match(as.character(df$CHR), chrs)
+    df$pt_color <- ifelse(df$is_island,
+                          col_island,
+                          col_snp[(chr_idx %% 2L) + 1L])
+
+    # Chromosome midpoints for x labels
+    chr_mids <- sapply(chrs, function(ch) {
+        pos <- df$cum_pos[as.character(df$CHR) == ch]
+        (min(pos) + max(pos)) / 2
+    })
+
+    # Per-chromosome threshold segments (convert count → % animals)
+    thr_segs <- do.call(rbind, lapply(chrs, function(ch) {
+        pos <- df$cum_pos[as.character(df$CHR) == ch]
+        thr <- if (!is.null(x$thresholds[ch]) && !is.na(x$thresholds[ch]))
+            x$thresholds[[ch]] / x$n_samples * 100
+        else NA_real_
+        data.frame(xmin = min(pos), xmax = max(pos),
+                   thr = thr, stringsAsFactors = FALSE)
+    }))
+    thr_segs <- thr_segs[!is.na(thr_segs$thr), ]
+
+    p <- ggplot2::ggplot(df,
+             ggplot2::aes(x = .data[["cum_pos"]] / 1e6,
+                          y = .data[["pct_animals"]])) +
+        ggplot2::geom_point(color = df$pt_color,
+                            size  = pt_size,
+                            alpha = pt_alpha) +
+        ggplot2::geom_segment(
+            data = thr_segs,
+            ggplot2::aes(x    = .data[["xmin"]] / 1e6, xend = .data[["xmax"]] / 1e6,
+                         y    = .data[["thr"]],         yend = .data[["thr"]]),
+            color     = col_threshold,
+            linewidth = 0.8,
+            linetype  = "dashed",
+            inherit.aes = FALSE) +
+        ggplot2::scale_x_continuous(
+            breaks = chr_mids / 1e6,
+            labels = chrs,
+            expand = c(0.01, 0)) +
+        ggplot2::scale_y_continuous(
+            limits = c(0, NA),
+            expand = ggplot2::expansion(mult = c(0, 0.05))) +
+        ggplot2::labs(
+            title   = title,
+            x       = "Chromosome",
+            y       = "% individuals with SNP in ROH",
+            caption = sprintf("n_perm = %d  |  threshold percentile = %.2f  |  n = %d individuals",
+                              x$n_perm, x$percentile, x$n_samples)) +
+        ggplot2::theme_bw(base_size = 11) +
+        ggplot2::theme(
+            panel.grid.minor   = ggplot2::element_blank(),
+            panel.grid.major.x = ggplot2::element_blank(),
+            plot.title         = ggplot2::element_text(hjust = 0.5),
+            plot.caption       = ggplot2::element_text(size = 8, colour = "grey50")
+        )
+
+    print(p)
+    invisible(p)
+}
