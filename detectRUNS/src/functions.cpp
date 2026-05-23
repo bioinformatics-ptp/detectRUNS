@@ -773,13 +773,6 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
     Named("from")=from, Named("to")=to, Named("lengthBps")=lengthBps,
     _["stringsAsFactors"] = false);
 
-  // debug
-  if(res.nrows() > 0) {
-    Rcout << "N. of RUNS for individual " << iid << " is: " << res.nrows() << std::endl;
-  } else {
-    Rcout << "No RUNs found for animal " << iid << std::endl;
-  }
-
   // returning all runs for this individual genotype
   return(res);
 
@@ -1228,9 +1221,9 @@ DataFrame tableRuns(
     std::string chrom = as<std::string>(unique_chromosomes[i]);
 
     Rprintf(
-      "Processing chromosome '%s' (%d/%d)\n",
+      "Processing chromosome '%s' (%u/%u)\n",
       chrom.c_str(),
-      (int)(i+1), (int)unique_chromosomes.size());
+      i+1, (unsigned int)unique_chromosomes.size());
 
     // extract the desired chrom
     DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);

@@ -35,7 +35,7 @@ readMapFile <- function(mapFile) {
   
   if(file.exists(mapFile)){
     # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
+    mappa <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
   } else {
     stop(paste("file", mapFile, "doesn't exists"))
   }
@@ -291,7 +291,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
   }
 
   # filters on max heterozygotes and missing in a run
-  if(!is.null(maxOppRun) | !is.null(maxMissRun)) {
+  if(!is.null(maxOppRun) || !is.null(maxMissRun)) {
     # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
     W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
@@ -343,9 +343,6 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
   if(nrow(dRUN) > 0) {
-    # debug
-    message(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
-
     append = FALSE
     headers = TRUE
 
@@ -482,13 +479,6 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
   dRUN$group <- rep(group, nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
-  # debug
-  if(nrow(dRUN) > 0) {
-    message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
-  } else {
-    message(paste("No RUNs found for animal", ind))
-  }
-
   #return RUNs to caller
   return(dRUN)
 }
@@ -556,7 +546,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 
   # initialize dataframe of results. Defining data types accordingly slinding window
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
-                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
+                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = FALSE)
 
   ##########################################################################################
   for (i in seq_along(indGeno)) {
@@ -698,13 +688,6 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     runData <- NULL
   }
 
-  # debug
-  if(nrow(res) > 0) {
-    message(paste("N. of RUNS for individual", ind, "is:", nrow(res)))
-  } else {
-    message(paste("No RUNs found for animal",ind))
-  }
-
   return(res)
 }
 
@@ -769,8 +752,8 @@ readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detect
 
   # BCFtools
   if (method == "BCFtools"){
-    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = F,value = T)
-    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = F,
+    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = FALSE,value = TRUE)
+    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = FALSE,
                            #colClasses = c("character","character","character","numeric","numeric","numeric","numeric"),
                            colClasses = c(rep("character", 3), rep("numeric", 4)),
                            col.names=c("group","id","chrom","from","to","lengthBps","nSNP","Quality")   )

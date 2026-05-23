@@ -198,7 +198,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
       yread[1] <- minstart - 1;
       ypos <- c(); #holds the y pos of the ith segment
 
-      for (r in 1:nrow(krom)){
+      for (r in seq_len(nrow(krom))){
         read <- krom[r,];
         start <- read$from;
         placed <- FALSE;
@@ -462,7 +462,7 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
     #sort a file
     #subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
     subset_group=subset_group[order(subset_group$CHR),]
-    row.names(subset_group) <- 1:nrow(subset_group)
+    row.names(subset_group) <- seq_len(nrow(subset_group))
 
     #create a new position
     chrNum <- length(unique(subset_group$CHR))

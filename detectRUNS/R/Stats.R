@@ -279,7 +279,6 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
 
 
   runs$MB <- runs$lengthBps/1000000
-  head(runs)
   #step_value=2
 
   range_mb <- c(0,0,0,0,0,99999)
@@ -495,43 +494,43 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile=NULL, mapFile=NULL, 
     #print(group_subset)
 
     #variable
-    old_pos=group_subset[1,7]
-    snp_pos1=group_subset[1,3]
-    Start_SNP=group_subset[1,1]
+    old_pos=group_subset[1,"Number"]
+    snp_pos1=group_subset[1,"POSITION"]
+    Start_SNP=group_subset[1,"SNP_NAME"]
     snp_count=0
 
     x=2
     while(x <= length(rownames(group_subset))) {
 
       snp_count = snp_count + 1
-      new_pos=group_subset[x,7]
-      old_pos=group_subset[x-1,7]
-      chr_old=group_subset[x-1,2]
-      chr_new =group_subset[x,2]
+      new_pos=group_subset[x,"Number"]
+      old_pos=group_subset[x-1,"Number"]
+      chr_old=group_subset[x-1,"CHR"]
+      chr_new =group_subset[x,"CHR"]
 
       diff=new_pos-old_pos
 
       if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
         if (x==length(rownames(group_subset))){
-          end_SNP=group_subset[x,1]
-          TO=group_subset[x,3]
+          end_SNP=group_subset[x,"SNP_NAME"]
+          TO=group_subset[x,"POSITION"]
         }else{
-          end_SNP=group_subset[x-1,1]
-          TO=group_subset[x-1,3]
+          end_SNP=group_subset[x-1,"SNP_NAME"]
+          TO=group_subset[x-1,"POSITION"]
         }
 
-        final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,5],
+        final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,"BREED"],
                                                                            "Start_SNP"=Start_SNP,
                                                                            "End_SNP"=end_SNP,
-                                                                           "chrom"=group_subset[x-1,2],
+                                                                           "chrom"=group_subset[x-1,"CHR"],
                                                                            "nSNP"=snp_count,
                                                                            "from"=snp_pos1,
                                                                            "to"=TO))
 
         #reset variable
         snp_count=0
-        snp_pos1=group_subset[x,3]
-        Start_SNP=group_subset[x,1]
+        snp_pos1=group_subset[x,"POSITION"]
+        Start_SNP=group_subset[x,"SNP_NAME"]
       }
 
       #upgrade x value
