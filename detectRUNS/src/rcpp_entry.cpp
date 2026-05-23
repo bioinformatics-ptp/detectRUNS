@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include "scan_roh.h"
 #include "output.h"
+#include "perm_roh.h"
 
 
 // ===========================================================================
@@ -296,5 +297,121 @@ Rcpp::List C_load_roh(std::string path)
 
     return Rcpp::List::create(
         Rcpp::Named("runs") = build_runs_df(bd.records, bd.fam, bim)
+    );
+}
+
+
+// ===========================================================================
+// Permutation-based ROH island detection  (Phase 9)
+// ===========================================================================
+
+//' Permutation-based ROH island detection
+//'
+//' Low-level C++ entry point called by \code{rohIslands()}.
+//' Do not call directly; use \code{rohIslands()} instead.
+//'
+//' @param bed_path    Path to the .bed file
+//' @param bim_path    Path to the .bim file
+//' @param fam_path    Path to the .fam file
+//' @param snp_freq_r  Named integer vector of real SNPROH counts from
+//'   \code{scanRUNS()$snp_freq}
+//' @param method      Integer: 0=consecutive, 1=sliding
+//' @param roh_type    Integer: 0=ROHom, 1=ROHet
+//' @param min_snps    Same parameter as the original scan
+//' @param max_opposite Same parameter as the original scan
+//' @param max_missing Same parameter as the original scan
+//' @param min_length_bp Same parameter as the original scan
+//' @param max_gap     Same parameter as the original scan
+//' @param window_size Sliding window width (sliding method only)
+//' @param threshold   Coverage ratio threshold (sliding method only)
+//' @param n_threads   OpenMP thread count (parallelism over permutations)
+//' @param n_perm      Number of permutations
+//' @param percentile  Quantile for threshold derivation (e.g. 0.99)
+//' @param seed        MT19937 seed; 0 = draw from random_device
+//'
+//' @return Named list with \code{thresholds} (named numeric vector, one per
+//'   chromosome) and \code{is_island} (named logical vector, one per SNP).
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+// [[Rcpp::export]]
+Rcpp::List C_perm_roh_islands(
+    std::string         bed_path,
+    std::string         bim_path,
+    std::string         fam_path,
+    Rcpp::IntegerVector snp_freq_r,
+    int                 method,
+    int                 roh_type,
+    int                 min_snps,
+    int                 max_opposite,
+    int                 max_missing,
+    int                 min_length_bp,
+    int                 max_gap,
+    int                 window_size,
+    double              threshold,
+    int                 n_threads,
+    int                 n_perm,
+    double              percentile,
+    int                 seed)
+{
+    BimData bim = parse_bim(bim_path);
+    FamData fam = parse_fam(fam_path);
+    const int n_samples = static_cast<int>(fam.samples.size());
+    const int n_snps    = static_cast<int>(bim.snps.size());
+
+    ScanParams params;
+    params.method        = method;
+    params.target        = static_cast<int8_t>(roh_type);
+    params.min_snps      = min_snps;
+    params.max_opposite  = max_opposite;
+    params.max_missing   = max_missing;
+    params.min_length_bp = min_length_bp;
+    params.max_gap       = max_gap;
+    params.window_size   = window_size;
+    params.threshold     = threshold;
+    params.n_threads     = (n_threads > 0) ? n_threads : 1;
+    params.verbose       = false;
+
+    std::vector<int32_t> real_freq(snp_freq_r.begin(), snp_freq_r.end());
+
+    BedFile bed = open_bed(bed_path, n_samples, n_snps);
+    PermResult pr;
+    try {
+        pr = permutation_roh_islands(
+            bed, bim, fam, real_freq, params,
+            n_perm, percentile,
+            static_cast<uint32_t>(seed));
+    } catch (...) {
+        close_bed(bed);
+        throw;
+    }
+    close_bed(bed);
+
+    // Build named thresholds vector (chromosome name → threshold)
+    const int nc = static_cast<int>(pr.chrom_indices.size());
+    Rcpp::CharacterVector chrom_names_r(nc);
+    Rcpp::NumericVector   thresholds_r(nc);
+    for (int k = 0; k < nc; ++k) {
+        uint8_t ci = pr.chrom_indices[k];
+        chrom_names_r[k] = (static_cast<size_t>(ci) < bim.chrom_names.size() &&
+                            !bim.chrom_names[ci].empty())
+                           ? bim.chrom_names[ci]
+                           : std::to_string(static_cast<int>(ci));
+        thresholds_r[k] = pr.thresholds[k];
+    }
+    thresholds_r.attr("names") = chrom_names_r;
+
+    // Build named is_island logical vector (SNP name → bool)
+    Rcpp::LogicalVector   is_island_r(n_snps);
+    Rcpp::CharacterVector snp_names_r(n_snps);
+    for (int j = 0; j < n_snps; ++j) {
+        is_island_r[j] = pr.is_island[j];
+        snp_names_r[j] = bim.snps[j].snp_name;
+    }
+    is_island_r.attr("names") = snp_names_r;
+
+    return Rcpp::List::create(
+        Rcpp::Named("thresholds") = thresholds_r,
+        Rcpp::Named("is_island")  = is_island_r
     );
 }

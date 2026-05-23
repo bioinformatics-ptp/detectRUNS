@@ -4,7 +4,8 @@
 
 #' @keywords internal
 new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
-                    method, type, snp_freq = NULL, chrom_map = NULL) {
+                    method, type, snp_freq = NULL, chrom_map = NULL,
+                    bed_path = NULL, scan_params = NULL) {
   structure(
     list(
       runs          = runs,
@@ -15,7 +16,9 @@ new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
       method        = method,
       type          = type,
       snp_freq      = snp_freq,
-      chrom_map     = chrom_map
+      chrom_map     = chrom_map,
+      bed_path      = bed_path,
+      scan_params   = scan_params
     ),
     class = "ROH"
   )

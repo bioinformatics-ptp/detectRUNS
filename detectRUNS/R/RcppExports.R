@@ -300,3 +300,36 @@ C_load_roh <- function(path) {
     .Call('_detectRUNS_C_load_roh', PACKAGE = 'detectRUNS', path)
 }
 
+#' Permutation-based ROH island detection
+#'
+#' Low-level C++ entry point called by \code{rohIslands()}.
+#' Do not call directly; use \code{rohIslands()} instead.
+#'
+#' @param bed_path    Path to the .bed file
+#' @param bim_path    Path to the .bim file
+#' @param fam_path    Path to the .fam file
+#' @param snp_freq_r  Named integer vector of real SNPROH counts from
+#'   \code{scanRUNS()$snp_freq}
+#' @param method      Integer: 0=consecutive, 1=sliding
+#' @param roh_type    Integer: 0=ROHom, 1=ROHet
+#' @param min_snps    Same parameter as the original scan
+#' @param max_opposite Same parameter as the original scan
+#' @param max_missing Same parameter as the original scan
+#' @param min_length_bp Same parameter as the original scan
+#' @param max_gap     Same parameter as the original scan
+#' @param window_size Sliding window width (sliding method only)
+#' @param threshold   Coverage ratio threshold (sliding method only)
+#' @param n_threads   OpenMP thread count (parallelism over permutations)
+#' @param n_perm      Number of permutations
+#' @param percentile  Quantile for threshold derivation (e.g. 0.99)
+#' @param seed        MT19937 seed; 0 = draw from random_device
+#'
+#' @return Named list with \code{thresholds} (named numeric vector, one per
+#'   chromosome) and \code{is_island} (named logical vector, one per SNP).
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_perm_roh_islands <- function(bed_path, bim_path, fam_path, snp_freq_r, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, n_perm, percentile, seed) {
+    .Call('_detectRUNS_C_perm_roh_islands', PACKAGE = 'detectRUNS', bed_path, bim_path, fam_path, snp_freq_r, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, n_perm, percentile, seed)
+}
+
