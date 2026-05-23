@@ -99,7 +99,7 @@ void write_roh_binary(
         // Write chrom table
         for (uint8_t cidx : chrom_idxs) {
             const std::string& name =
-                (cidx < static_cast<uint8_t>(bim.chrom_names.size()) &&
+                (static_cast<size_t>(cidx) < bim.chrom_names.size() &&
                  !bim.chrom_names[cidx].empty())
                 ? bim.chrom_names[cidx]
                 : std::to_string(cidx);

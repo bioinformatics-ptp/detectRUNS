@@ -47,6 +47,14 @@
 * Fixed `guides(fill=FALSE)` deprecation warnings across plot functions
   (changed to `guides(fill="none")`).
 
+## New functions
+
+* **`runsAssociation()`**: tests the association between run presence/absence and
+  a quantitative phenotype using linear regression. For each run region carried by
+  at least `minFreq` fraction of individuals, fits `phenotype ~ run_presence` and
+  returns effect sizes with Bonferroni and Benjamini-Hochberg FDR-adjusted p-values.
+  Accepts an `ROH` object or a plain data.frame of runs.
+
 ## Backward compatibility
 
 * `slidingRUNS.run()` and `consecutiveRUNS.run()` still exist as deprecated

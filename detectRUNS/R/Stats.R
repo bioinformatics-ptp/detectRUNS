@@ -81,8 +81,27 @@ chromosomeLength <- function(mapFile){
 
 Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
   LengthGenome <- .get_chrom_lengths(runs, mapFile)
-  info_breed   <- unique(.get_runs(runs)[c('group','id')])
-  runs         <- .get_runs(runs)
+
+  # Use sample_info from ROH object (includes 0-run individuals);
+  # fall back to unique individuals in the runs data for plain data.frames.
+  if (inherits(runs, "ROH") && !is.null(runs$sample_info)) {
+    info_breed <- as.data.frame(runs$sample_info)[, c("group", "id"), drop = FALSE]
+  } else {
+    info_breed <- unique(.get_runs(runs)[c('group','id')])
+  }
+  runs <- .get_runs(runs)
+
+  # Early return when no runs are present — all individuals have Froh = 0
+  if (nrow(runs) == 0L) {
+    if (genome_wide) {
+      message("calculating Froh on all genome")
+      info_breed$sum         <- 0
+      info_breed$Froh_genome <- 0
+    } else {
+      message("calculating Froh chromosome by chromosome")
+    }
+    return(info_breed)
+  }
 
   #sum of ROH for Sample
   if (genome_wide) {
@@ -285,6 +304,20 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
   result_Froh_chromosome_wide <- Froh_inbreeding(runs = runs_input, mapFile = mapFile, genome_wide = FALSE)
   result_Froh_class <- Froh_inbreedingClass(runs = runs_input, mapFile = mapFile, Class = n_class)
 
+  if (nrow(runs) == 0L) {
+    message("No runs detected — summary statistics are empty.")
+    return(list(
+      summary_ROH_count_chr       = data.frame(stringsAsFactors = FALSE),
+      summary_ROH_percentage_chr  = data.frame(stringsAsFactors = FALSE),
+      summary_ROH_count           = data.frame(stringsAsFactors = FALSE),
+      summary_ROH_percentage      = data.frame(stringsAsFactors = FALSE),
+      summary_ROH_mean_chr        = data.frame(stringsAsFactors = FALSE),
+      summary_ROH_mean_class      = data.frame(stringsAsFactors = FALSE),
+      result_Froh_genome_wide     = result_Froh_genome_wide,
+      result_Froh_chromosome_wide = result_Froh_chromosome_wide,
+      result_Froh_class           = result_Froh_class
+    ))
+  }
 
   runs$MB <- runs$lengthBps/1000000
   #step_value=2
@@ -456,25 +489,27 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile=NULL, mapFile=NULL, 
                                "PERCENTAGE"=numeric(),
                                stringsAsFactors=FALSE)
 
-    # create progress bar
     total <- length(unique(runs$CHROMOSOME))
     message(paste('Chromosome founds: ',total))
-    n=0
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-    sample_info <- .get_sample_info(runs_input, genotypeFile)
+    if (total > 0L) {
+      n=0
+      pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-    #SNP in ROH
-    for (chrom in sort(unique(runs$CHROMOSOME))) {
-      runsChrom <- runs[runs$CHROMOSOME==chrom,]
-      mapKrom <- mappa[mappa$CHR==chrom,]
-      snpInRuns_result <- snpInsideRuns(runsChrom, mapKrom, sample_info)
-      all_SNPinROH <- rbind.data.frame(all_SNPinROH, snpInRuns_result)
-      n=n+1
-      setTxtProgressBar(pb, n)
+      sample_info <- .get_sample_info(runs_input, genotypeFile)
+
+      #SNP in ROH
+      for (chrom in sort(unique(runs$CHROMOSOME))) {
+        runsChrom <- runs[runs$CHROMOSOME==chrom,]
+        mapKrom <- mappa[mappa$CHR==chrom,]
+        snpInRuns_result <- snpInsideRuns(runsChrom, mapKrom, sample_info)
+        all_SNPinROH <- rbind.data.frame(all_SNPinROH, snpInRuns_result)
+        n=n+1
+        setTxtProgressBar(pb, n)
+      }
+      close(pb)
+      message("Calculation % SNP in ROH finish")
     }
-    close(pb)
-    message("Calculation % SNP in ROH finish")
   } else if (is.null(runs) & !is.null(SnpInRuns)) {
     message('I found only SNPinRuns data frame. GOOD!')
     all_SNPinROH=SnpInRuns
@@ -483,7 +518,7 @@ tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile=NULL, mapFile=NULL, 
   }
 
   #consecutive number
-  all_SNPinROH$Number <- seq(1,length(all_SNPinROH$PERCENTAGE))
+  all_SNPinROH$Number <- seq_len(nrow(all_SNPinROH))
 
   #final data frame
   final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),

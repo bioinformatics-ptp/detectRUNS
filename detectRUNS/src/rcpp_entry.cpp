@@ -28,8 +28,8 @@ static Rcpp::DataFrame build_runs_df(
         id[k]    = s.iid;
 
         chrom[k] = (static_cast<size_t>(r.chrom_idx) < bim.chrom_names.size() &&
-                    !bim.chrom_names[r.chrom_idx].empty())
-                   ? bim.chrom_names[r.chrom_idx]
+                    !bim.chrom_names[static_cast<size_t>(r.chrom_idx)].empty())
+                   ? bim.chrom_names[static_cast<size_t>(r.chrom_idx)]
                    : std::to_string(static_cast<int>(r.chrom_idx));
 
         nSNP[k]      = r.n_snps;

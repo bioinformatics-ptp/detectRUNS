@@ -45,6 +45,7 @@ Beyond detecting genomic runs, **detectRUNS** can:
 - Generate descriptive statistics on detected runs
 - Calculate ROH-based inbreeding coefficients ($F_{ROH}$), genome-wide and chromosome-wide
 - Plot $F_{ROH}$ per chromosome
+- Test association between run presence/absence and quantitative phenotypes (`runsAssociation()`)
 - Import run results from PLINK, BCFtools, or a previous detectRUNS session
 
 **detectRUNS** can be used with genotype data from any diploid organism: humans, animals or plants.
@@ -341,6 +342,45 @@ plot_InbreedingChr(roh_sliding, style = "FrohBoxPlot", savePlots = FALSE)
 ```{r plot-violin, fig.cap="Violin plot: total ROH length by group."}
 plot_ViolinRuns(roh_sliding, method = "sum", savePlots = FALSE)
 ```
+
+# Association testing
+
+`runsAssociation()` tests whether carrying a run in a given genomic region is associated with a quantitative phenotype. For each region, it fits a simple linear regression:
+
+$$phenotype \sim run_{presence}$$
+
+where $run_{presence}$ is a numeric 0/1 indicator. Regions must be present in at least `minFreq` fraction of individuals to be tested. The function returns effect sizes and p-values with Bonferroni and Benjamini-Hochberg FDR corrections for multiple testing.
+
+To illustrate the approach with the sheep dataset, we build a synthetic horn-score phenotype. The Jacobs breed carries a strong ROH peak on OAR2 at the four-horns locus (Kijas et al. 2016), so we simulate higher horn scores in Jacobs animals:
+
+```{r assoc-pheno}
+set.seed(42)
+info <- roh_sliding$sample_info
+horn_score <- ifelse(
+  info$group == "Jacobs",
+  rnorm(nrow(info), mean = 2.5, sd = 0.8),
+  rnorm(nrow(info), mean = 1.0, sd = 0.6)
+)
+pheno <- data.frame(id = info$id, pheno = horn_score,
+                    stringsAsFactors = FALSE)
+```
+
+```{r assoc-run, message=TRUE}
+assoc <- runsAssociation(roh_sliding, pheno, minFreq = 0.10)
+```
+
+The function prints a brief summary: how many individuals were matched, how many run regions were detected and tested, and how many pass significance thresholds. Inspect the top associations:
+
+```{r assoc-top}
+head(assoc[order(assoc$pvalue), ], 10)
+```
+
+Regions on OAR2 (the four-horns locus) should rank among the top hits because the simulated phenotype is correlated with Jacobs-breed membership, and Jacobs animals carry breed-specific ROH on OAR2.
+
+**Important caveats:**
+
+- The linear model assumes independent observations. For structured populations (breeds, families), individuals share runs by descent, which inflates type I error. For production analyses, mixed-model approaches accounting for the genomic relationship matrix are more appropriate.
+- Raw p-values (`pvalue`) should not be used for inference when many regions are tested simultaneously. Use `pvalue_bonferroni` (conservative, controls family-wise error rate) or `pvalue_fdr` (less conservative, controls false discovery rate).
 
 # Importing external results
 
