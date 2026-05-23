@@ -300,7 +300,17 @@ scanRUNS <- function(
             method        = method,
             type          = if (ROHet) "ROHet" else "ROHom",
             snp_freq      = result$snp_freq,
-            chrom_map     = result$chrom_map
+            chrom_map     = result$chrom_map,
+            bed_path      = bed_path,
+            scan_params   = list(
+                minSNP       = as.integer(minSNP),
+                maxOpp       = as.integer(maxOpp),
+                maxMiss      = as.integer(maxMiss),
+                minLengthBps = as.integer(minLengthBps),
+                maxGap       = as.integer(maxGap),
+                windowSize   = as.integer(windowSize),
+                threshold    = as.double(threshold)
+            )
         ))
 
     } else {

@@ -220,6 +220,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// C_perm_roh_islands
+Rcpp::List C_perm_roh_islands(std::string bed_path, std::string bim_path, std::string fam_path, Rcpp::IntegerVector snp_freq_r, int method, int roh_type, int min_snps, int max_opposite, int max_missing, int min_length_bp, int max_gap, int window_size, double threshold, int n_threads, int n_perm, double percentile, int seed);
+RcppExport SEXP _detectRUNS_C_perm_roh_islands(SEXP bed_pathSEXP, SEXP bim_pathSEXP, SEXP fam_pathSEXP, SEXP snp_freq_rSEXP, SEXP methodSEXP, SEXP roh_typeSEXP, SEXP min_snpsSEXP, SEXP max_oppositeSEXP, SEXP max_missingSEXP, SEXP min_length_bpSEXP, SEXP max_gapSEXP, SEXP window_sizeSEXP, SEXP thresholdSEXP, SEXP n_threadsSEXP, SEXP n_permSEXP, SEXP percentileSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type bed_path(bed_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type bim_path(bim_pathSEXP);
+    Rcpp::traits::input_parameter< std::string >::type fam_path(fam_pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type snp_freq_r(snp_freq_rSEXP);
+    Rcpp::traits::input_parameter< int >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< int >::type roh_type(roh_typeSEXP);
+    Rcpp::traits::input_parameter< int >::type min_snps(min_snpsSEXP);
+    Rcpp::traits::input_parameter< int >::type max_opposite(max_oppositeSEXP);
+    Rcpp::traits::input_parameter< int >::type max_missing(max_missingSEXP);
+    Rcpp::traits::input_parameter< int >::type min_length_bp(min_length_bpSEXP);
+    Rcpp::traits::input_parameter< int >::type max_gap(max_gapSEXP);
+    Rcpp::traits::input_parameter< int >::type window_size(window_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< int >::type n_threads(n_threadsSEXP);
+    Rcpp::traits::input_parameter< int >::type n_perm(n_permSEXP);
+    Rcpp::traits::input_parameter< double >::type percentile(percentileSEXP);
+    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(C_perm_roh_islands(bed_path, bim_path, fam_path, snp_freq_r, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, n_perm, percentile, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_detectRUNS_fast_factor", (DL_FUNC) &_detectRUNS_fast_factor, 1},
@@ -237,6 +264,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_detectRUNS_C_scan_roh_bed", (DL_FUNC) &_detectRUNS_C_scan_roh_bed, 14},
     {"_detectRUNS_C_save_roh", (DL_FUNC) &_detectRUNS_C_save_roh, 3},
     {"_detectRUNS_C_load_roh", (DL_FUNC) &_detectRUNS_C_load_roh, 1},
+    {"_detectRUNS_C_perm_roh_islands", (DL_FUNC) &_detectRUNS_C_perm_roh_islands, 17},
     {NULL, NULL, 0}
 };
 

@@ -1,3 +1,17 @@
+# detectRUNS 1.1.0
+
+## New features
+
+* **`rohIslands()`**: permutation-based ROH island detection (Falchi et al. 2026,
+  BMC Genomics). For each chromosome, builds a null SNPROH distribution by randomly
+  permuting sample identity `n_perm` times (default 1000) and re-running the ROH scan.
+  SNPs whose real SNPROH exceeds the chromosome-specific 99th-percentile threshold are
+  declared ROH islands. The permutation loop is fully parallelised in C++ via OpenMP.
+
+* **`ROH` object** now stores `$bed_path` and `$scan_params` (BED-engine scans only),
+  allowing `rohIslands()` to automatically reuse the original scan parameters without
+  requiring the user to re-specify them.
+
 # detectRUNS 1.0.0
 
 ## Major new features
