@@ -17,6 +17,7 @@ reportRUNS(
   include_plots = TRUE,
   plot_width = 8,
   plot_height = 5,
+  outlier_sd = 2,
   overwrite = FALSE,
   open = FALSE,
   verbose = TRUE
@@ -48,7 +49,7 @@ Default \code{2}.}
 \code{summaryRuns(snpInRuns = TRUE)} and add a top-10 chromosomes and
 top-10 SNPs table.  Set to \code{FALSE} to skip this step on large datasets.}
 
-\item{table_threshold}{Frequency threshold (0–1) passed to
+\item{table_threshold}{Frequency threshold (0-1) passed to
 \code{\link{tableRuns}}.  Default \code{0.50}.}
 
 \item{froh_class}{If \code{TRUE} (default), include an
@@ -61,6 +62,9 @@ violin (total run length), class distribution, Froh box plot, and (if
 \item{plot_width}{Plot width in inches.  Default \code{8}.}
 
 \item{plot_height}{Plot height in inches.  Default \code{5}.}
+
+\item{outlier_sd}{Number of standard deviations from the group mean used to
+flag individual outliers.  Default \code{2}.}
 
 \item{overwrite}{If \code{FALSE} (default), stop when the output file already
 exists.  Set to \code{TRUE} to overwrite silently.}
@@ -76,7 +80,7 @@ Invisibly returns a named list:
 \describe{
   \item{report_file}{Absolute path to the written report file.}
   \item{plot_dir}{Absolute path to the plot sub-directory, or \code{NA}.}
-  \item{plots}{Named character vector: plot tag → absolute file path.}
+  \item{plots}{Named character vector: plot tag -> absolute file path.}
   \item{summary}{The full \code{\link{summaryRuns}} result list.}
 }
 }
