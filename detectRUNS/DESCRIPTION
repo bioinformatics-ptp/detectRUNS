@@ -3,7 +3,6 @@ Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
 Version: 1.0.0
-Date: 2026-05-13
 Authors@R: c(
     person("Filippo",  "Biscarini", email="filippo.biscarini@gmail.com",    role=c("aut","cre")),
     person("Paolo",    "Cozzi",     email="paolo.cozzi@ptp.it",             role="aut"),
@@ -19,7 +18,6 @@ Description: Detection of runs of homozygosity and of heterozygosity
 Depends:
     R (>= 4.1.0)
 License: GPL-3
-LazyData: TRUE
 Encoding: UTF-8
 Imports:
     ggplot2,

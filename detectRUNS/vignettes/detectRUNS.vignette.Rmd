@@ -9,7 +9,7 @@ output:
     toc: true
     fig_caption: yes
 vignette: >
-  %\VignetteIndexEntry{detectRUNS: detecting runs of homozygosity and heterozygosity in diploid genomes}
+  %\VignetteIndexEntry{detectRUNS: an R package to detect runs of homozygosity and heterozygosity in diploid genomes}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
