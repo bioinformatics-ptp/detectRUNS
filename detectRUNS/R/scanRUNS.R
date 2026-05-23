@@ -303,13 +303,26 @@ scanRUNS <- function(
             chrom_map     = result$chrom_map,
             bed_path      = bed_path,
             scan_params   = list(
+                input_format = "bed",
+                genoFile     = normalizePath(bed_path, mustWork = FALSE),
+                bimFile      = normalizePath(bim_path, mustWork = FALSE),
+                famFile      = normalizePath(fam_path, mustWork = FALSE),
+                mapFile      = NA_character_,
                 minSNP       = as.integer(minSNP),
                 maxOpp       = as.integer(maxOpp),
                 maxMiss      = as.integer(maxMiss),
                 minLengthBps = as.integer(minLengthBps),
                 maxGap       = as.integer(maxGap),
                 windowSize   = as.integer(windowSize),
-                threshold    = as.double(threshold)
+                threshold    = as.double(threshold),
+                ROHet        = ROHet,
+                nThreads     = nThreads
+            ),
+            meta = list(
+                pkg_version = as.character(utils::packageVersion("detectRUNS")),
+                r_version   = paste(R.version$major, R.version$minor, sep = "."),
+                timestamp   = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"),
+                platform    = R.version$platform
             )
         ))
 
@@ -393,7 +406,29 @@ scanRUNS <- function(
             method        = method,
             type          = if (ROHet) "ROHet" else "ROHom",
             snp_freq      = NULL,
-            chrom_map     = NULL
+            chrom_map     = NULL,
+            scan_params   = list(
+                input_format = "ped",
+                genoFile     = normalizePath(ped_path, mustWork = FALSE),
+                bimFile      = NA_character_,
+                famFile      = NA_character_,
+                mapFile      = normalizePath(map_path, mustWork = FALSE),
+                minSNP       = as.integer(minSNP),
+                maxOpp       = as.integer(maxOpp),
+                maxMiss      = as.integer(maxMiss),
+                minLengthBps = as.integer(minLengthBps),
+                maxGap       = as.integer(maxGap),
+                windowSize   = as.integer(windowSize),
+                threshold    = as.double(threshold),
+                ROHet        = ROHet,
+                nThreads     = nThreads
+            ),
+            meta = list(
+                pkg_version = as.character(utils::packageVersion("detectRUNS")),
+                r_version   = paste(R.version$major, R.version$minor, sep = "."),
+                timestamp   = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z"),
+                platform    = R.version$platform
+            )
         ))
     }
 }

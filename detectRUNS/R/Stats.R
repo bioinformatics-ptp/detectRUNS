@@ -390,25 +390,22 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
     runs        <- runs[, 1:7, drop = FALSE]
     names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-    all_SNPinROH <- data.frame("SNP_NAME"=character(), "CHR"=integer(),
-                               "POSITION"=numeric(), "COUNT"=integer(),
-                               "BREED"=factor(), "PERCENTAGE"=numeric(),
-                               stringsAsFactors=FALSE)
-
-    total <- length(unique(runs$CHROMOSOME))
+    chroms <- sort(unique(runs$CHROMOSOME))
+    total  <- length(chroms)
     message(paste('Chromosome founds: ', total))
-    n <- 0
+    chrom_list <- vector("list", total)
+    n  <- 0L
     pb <- txtProgressBar(min = 0, max = total, style = 3)
 
-    for (chrom in sort(unique(runs$CHROMOSOME))) {
-      runsChrom <- runs[runs$CHROMOSOME==chrom,]
-      mapKrom   <- mappa[mappa$CHR==chrom,]
-      snp_result <- snpInsideRuns(runsChrom, mapKrom, sample_info)
-      all_SNPinROH <- rbind.data.frame(all_SNPinROH, snp_result)
-      n <- n + 1
+    for (chrom in chroms) {
+      runsChrom  <- runs[runs$CHROMOSOME == chrom, ]
+      mapKrom    <- mappa[mappa$CHR == chrom, ]
+      n          <- n + 1L
+      chrom_list[[n]] <- snpInsideRuns(runsChrom, mapKrom, sample_info)
       setTxtProgressBar(pb, n)
     }
     close(pb)
+    all_SNPinROH <- do.call(rbind, chrom_list)
 
     result_summary <- append(result_summary, list(SNPinRun = all_SNPinROH))
     message("Calculation % SNP in ROH finish")

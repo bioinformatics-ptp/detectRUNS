@@ -5,7 +5,7 @@
 #' @keywords internal
 new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
                     method, type, snp_freq = NULL, chrom_map = NULL,
-                    bed_path = NULL, scan_params = NULL) {
+                    bed_path = NULL, scan_params = NULL, meta = NULL) {
   structure(
     list(
       runs          = runs,
@@ -18,7 +18,8 @@ new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
       snp_freq      = snp_freq,
       chrom_map     = chrom_map,
       bed_path      = bed_path,
-      scan_params   = scan_params
+      scan_params   = scan_params,
+      meta          = meta
     ),
     class = "ROH"
   )
@@ -56,6 +57,21 @@ print.ROH <- function(x, ...) {
     cat(sprintf("  Length   : mean %.0f bp  |  total %.2f Mbp\n",
                 mean(x$runs$lengthBps),
                 sum(as.numeric(x$runs$lengthBps)) / 1e6))
+  if (!is.null(x$scan_params)) {
+    sp <- x$scan_params
+    cat(sprintf("  Params   : minSNP=%d | maxOpp=%d | maxMiss=%d | minLen=%s bp | maxGap=%s bp",
+                sp$minSNP, sp$maxOpp, sp$maxMiss,
+                format(sp$minLengthBps, big.mark = ","),
+                format(sp$maxGap,       big.mark = ",")))
+    if (x$method == "sliding")
+      cat(sprintf(" | win=%d | thr=%.3f", sp$windowSize, sp$threshold))
+    cat("\n")
+  }
+  if (!is.null(x$meta)) {
+    m <- x$meta
+    cat(sprintf("  Scanned  : %s  [detectRUNS %s | R %s]\n",
+                m$timestamp, m$pkg_version, m$r_version))
+  }
   invisible(x)
 }
 
