@@ -46,6 +46,7 @@ Beyond detecting genomic runs, **detectRUNS** can:
 - Calculate ROH-based inbreeding coefficients ($F_{ROH}$), genome-wide and chromosome-wide
 - Plot $F_{ROH}$ per chromosome
 - Test association between run presence/absence and quantitative phenotypes (`runsAssociation()`)
+- Identify ROH islands via permutation testing (`rohIslands()`)
 - Import run results from PLINK, BCFtools, or a previous detectRUNS session
 
 **detectRUNS** can be used with genotype data from any diploid organism: humans, animals or plants.
@@ -381,6 +382,103 @@ Regions on OAR2 (the four-horns locus) should rank among the top hits because th
 
 - The linear model assumes independent observations. For structured populations (breeds, families), individuals share runs by descent, which inflates type I error. For production analyses, mixed-model approaches accounting for the genomic relationship matrix are more appropriate.
 - Raw p-values (`pvalue`) should not be used for inference when many regions are tested simultaneously. Use `pvalue_bonferroni` (conservative, controls family-wise error rate) or `pvalue_fdr` (less conservative, controls false discovery rate).
+
+# ROH island detection
+
+A ROH *island* is a genomic region where the frequency of SNPs inside ROH is significantly higher than expected by chance — typically a signal of positive selection or ancient inbreeding. `rohIslands()` implements the permutation-based method of Falchi et al. (2026, *BMC Genomics*).
+
+## How it works
+
+For each chromosome independently:
+
+1. The observed SNPROH (number of individuals that have a given SNP inside a ROH) is taken from the `scanRUNS()` result.
+2. Sample identity is randomly permuted `n_perm` times, and the ROH scan is re-run each time to build a null distribution of SNPROH values.
+3. The chromosome-specific threshold is the 99th percentile of the pooled null SNPROH values.
+4. SNPs whose real SNPROH exceeds the threshold are declared ROH islands.
+
+The permutation loop runs in C++ (OpenMP-parallel over permutations) so even 1,000 permutations finish in reasonable time.
+
+## Running rohIslands()
+
+`rohIslands()` requires a BED-sourced `ROH` object (i.e. from `scanRUNS()` with a `.bed` file). All scan parameters are read directly from the object — no need to re-specify them.
+
+First we need a BED-sourced ROH object (the consecutive PED scan above does not carry SNP frequency data):
+
+```{r rohislands_scan, results='hide'}
+roh_bed_isl <- scanRUNS(bedFile,
+                         method       = "consecutive",
+                         minSNP       = 20,
+                         maxOpp       = 1,
+                         maxMiss      = 1,
+                         minLengthBps = 250000,
+                         verbose      = FALSE)
+```
+
+For production analyses increase `n_perm` to 1000:
+
+```{r rohislands, eval=FALSE}
+islands <- rohIslands(roh_bed_isl,
+                      n_perm     = 1000,   # publication-quality
+                      percentile = 0.99,   # 99th percentile (Falchi et al. 2026)
+                      seed       = 42,
+                      verbose    = TRUE)
+```
+
+For the vignette we use a smaller `n_perm` to keep build time short:
+
+```{r rohislands_fast}
+islands <- rohIslands(roh_bed_isl, n_perm = 50, seed = 42, verbose = FALSE)
+print(islands)
+```
+
+## Inspecting results
+
+`$islands` is a `data.table` of flagged SNPs:
+
+```{r rohislands_inspect}
+head(islands$islands)
+```
+
+`$thresholds` gives the chromosome-specific threshold (number of individuals with the SNP in a ROH):
+
+```{r rohislands_thresholds}
+islands$thresholds
+```
+
+`$snp_table` contains all SNPs with their SNPROH count, threshold, and island flag — suitable for a Manhattan-style plot:
+
+```{r rohislands_manhattan, fig.width=8, fig.height=4}
+snp_df <- as.data.frame(islands$snp_table)
+snp_df$CHR_num <- as.numeric(snp_df$CHR)
+
+# Simple Manhattan plot of SNPROH frequency
+plot(snp_df$POSITION / 1e6, snp_df$pct_animals,
+     col  = ifelse(snp_df$is_island, "firebrick", "grey70"),
+     pch  = 20, cex = 0.5,
+     xlab = "Position (Mbp)", ylab = "% animals with SNP in ROH",
+     main = "ROH island detection (permutation threshold)")
+
+# Add per-chromosome threshold lines
+for (chr in names(islands$thresholds)) {
+    thr_pct <- islands$thresholds[[chr]] / islands$n_samples * 100
+    snps_chr <- snp_df[as.character(snp_df$CHR) == chr, ]
+    segments(min(snps_chr$POSITION) / 1e6, thr_pct,
+             max(snps_chr$POSITION) / 1e6, thr_pct,
+             col = "steelblue", lwd = 1.5, lty = 2)
+}
+legend("topleft", legend = c("ROH island", "Non-island", "Threshold"),
+       col = c("firebrick", "grey70", "steelblue"),
+       pch = c(20, 20, NA), lty = c(NA, NA, 2), bty = "n")
+```
+
+## Interpretation
+
+- SNPs coloured in red are declared ROH islands: they fall inside a ROH more often than expected under the null hypothesis of randomly distributed genotypes.
+- The dashed blue line is the chromosome-specific 99th-percentile threshold derived from `n_perm` permutations.
+- Clusters of island SNPs map genomic regions potentially under positive selection, carrying recessive disease variants, or reflecting ancient population bottlenecks.
+- Increase `n_perm` (e.g. 1000) for more stable thresholds; the computation scales linearly with `n_perm` but is parallelised over OpenMP threads.
+
+**Reference:** Falchi L, Cesarani A, Brito LF, Mastrangelo S, Pauciullo A, Macciotta NPP, Gaspa G (2026). Runs of homozygosity in Italian Holstein bulls: a permutation approach and time-based mapping of the genomic regions potentially under selection. *BMC Genomics*, 27, 203. https://doi.org/10.1186/s12864-026-12564-7
 
 # Importing external results
 
