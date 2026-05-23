@@ -28,14 +28,25 @@
 #' saveROH(roh, tempfile(fileext = ".roh"))
 #' }
 saveROH <- function(result, path) {
-    if (!is.list(result) || is.null(result$runs) || is.null(result$chrom_map))
-        stop("'result' must be the output of scanRUNS() (needs $runs and $chrom_map)")
+    if (!is.list(result) || is.null(result$runs))
+        stop("'result' must be an ROH object from scanRUNS() or as_ROH()")
     if (!is.character(path) || length(path) != 1L)
         stop("'path' must be a single file path string")
 
+    chrom_map <- result$chrom_map
+    if (is.null(chrom_map)) {
+        # PED-engine results don't carry a chrom_map; synthesize a 0-based
+        # integer index from the chromosome labels present in the runs.
+        chroms    <- sort(unique(as.character(result$runs$chrom)))
+        chrom_map <- if (length(chroms) > 0L)
+            setNames(seq_along(chroms) - 1L, chroms)
+        else
+            setNames(integer(0L), character(0L))
+    }
+
     C_save_roh(
         runs_df     = as.data.frame(result$runs),
-        chrom_map_r = result$chrom_map,
+        chrom_map_r = chrom_map,
         path        = path
     )
     invisible(path)
