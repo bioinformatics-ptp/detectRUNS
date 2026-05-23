@@ -91,7 +91,7 @@ Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
   }
   runs <- .get_runs(runs)
 
-  # Early return when no runs are present — all individuals have Froh = 0
+  # Early return when no runs are present -- all individuals have Froh = 0
   if (nrow(runs) == 0L) {
     if (genome_wide) {
       message("calculating Froh on all genome")
@@ -305,7 +305,7 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
   result_Froh_class <- Froh_inbreedingClass(runs = runs_input, mapFile = mapFile, Class = n_class)
 
   if (nrow(runs) == 0L) {
-    message("No runs detected — summary statistics are empty.")
+    message("No runs detected -- summary statistics are empty.")
     return(list(
       summary_ROH_count_chr       = data.frame(stringsAsFactors = FALSE),
       summary_ROH_percentage_chr  = data.frame(stringsAsFactors = FALSE),

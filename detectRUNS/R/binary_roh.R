@@ -17,6 +17,7 @@
 #'
 #' @seealso \code{\link{loadROH}}, \code{\link{scanRUNS}}
 #'
+#' @importFrom stats setNames
 #' @export
 #'
 #' @examples
