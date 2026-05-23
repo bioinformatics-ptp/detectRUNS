@@ -219,6 +219,8 @@ slidingRUNS.run <- function(genotypeFile, mapFile,
 
     if (is.null(nCores) || identical(nCores, 0L) || identical(nCores, 0))
         nCores <- max(1L, parallel::detectCores(logical = FALSE), na.rm = TRUE)
+    if (!is.na(Sys.getenv("_R_CHECK_LIMIT_CORES_", unset = NA)))
+        nCores <- min(nCores, 2L)
     nCores <- as.integer(nCores)
 
     if (!is.logical(ROHet) || length(ROHet) != 1L)
@@ -301,6 +303,8 @@ consecutiveRUNS.run <- function(genotypeFile, mapFile,
 
     if (is.null(nCores) || identical(nCores, 0L) || identical(nCores, 0))
         nCores <- max(1L, parallel::detectCores(logical = FALSE), na.rm = TRUE)
+    if (!is.na(Sys.getenv("_R_CHECK_LIMIT_CORES_", unset = NA)))
+        nCores <- min(nCores, 2L)
     nCores <- as.integer(nCores)
 
     if (!is.logical(ROHet) || length(ROHet) != 1L)

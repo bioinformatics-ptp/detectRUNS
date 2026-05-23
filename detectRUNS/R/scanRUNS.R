@@ -235,13 +235,14 @@ scanRUNS <- function(
     ext  <- tolower(tools::file_ext(genoFile))
 
     if (verbose)
-        message(sprintf("Scanning | format: %s | method: %s | type: %s%s",
+        message(sprintf("Scanning | format: %s | method: %s | type: %s | threads: %d",
                         toupper(fmt), method,
                         if (ROHet) "ROHet" else "ROHom",
-                        if (fmt == "bed") sprintf(" | threads: %d", nThreads)
-                        else " | threads: 1 (PED engine is single-threaded; use BED for parallelism)"))
+                        nThreads))
 
     # --- Dispatch ---
+    t0 <- proc.time()
+
     if (fmt == "bed") {
         bed_path <- if (ext == "bed") genoFile else paste0(base, ".bed")
         bim_path <- if (!is.null(bimFile)) bimFile else paste0(base, ".bim")
@@ -273,7 +274,8 @@ scanRUNS <- function(
         result$summary <- data.table::as.data.table(result$summary)
 
         if (verbose)
-            .print_scan_summary(result$runs, result$summary, method, ROHet, fmt = "BED")
+            .print_scan_summary(result$runs, result$summary, method, ROHet,
+                                fmt = "BED", elapsed = (proc.time() - t0)[["elapsed"]])
 
         bim         <- as.data.frame(readBimFile(bim_path))
         snp_map_bed <- data.frame(CHR      = bim$chrom,
@@ -324,7 +326,9 @@ scanRUNS <- function(
                 maxMissRun   = maxMiss,
                 minSNP       = minSNP,
                 minLengthBps = minLengthBps,
-                maxGap       = maxGap
+                maxGap       = maxGap,
+                nCores       = nThreads,
+                verbose      = isTRUE(verbose)
             )
         } else {
             gaps <- diff(map_df$bps)
@@ -342,7 +346,9 @@ scanRUNS <- function(
                 minLengthBps  = minLengthBps,
                 minDensity    = 1/1000,
                 maxOppRun     = NULL,
-                maxMissRun    = NULL
+                maxMissRun    = NULL,
+                nCores        = nThreads,
+                verbose       = isTRUE(verbose)
             )
         }
 
@@ -350,7 +356,8 @@ scanRUNS <- function(
         summ_dt  <- .build_ped_summary(runs_df, ped_path)
 
         if (verbose)
-            .print_scan_summary(runs_dt, summ_dt, method, ROHet, fmt = "PED")
+            .print_scan_summary(runs_dt, summ_dt, method, ROHet,
+                                fmt = "PED", elapsed = (proc.time() - t0)[["elapsed"]])
 
         snp_map_ped <- data.frame(
             CHR      = map_df$Chrom,
@@ -381,7 +388,7 @@ scanRUNS <- function(
 
 
 #' @keywords internal
-.print_scan_summary <- function(runs_dt, summ_dt, method, ROHet, fmt) {
+.print_scan_summary <- function(runs_dt, summ_dt, method, ROHet, fmt, elapsed = NULL) {
     n_roh   <- nrow(runs_dt)
     n_indiv <- nrow(summ_dt)
     n_with  <- sum(summ_dt$n_ROH > 0)
@@ -405,5 +412,7 @@ scanRUNS <- function(
         cat(sprintf("  Total genome in ROH:      %.2f Mbp\n",
                     sum(as.numeric(summ_dt$total_length_bp)) / 1e6))
     }
+    if (!is.null(elapsed))
+        cat(sprintf("  Elapsed time:             %.1f sec\n", elapsed))
     cat("\n")
 }
