@@ -225,15 +225,14 @@ test_that("saveROH/loadROH preserves runs exactly", {
   expect_equal(orig, back)
 })
 
-test_that("saveROH/loadROH returns plain list without scan metadata", {
+test_that("saveROH/loadROH preserves full ROH object including method and type", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
   saveROH(.roh_normal, tmp)
   roh2 <- loadROH(tmp)
-  # loadROH returns a plain list — method/type are not stored in the binary format
-  expect_type(roh2, "list")
-  expect_null(roh2$method)
-  expect_null(roh2$type)
+  expect_s3_class(roh2, "ROH")
+  expect_equal(roh2$method, .roh_normal$method)
+  expect_equal(roh2$type,   .roh_normal$type)
 })
 
 test_that("saveROH/loadROH roundtrip on empty-runs ROH object", {
