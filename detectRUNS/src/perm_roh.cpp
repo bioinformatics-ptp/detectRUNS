@@ -172,60 +172,24 @@ static void scan_chrom_consec_perm(
 
 
 // ===========================================================================
-// Simplified sliding-window state for permutation scans.
+// Optimised sliding-window permutation scan.
+//
+// The original implementation re-evaluated each window from scratch with
+// three O(windowSize) inner loops:
+//   1. gap check             — O(W) scan
+//   2. n_opp / n_miss count  — O(W) scan
+//   3. win_pass_buf sum      — O(W) scan
+//
+// This version replaces all three with O(1) sliding-sum updates:
+//   • n_opp_win / n_miss_win: add incoming SNP, drop departing SNP
+//   • n_bad_gaps:             add new gap, drop departing gap
+//   • win_pass_sum:           add new win_pass, subtract the one that
+//                             left the per-SNP covering window set
+//
+// Expected wall-clock speedup ≈ window_size (≈ 20× for default W=20).
+// The trailing W-1 SNPs still use an O(W^2) loop, but that is at most
+// W-1 iterations total per individual so its cost is negligible.
 // ===========================================================================
-
-// Decide whether SNP at local index s is in ROH and update snp_freq_out.
-// Uses the same ring-buffer logic as decide_snp_sw in scan_roh.cpp but
-// only increments snp_freq rather than emitting a full RohRecord.
-
-struct SlidingRunPerm {
-    int     run_start_snp;  // local index of first SNP in current run
-    int32_t run_start_bp;
-    int32_t run_end_bp;
-    int     n_snp_run;
-    uint8_t in_run;
-};
-
-static void decide_and_update_sw_perm(
-    IndivStateSW&           st,
-    SlidingRunPerm&         run,
-    int                     s,          // local SNP index being decided
-    int                     from_win,
-    int                     to_win,
-    const ScanParams&       p,
-    std::vector<int32_t>&   snp_freq_out)
-{
-    int h = 0;
-    for (int w = from_win; w <= to_win; ++w)
-        h += st.win_pass_buf[w % (MAX_WINDOW * 2)];
-
-    const int  n_cov  = to_win - from_win + 1;
-    const bool in_roh = (static_cast<float>(h) / n_cov > p.threshold);
-
-    if (in_roh) {
-        if (!run.in_run) {
-            run.in_run        = 1;
-            run.run_start_snp = s;
-            run.run_start_bp  = st.bp_buf[s % MAX_WINDOW];
-            run.run_end_bp    = run.run_start_bp;
-            run.n_snp_run     = 0;
-        }
-        run.run_end_bp = st.bp_buf[s % MAX_WINDOW];
-        run.n_snp_run++;
-        // tentatively mark; only finalised on run close
-    } else {
-        if (run.in_run) {
-            // Close run: apply min_snps / min_length_bp and write snp_freq
-            if (run.n_snp_run >= p.min_snps &&
-                (run.run_end_bp - run.run_start_bp) >= p.min_length_bp) {
-                for (int k = run.run_start_snp; k < run.run_start_snp + run.n_snp_run; ++k)
-                    snp_freq_out[k]++;
-            }
-            run.in_run = 0;
-        }
-    }
-}
 
 static void scan_chrom_sliding_perm(
     const BedFile&          bed,
@@ -244,12 +208,27 @@ static void scan_chrom_sliding_perm(
     const int    W   = params.window_size;
     const int8_t opp = static_cast<int8_t>(1 - params.target);
 
-    std::vector<IndivStateSW>    states(N);
-    std::vector<SlidingRunPerm>  runs(N);
-    for (int i = 0; i < N; ++i) {
-        memset(&states[i], 0, sizeof(IndivStateSW));
-        memset(&runs[i],   0, sizeof(SlidingRunPerm));
-    }
+    // Per-individual state — all sliding sums live here.
+    struct IndivFast {
+        int8_t  geno_buf    [MAX_WINDOW * 2];   // ring: genotypes
+        int32_t bp_buf      [MAX_WINDOW * 2];   // ring: base-pair positions
+        int8_t  win_pass_buf[MAX_WINDOW * 2];   // ring: per-window pass flag
+        int     n_opp_win;      // opposite genotypes inside current window
+        int     n_miss_win;     // missing   genotypes inside current window
+        int     n_bad_gaps;     // gaps > max_gap    inside current window
+        int     win_pass_sum;   // sliding sum of win_pass over the W windows
+                                // that cover the SNP currently being decided
+        int     chrom_pos;
+        // run tracking
+        int     run_start_snp;
+        int32_t run_start_bp;
+        int32_t run_end_bp;
+        int     n_snp_run;
+        bool    in_run;
+    };
+
+    std::vector<IndivFast> states(N);
+    for (auto& st : states) memset(&st, 0, sizeof(IndivFast));
 
     std::vector<int8_t> row_buf(N);
 
@@ -258,68 +237,140 @@ static void scan_chrom_sliding_perm(
         const int32_t bp = bim.snps[first_snp + s].bp_pos;
 
         for (int i = 0; i < N; ++i) {
-            IndivStateSW&   st  = states[i];
-            const int       pos = st.chrom_pos;
-            const int8_t    g   = row_buf[perm[i]];
+            IndivFast&   st  = states[i];
+            const int    pos = st.chrom_pos;
+            const int8_t g   = row_buf[perm[i]];
+            const int    ri  = pos % (MAX_WINDOW * 2);   // ring index
 
-            st.geno_buf[pos % MAX_WINDOW] = g;
-            st.bp_buf  [pos % MAX_WINDOW] = bp;
+            st.geno_buf[ri] = g;
+            st.bp_buf  [ri] = bp;
 
+            // --- O(1): add incoming SNP to window counts ---
+            if      (g == opp)          ++st.n_opp_win;
+            else if (g == GENO_MISSING) ++st.n_miss_win;
+
+            // new gap: (pos-1) → pos
+            if (pos > 0) {
+                const int32_t prev_bp = st.bp_buf[(pos - 1) % (MAX_WINDOW * 2)];
+                if (bp - prev_bp > params.max_gap) ++st.n_bad_gaps;
+            }
+
+            // --- O(1): drop departing SNP once the window is full ---
+            if (pos >= W) {
+                const int dep   = pos - W;
+                const int8_t dg = st.geno_buf[dep % (MAX_WINDOW * 2)];
+                if      (dg == opp)          --st.n_opp_win;
+                else if (dg == GENO_MISSING) --st.n_miss_win;
+
+                // departing gap: dep → dep+1
+                const int32_t dep_bp = st.bp_buf[ dep      % (MAX_WINDOW * 2)];
+                const int32_t nxt_bp = st.bp_buf[(dep + 1) % (MAX_WINDOW * 2)];
+                if (nxt_bp - dep_bp > params.max_gap) --st.n_bad_gaps;
+            }
+
+            // --- Evaluate window once it is complete ---
             if (pos >= W - 1) {
-                const int w = pos - W + 1;
+                const int w = pos - W + 1;   // window-start SNP index
 
-                // Evaluate window w = [w .. pos]
-                bool gap_fail = false;
-                for (int k = w; k < pos; ++k) {
-                    if (st.bp_buf[(k + 1) % MAX_WINDOW] -
-                        st.bp_buf[k % MAX_WINDOW] > params.max_gap) {
-                        gap_fail = true;
-                        break;
-                    }
-                }
-
-                int8_t win_pass = 0;
-                if (!gap_fail) {
-                    int n_opp = 0, n_miss = 0;
-                    for (int k = w; k <= pos; ++k) {
-                        const int8_t gk = st.geno_buf[k % MAX_WINDOW];
-                        if      (gk == GENO_MISSING) ++n_miss;
-                        else if (gk == opp)          ++n_opp;
-                    }
-                    win_pass = (n_opp <= params.max_opposite &&
-                                n_miss <= params.max_missing) ? 1 : 0;
-                }
+                // O(1) window pass flag
+                const int8_t win_pass = (st.n_bad_gaps   == 0 &&
+                                         st.n_opp_win  <= params.max_opposite &&
+                                         st.n_miss_win <= params.max_missing) ? 1 : 0;
                 st.win_pass_buf[w % (MAX_WINDOW * 2)] = win_pass;
 
-                const int from_w = (w - W + 1 > 0) ? (w - W + 1) : 0;
-                decide_and_update_sw_perm(st, runs[i], w, from_w, w,
-                                          params, snp_freq_out);
+                // O(1) sliding sum of covering windows for SNP at position w
+                st.win_pass_sum += win_pass;
+                if (w >= W)
+                    st.win_pass_sum -= st.win_pass_buf[(w - W) % (MAX_WINDOW * 2)];
+
+                // Decide whether SNP w is in ROH
+                const int  n_cov  = (w < W) ? (w + 1) : W;
+                const bool in_roh = (static_cast<float>(st.win_pass_sum) / n_cov
+                                     > params.threshold);
+
+                if (in_roh) {
+                    if (!st.in_run) {
+                        st.in_run        = true;
+                        st.run_start_snp = w;
+                        st.run_start_bp  = st.bp_buf[w % (MAX_WINDOW * 2)];
+                        st.run_end_bp    = st.run_start_bp;
+                        st.n_snp_run     = 0;
+                    }
+                    st.run_end_bp = st.bp_buf[w % (MAX_WINDOW * 2)];
+                    st.n_snp_run++;
+                } else {
+                    if (st.in_run) {
+                        if (st.n_snp_run >= params.min_snps &&
+                            (st.run_end_bp - st.run_start_bp) >= params.min_length_bp)
+                            for (int k = st.run_start_snp;
+                                     k < st.run_start_snp + st.n_snp_run; ++k)
+                                snp_freq_out[k]++;
+                        st.in_run = false;
+                    }
+                }
             }
+
             st.chrom_pos++;
         }
     }
 
-    // Flush trailing SNPs (last W-1 undecided)
+    // Flush trailing W-1 undecided SNPs (at most W-1 per individual — negligible cost)
     for (int i = 0; i < N; ++i) {
-        IndivStateSW&  st  = states[i];
-        SlidingRunPerm& run = runs[i];
-        const int C = st.chrom_pos;
-        if (C >= W) {
-            const int last_win = C - W;
-            for (int s = last_win + 1; s < C; ++s) {
-                const int from_w = (s - W + 1 > 0) ? (s - W + 1) : 0;
-                decide_and_update_sw_perm(st, run, s, from_w, last_win,
-                                          params, snp_freq_out);
+        IndivFast& st = states[i];
+        const int  C  = st.chrom_pos;
+
+        if (C < W) {
+            // Chromosome shorter than one window — nothing was ever decided.
+            if (st.in_run) {
+                if (st.n_snp_run >= params.min_snps &&
+                    (st.run_end_bp - st.run_start_bp) >= params.min_length_bp)
+                    for (int k = st.run_start_snp;
+                             k < st.run_start_snp + st.n_snp_run; ++k)
+                        snp_freq_out[k]++;
+            }
+            continue;
+        }
+
+        const int last_win = C - W;   // last window evaluated in the main loop
+
+        // SNPs last_win+1 … C-1 (at most W-1 of them): use simple O(W) loop —
+        // total iterations <= (W-1)^2 / 2, completely dominated by the main loop.
+        for (int q = last_win + 1; q < C; ++q) {
+            const int from_w = (q - W + 1 > 0) ? (q - W + 1) : 0;
+            int h = 0;
+            for (int ww = from_w; ww <= last_win; ++ww)
+                h += st.win_pass_buf[ww % (MAX_WINDOW * 2)];
+            const int n_cov = last_win - from_w + 1;
+            if (n_cov <= 0) continue;
+            const bool in_roh = (static_cast<float>(h) / n_cov > params.threshold);
+            if (in_roh) {
+                if (!st.in_run) {
+                    st.in_run        = true;
+                    st.run_start_snp = q;
+                    st.run_start_bp  = st.bp_buf[q % (MAX_WINDOW * 2)];
+                    st.run_end_bp    = st.run_start_bp;
+                    st.n_snp_run     = 0;
+                }
+                st.run_end_bp = st.bp_buf[q % (MAX_WINDOW * 2)];
+                st.n_snp_run++;
+            } else {
+                if (st.in_run) {
+                    if (st.n_snp_run >= params.min_snps &&
+                        (st.run_end_bp - st.run_start_bp) >= params.min_length_bp)
+                        for (int k = st.run_start_snp;
+                                 k < st.run_start_snp + st.n_snp_run; ++k)
+                            snp_freq_out[k]++;
+                    st.in_run = false;
+                }
             }
         }
-        // Close any still-open run
-        if (run.in_run) {
-            if (run.n_snp_run >= params.min_snps &&
-                (run.run_end_bp - run.run_start_bp) >= params.min_length_bp) {
-                for (int k = run.run_start_snp; k < run.run_start_snp + run.n_snp_run; ++k)
+
+        if (st.in_run) {
+            if (st.n_snp_run >= params.min_snps &&
+                (st.run_end_bp - st.run_start_bp) >= params.min_length_bp)
+                for (int k = st.run_start_snp;
+                         k < st.run_start_snp + st.n_snp_run; ++k)
                     snp_freq_out[k]++;
-            }
-            run.in_run = 0;
         }
     }
 }
