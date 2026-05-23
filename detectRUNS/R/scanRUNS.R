@@ -198,6 +198,8 @@ scanRUNS <- function(
     if (is.null(nThreads) || identical(nThreads, 0L) || identical(nThreads, 0)) {
         nThreads <- max(1L, parallel::detectCores(logical = FALSE), na.rm = TRUE)
     }
+    if (!is.na(Sys.getenv("_R_CHECK_LIMIT_CORES_", unset = NA)))
+        nThreads <- min(nThreads, 2L)
     nThreads <- as.integer(nThreads)
 
     # --- Parameter validation ---
