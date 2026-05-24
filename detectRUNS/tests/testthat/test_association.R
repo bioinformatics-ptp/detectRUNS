@@ -86,7 +86,7 @@ test_that("accepts a plain data.frame and ROH S3 object identically", {
   # Wrap in a minimal ROH S3 object (same structure as package internals)
   roh_obj <- structure(
     list(runs = plain_runs),
-    class = "ROH"
+    class = "RUNS"
   )
   res_s3 <- runsAssociation(roh_obj, make_pheno(), minFreq = 0.50)
 

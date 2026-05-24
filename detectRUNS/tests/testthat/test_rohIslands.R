@@ -1,4 +1,4 @@
-## Tests for rohIslands() — permutation-based ROH island detection
+## Tests for runsIslands() — permutation-based ROH island detection
 ##
 ## Fixtures are created once per file with local() so expensive scans run once.
 ## Fast tests: n_perm = 5 (deterministic with seed, just enough to check logic).
@@ -40,7 +40,7 @@ library(detectRUNS)
 
 # Pre-computed island result (n_perm=5, seed=1) — reference for determinism checks
 .islands_ref <- local({
-    rohIslands(.roh_bed, n_perm = 5L, seed = 1L, verbose = FALSE)
+    runsIslands(.roh_bed, n_perm = 5L, seed = 1L, verbose = FALSE)
 })
 
 
@@ -48,47 +48,47 @@ library(detectRUNS)
 # 1. Input validation
 # ===========================================================================
 
-test_that("rohIslands rejects non-ROH input", {
-    expect_error(rohIslands(list(runs = data.frame())),
-                 "must be an ROH object")
-    expect_error(rohIslands(data.frame()),
-                 "must be an ROH object")
-    expect_error(rohIslands("not an ROH"),
-                 "must be an ROH object")
+test_that("runsIslands rejects non-ROH input", {
+    expect_error(runsIslands(list(runs = data.frame())),
+                 "must be a RUNS object")
+    expect_error(runsIslands(data.frame()),
+                 "must be a RUNS object")
+    expect_error(runsIslands("not an ROH"),
+                 "must be a RUNS object")
 })
 
-test_that("rohIslands rejects PED-sourced ROH (no snp_freq)", {
-    expect_error(rohIslands(.roh_ped),
+test_that("runsIslands rejects PED-sourced ROH (no snp_freq)", {
+    expect_error(runsIslands(.roh_ped),
                  "snp_freq.*NULL|BED-format")
 })
 
-test_that("rohIslands rejects ROH with missing scan_params", {
+test_that("runsIslands rejects ROH with missing scan_params", {
     roh_no_sp        <- .roh_bed
     roh_no_sp$scan_params <- NULL
-    expect_error(rohIslands(roh_no_sp),
+    expect_error(runsIslands(roh_no_sp),
                  "scan_params.*NULL|re-run scanRUNS")
 })
 
-test_that("rohIslands rejects non-existent bed_path", {
-    expect_error(rohIslands(.roh_bed, bed_path = "no_such_file.bed"),
+test_that("runsIslands rejects non-existent bed_path", {
+    expect_error(runsIslands(.roh_bed, bed_path = "no_such_file.bed"),
                  "not found|does not exist")
 })
 
-test_that("rohIslands rejects invalid n_perm", {
-    expect_error(rohIslands(.roh_bed, n_perm = 0,  verbose = FALSE), "n_perm")
-    expect_error(rohIslands(.roh_bed, n_perm = -1, verbose = FALSE), "n_perm")
-    expect_error(rohIslands(.roh_bed, n_perm = "a",verbose = FALSE), "n_perm")
+test_that("runsIslands rejects invalid n_perm", {
+    expect_error(runsIslands(.roh_bed, n_perm = 0,  verbose = FALSE), "n_perm")
+    expect_error(runsIslands(.roh_bed, n_perm = -1, verbose = FALSE), "n_perm")
+    expect_error(runsIslands(.roh_bed, n_perm = "a",verbose = FALSE), "n_perm")
 })
 
-test_that("rohIslands rejects percentile outside (0, 1)", {
-    expect_error(rohIslands(.roh_bed, percentile = 0,    verbose = FALSE), "percentile")
-    expect_error(rohIslands(.roh_bed, percentile = 1,    verbose = FALSE), "percentile")
-    expect_error(rohIslands(.roh_bed, percentile = -0.1, verbose = FALSE), "percentile")
-    expect_error(rohIslands(.roh_bed, percentile = 1.5,  verbose = FALSE), "percentile")
+test_that("runsIslands rejects percentile outside (0, 1)", {
+    expect_error(runsIslands(.roh_bed, percentile = 0,    verbose = FALSE), "percentile")
+    expect_error(runsIslands(.roh_bed, percentile = 1,    verbose = FALSE), "percentile")
+    expect_error(runsIslands(.roh_bed, percentile = -0.1, verbose = FALSE), "percentile")
+    expect_error(runsIslands(.roh_bed, percentile = 1.5,  verbose = FALSE), "percentile")
 })
 
-test_that("rohIslands rejects non-scalar seed", {
-    expect_error(rohIslands(.roh_bed, seed = c(1, 2), verbose = FALSE), "seed")
+test_that("runsIslands rejects non-scalar seed", {
+    expect_error(runsIslands(.roh_bed, seed = c(1, 2), verbose = FALSE), "seed")
 })
 
 
@@ -96,11 +96,11 @@ test_that("rohIslands rejects non-scalar seed", {
 # 2. Return structure
 # ===========================================================================
 
-test_that("rohIslands returns ROHIslands S3 object", {
-    expect_s3_class(.islands_ref, "ROHIslands")
+test_that("runsIslands returns RunsIslands S3 object", {
+    expect_s3_class(.islands_ref, "RunsIslands")
 })
 
-test_that("ROHIslands has required fields", {
+test_that("RunsIslands has required fields", {
     expect_true(all(c("islands", "snp_table", "thresholds",
                       "n_samples", "n_perm", "percentile") %in% names(.islands_ref)))
 })
@@ -204,14 +204,14 @@ test_that("threshold assigned to each SNP matches its chromosome threshold", {
 # ===========================================================================
 
 test_that("same seed produces identical results", {
-    isl2 <- rohIslands(.roh_bed, n_perm = 5L, seed = 1L, verbose = FALSE)
+    isl2 <- runsIslands(.roh_bed, n_perm = 5L, seed = 1L, verbose = FALSE)
     expect_equal(.islands_ref$thresholds, isl2$thresholds)
     expect_equal(.islands_ref$islands,    isl2$islands)
 })
 
 test_that("different seeds produce different thresholds (with high probability)", {
-    isl_a <- rohIslands(.roh_bed, n_perm = 10L, seed = 100L, verbose = FALSE)
-    isl_b <- rohIslands(.roh_bed, n_perm = 10L, seed = 999L, verbose = FALSE)
+    isl_a <- runsIslands(.roh_bed, n_perm = 10L, seed = 100L, verbose = FALSE)
+    isl_b <- runsIslands(.roh_bed, n_perm = 10L, seed = 999L, verbose = FALSE)
     # With only 10 perms it's possible (but unlikely) to get identical thresholds;
     # we test that at least one chromosome differs
     # (skip rather than fail — rare false positive)
@@ -221,7 +221,7 @@ test_that("different seeds produce different thresholds (with high probability)"
 })
 
 test_that("seed = 0 runs without error (random seed path)", {
-    expect_no_error(rohIslands(.roh_bed, n_perm = 3L, seed = 0L, verbose = FALSE))
+    expect_no_error(runsIslands(.roh_bed, n_perm = 3L, seed = 0L, verbose = FALSE))
 })
 
 
@@ -230,17 +230,17 @@ test_that("seed = 0 runs without error (random seed path)", {
 # ===========================================================================
 
 test_that("lower percentile gives >= island SNPs than higher percentile", {
-    isl_hi <- rohIslands(.roh_bed, n_perm = 5L, seed = 7L,
+    isl_hi <- runsIslands(.roh_bed, n_perm = 5L, seed = 7L,
                          percentile = 0.99, verbose = FALSE)
-    isl_lo <- rohIslands(.roh_bed, n_perm = 5L, seed = 7L,
+    isl_lo <- runsIslands(.roh_bed, n_perm = 5L, seed = 7L,
                          percentile = 0.50, verbose = FALSE)
     expect_gte(nrow(isl_lo$islands), nrow(isl_hi$islands))
 })
 
 test_that("lower percentile gives <= thresholds than higher percentile", {
-    isl_hi <- rohIslands(.roh_bed, n_perm = 5L, seed = 7L,
+    isl_hi <- runsIslands(.roh_bed, n_perm = 5L, seed = 7L,
                          percentile = 0.99, verbose = FALSE)
-    isl_lo <- rohIslands(.roh_bed, n_perm = 5L, seed = 7L,
+    isl_lo <- runsIslands(.roh_bed, n_perm = 5L, seed = 7L,
                          percentile = 0.10, verbose = FALSE)
     for (nm in names(isl_hi$thresholds)) {
         expect_lte(isl_lo$thresholds[[nm]], isl_hi$thresholds[[nm]])
@@ -248,8 +248,8 @@ test_that("lower percentile gives <= thresholds than higher percentile", {
 })
 
 test_that("more permutations does not break results (n_perm = 1)", {
-    isl1 <- rohIslands(.roh_bed, n_perm = 1L, seed = 42L, verbose = FALSE)
-    expect_s3_class(isl1, "ROHIslands")
+    isl1 <- runsIslands(.roh_bed, n_perm = 1L, seed = 42L, verbose = FALSE)
+    expect_s3_class(isl1, "RunsIslands")
     expect_true(all(isl1$thresholds >= 0))
 })
 
@@ -258,15 +258,15 @@ test_that("more permutations does not break results (n_perm = 1)", {
 # 6. Method coverage (sliding window)
 # ===========================================================================
 
-test_that("rohIslands works with sliding window method", {
-    isl_sw <- rohIslands(.roh_sliding, n_perm = 5L, seed = 3L, verbose = FALSE)
-    expect_s3_class(isl_sw, "ROHIslands")
+test_that("runsIslands works with sliding window method", {
+    isl_sw <- runsIslands(.roh_sliding, n_perm = 5L, seed = 3L, verbose = FALSE)
+    expect_s3_class(isl_sw, "RunsIslands")
     expect_true(all(c("islands", "snp_table", "thresholds") %in% names(isl_sw)))
     expect_true(all(isl_sw$thresholds >= 0))
 })
 
 test_that("sliding and consecutive give same SNP count in snp_table", {
-    isl_sw <- rohIslands(.roh_sliding, n_perm = 5L, seed = 3L, verbose = FALSE)
+    isl_sw <- runsIslands(.roh_sliding, n_perm = 5L, seed = 3L, verbose = FALSE)
     expect_equal(nrow(isl_sw$snp_table), nrow(.islands_ref$snp_table))
 })
 
@@ -275,26 +275,26 @@ test_that("sliding and consecutive give same SNP count in snp_table", {
 # 7. Explicit bed_path override
 # ===========================================================================
 
-test_that("rohIslands works when bed_path passed explicitly", {
+test_that("runsIslands works when bed_path passed explicitly", {
     roh_no_bp          <- .roh_bed
     roh_no_bp$bed_path <- NULL
-    isl <- rohIslands(roh_no_bp, bed_path = .bed_path,
+    isl <- runsIslands(roh_no_bp, bed_path = .bed_path,
                       n_perm = 5L, seed = 1L, verbose = FALSE)
     expect_equal(isl$thresholds, .islands_ref$thresholds)
 })
 
 
 # ===========================================================================
-# 8. print.ROHIslands
+# 8. print.RunsIslands
 # ===========================================================================
 
-test_that("print.ROHIslands produces output without error", {
-    expect_output(print(.islands_ref), "ROHIslands")
+test_that("print.RunsIslands produces output without error", {
+    expect_output(print(.islands_ref), "RunsIslands")
     expect_output(print(.islands_ref), "n_perm")
     expect_output(print(.islands_ref), "percentile")
 })
 
-test_that("print.ROHIslands invisibly returns x", {
+test_that("print.RunsIslands invisibly returns x", {
     out <- withVisible(print(.islands_ref))
     expect_false(out$visible)
     expect_identical(out$value, .islands_ref)
@@ -302,51 +302,51 @@ test_that("print.ROHIslands invisibly returns x", {
 
 
 # ===========================================================================
-# 9. summary.ROHIslands
+# 9. summary.RunsIslands
 # ===========================================================================
 
-test_that("summary.ROHIslands returns a data.table", {
+test_that("summary.RunsIslands returns a data.table", {
     out <- summary(.islands_ref)
     expect_s3_class(out, "data.table")
 })
 
-test_that("summary.ROHIslands has required columns", {
+test_that("summary.RunsIslands has required columns", {
     out <- summary(.islands_ref)
     expect_true(all(c("CHR", "start_bp", "end_bp", "n_snps",
                        "peak_pct", "width_mb") %in% names(out)))
 })
 
-test_that("summary.ROHIslands start_bp <= end_bp for all regions", {
+test_that("summary.RunsIslands start_bp <= end_bp for all regions", {
     out <- summary(.islands_ref)
     if (nrow(out) == 0L) skip("no islands detected")
     expect_true(all(out$start_bp <= out$end_bp))
 })
 
-test_that("summary.ROHIslands n_snps >= 1 for all regions", {
+test_that("summary.RunsIslands n_snps >= 1 for all regions", {
     out <- summary(.islands_ref)
     if (nrow(out) == 0L) skip("no islands detected")
     expect_true(all(out$n_snps >= 1L))
 })
 
-test_that("summary.ROHIslands peak_pct in [0, 100]", {
+test_that("summary.RunsIslands peak_pct in [0, 100]", {
     out <- summary(.islands_ref)
     if (nrow(out) == 0L) skip("no islands detected")
     expect_true(all(out$peak_pct >= 0 & out$peak_pct <= 100))
 })
 
-test_that("summary.ROHIslands width_mb >= 0", {
+test_that("summary.RunsIslands width_mb >= 0", {
     out <- summary(.islands_ref)
     if (nrow(out) == 0L) skip("no islands detected")
     expect_true(all(out$width_mb >= 0))
 })
 
-test_that("summary.ROHIslands total SNP count matches islands data.table", {
+test_that("summary.RunsIslands total SNP count matches islands data.table", {
     out <- summary(.islands_ref)
     if (nrow(out) == 0L) skip("no islands detected")
     expect_equal(sum(out$n_snps), nrow(.islands_ref$islands))
 })
 
-test_that("summary.ROHIslands returns empty data.table when no islands", {
+test_that("summary.RunsIslands returns empty data.table when no islands", {
     roh_no_isl <- .islands_ref
     snp_copy <- as.data.frame(.islands_ref$snp_table)
     snp_copy$is_island <- FALSE
@@ -358,27 +358,27 @@ test_that("summary.ROHIslands returns empty data.table when no islands", {
 
 
 # ===========================================================================
-# 10. plot.ROHIslands
+# 10. plot.RunsIslands
 # ===========================================================================
 
-test_that("plot.ROHIslands returns a ggplot object", {
+test_that("plot.RunsIslands returns a ggplot object", {
     p <- plot(.islands_ref)
     expect_s3_class(p, "gg")
 })
 
-test_that("plot.ROHIslands returns invisibly", {
+test_that("plot.RunsIslands returns invisibly", {
     out <- withVisible(plot(.islands_ref))
     expect_false(out$visible)
 })
 
-test_that("plot.ROHIslands accepts custom colours without error", {
+test_that("plot.RunsIslands accepts custom colours without error", {
     expect_no_error(plot(.islands_ref,
                          col_island    = "darkgreen",
                          col_snp       = c("black", "grey40"),
                          col_threshold = "orange"))
 })
 
-test_that("plot.ROHIslands works when no islands are present", {
+test_that("plot.RunsIslands works when no islands are present", {
     roh_no_isl <- .islands_ref
     snp_copy <- as.data.frame(.islands_ref$snp_table)
     snp_copy$is_island <- FALSE
@@ -392,10 +392,10 @@ test_that("plot.ROHIslands works when no islands are present", {
 # 11. Integration test (slow — skipped on CRAN)
 # ===========================================================================
 
-test_that("rohIslands with n_perm=100 completes and produces stable islands (integration)", {
+test_that("runsIslands with n_perm=100 completes and produces stable islands (integration)", {
     skip_on_cran()
-    isl_100 <- rohIslands(.roh_bed, n_perm = 100L, seed = 42L, verbose = FALSE)
-    expect_s3_class(isl_100, "ROHIslands")
+    isl_100 <- runsIslands(.roh_bed, n_perm = 100L, seed = 42L, verbose = FALSE)
+    expect_s3_class(isl_100, "RunsIslands")
     # With 100 perms the result should be stable: expect at least 1 island
     expect_gt(nrow(isl_100$islands), 0L)
     # All islands satisfy the threshold condition

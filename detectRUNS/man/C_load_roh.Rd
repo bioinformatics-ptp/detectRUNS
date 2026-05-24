@@ -7,13 +7,13 @@
 C_load_roh(path)
 }
 \arguments{
-\item{path}{Path to a .roh binary file written by \code{saveROH()}}
+\item{path}{Path to a .roh binary file written by \code{saveRUNS()}}
 }
 \value{
 Named list with element \code{runs} (data.frame, same format as
   \code{scanRUNS()$runs})
 }
 \description{
-Low-level C++ entry point called by \code{loadROH()}.
+Low-level C++ entry point called by \code{loadRUNS()}.
 Do not call directly.
 }

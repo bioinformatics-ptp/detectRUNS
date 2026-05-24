@@ -88,7 +88,7 @@ A named list with four elements:
   \item{snp_freq}{Named integer vector counting how many individuals have a
     ROH covering each SNP (BED engine only; \code{NULL} for PED input).}
   \item{chrom_map}{Named integer vector mapping chromosome names to internal
-    indices used by \code{saveROH()} / \code{loadROH()} (BED engine only;
+    indices used by \code{saveRUNS()} / \code{loadRUNS()} (BED engine only;
     \code{NULL} for PED input).}
 }
 }

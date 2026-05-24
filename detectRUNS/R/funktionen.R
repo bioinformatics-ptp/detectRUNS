@@ -130,7 +130,7 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
   oppositeAndMissingGenotypes <- array(character(0))
   y <- genoConvert(data)
 
-  print(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
+  message(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
 
   if(ROHet) {
 
@@ -381,43 +381,46 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 snpInsideRuns <- function(runsChrom, mapChrom, sample_info) {
 
   unique_groups <- sort(unique(runsChrom$POPULATION))
+  k             <- nrow(mapChrom)
+  snp_pos       <- mapChrom$POSITION   # must be sorted ascending
+
   results <- vector("list", length(unique_groups))
 
-  snpDT <- data.table::data.table(
-    SNP_NAME = mapChrom$SNP_NAME,
-    CHR      = mapChrom$CHR,
-    POSITION = mapChrom$POSITION,
-    pos_end  = mapChrom$POSITION   # zero-width interval [pos, pos]
-  )
-  data.table::setkeyv(snpDT, c("POSITION", "pos_end"))
-
   for (i in seq_along(unique_groups)) {
-    ras     <- unique_groups[i]
-    runsGrp <- runsChrom[runsChrom$POPULATION == ras, ]
-    nGroup  <- sum(sample_info$group == as.character(ras))
+    grp    <- unique_groups[i]
+    runs_g <- runsChrom[runsChrom$POPULATION == grp, ]
+    nGroup <- sum(sample_info$group == as.character(grp))
 
-    runsDT <- data.table::data.table(START = runsGrp$START, END = runsGrp$END)
-    data.table::setkeyv(runsDT, c("START", "END"))
+    if (nrow(runs_g) == 0L || k == 0L) {
+      count_g <- integer(k)
+    } else {
+      # Convert run bp coordinates to SNP indices (1-based).
+      # from_v: index of first SNP whose position >= START
+      # to_v  : index of last  SNP whose position <= END
+      from_v <- findInterval(runs_g$START - 1L, snp_pos) + 1L
+      to_v   <- findInterval(runs_g$END,         snp_pos)
 
-    # foverlaps: for each SNP [pos,pos], count how many runs [START,END] contain it.
-    # Returns one row per (SNP, matching-run) pair; nomatch=NA gives one NA row
-    # for SNPs not in any run.  Aggregate with base R to avoid [.data.table dispatch.
-    hits_df <- as.data.frame(
-      data.table::foverlaps(snpDT, runsDT,
-                             by.x    = c("POSITION", "pos_end"),
-                             by.y    = c("START",    "END"),
-                             nomatch = NA)
-    )
-    count_by_snp <- tapply(!is.na(hits_df$START), hits_df$SNP_NAME, sum)
-    snpCount     <- as.integer(count_by_snp[mapChrom$SNP_NAME])
+      valid <- from_v <= to_v & from_v >= 1L & to_v <= k
+      if (!any(valid)) {
+        count_g <- integer(k)
+      } else {
+        fv <- from_v[valid]
+        tv <- to_v[valid]
+        # Sweep-line: delta[j]+=1 at run start, delta[j]-=1 after run end.
+        # cumsum(delta)[1:k] gives the number of runs covering each SNP.
+        delta   <- tabulate(fv, nbins = k + 1L) -
+                   tabulate(tv + 1L, nbins = k + 1L)
+        count_g <- cumsum(delta)[seq_len(k)]
+      }
+    }
 
     results[[i]] <- data.frame(
       SNP_NAME   = mapChrom$SNP_NAME,
       CHR        = mapChrom$CHR,
-      POSITION   = mapChrom$POSITION,
-      COUNT      = snpCount,
-      BREED      = as.factor(rep(ras, nrow(mapChrom))),
-      PERCENTAGE = (snpCount / nGroup) * 100,
+      POSITION   = snp_pos,
+      COUNT      = count_g,
+      BREED      = as.factor(rep(grp, k)),
+      PERCENTAGE = (count_g / nGroup) * 100,
       stringsAsFactors = FALSE
     )
   }
@@ -714,8 +717,8 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #'
 #' write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 #' }

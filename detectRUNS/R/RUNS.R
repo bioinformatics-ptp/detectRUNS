@@ -1,9 +1,9 @@
 #####################
-## ROH S3 CLASS
+## RUNS S3 CLASS
 #####################
 
 #' @keywords internal
-new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
+new_RUNS <- function(runs, summary, chrom_lengths, sample_info, snp_map,
                     method, type, snp_freq = NULL, chrom_map = NULL,
                     bed_path = NULL, scan_params = NULL, meta = NULL) {
   structure(
@@ -21,15 +21,15 @@ new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
       scan_params   = scan_params,
       meta          = meta
     ),
-    class = "ROH"
+    class = "RUNS"
   )
 }
 
 
-#' Print a summary of an ROH object
+#' Print a summary of a RUNS object
 #'
-#' @param x An \code{ROH} object returned by \code{\link{scanRUNS}} or
-#'   \code{\link{as_ROH}}.
+#' @param x A \code{RUNS} object returned by \code{\link{scanRUNS}} or
+#'   \code{\link{as_RUNS}}.
 #' @param ... Ignored.
 #'
 #' @return Invisibly returns \code{x}.
@@ -43,12 +43,12 @@ new_ROH <- function(runs, summary, chrom_lengths, sample_info, snp_map,
 #'                 minLengthBps = 100000)
 #' print(roh)
 #' }
-print.ROH <- function(x, ...) {
+print.RUNS <- function(x, ...) {
   n_samp  <- nrow(x$sample_info)
   n_group <- length(unique(x$sample_info$group))
   n_roh   <- nrow(x$runs)
   n_chr   <- length(unique(x$runs$chrom))
-  cat(sprintf("ROH object  [method: %s | type: %s]\n", x$method, x$type))
+  cat(sprintf("RUNS object  [method: %s | type: %s]\n", x$method, x$type))
   cat(sprintf("  Samples  : %d  (%d group%s)\n", n_samp, n_group,
               if (n_group != 1L) "s" else ""))
   cat(sprintf("  Runs     : %d  across %d chromosome%s\n", n_roh, n_chr,
@@ -76,10 +76,10 @@ print.ROH <- function(x, ...) {
 }
 
 
-#' Extract runs as a plain data.frame from an ROH object
+#' Extract runs as a plain data.frame from a RUNS object
 #'
-#' @param x An \code{ROH} object returned by \code{\link{scanRUNS}} or
-#'   \code{\link{as_ROH}}.
+#' @param x A \code{RUNS} object returned by \code{\link{scanRUNS}} or
+#'   \code{\link{as_RUNS}}.
 #' @param ... Ignored.
 #'
 #' @return A \code{data.frame} with columns \code{group}, \code{id},
@@ -95,10 +95,10 @@ print.ROH <- function(x, ...) {
 #' df <- as.data.frame(roh)
 #' head(df)
 #' }
-as.data.frame.ROH <- function(x, ...) as.data.frame(x$runs)
+as.data.frame.RUNS <- function(x, ...) as.data.frame(x$runs)
 
 
-#' Build an ROH object from pre-existing run results
+#' Build a RUNS object from pre-existing run results
 #'
 #' Use this when you have run results from a previous analysis (e.g. loaded via
 #' \code{\link{readExternalRuns}} or saved from an earlier session) and want to
@@ -121,7 +121,7 @@ as.data.frame.ROH <- function(x, ...) as.data.frame(x$runs)
 #' @param method Detection method: \code{"sliding"} or \code{"consecutive"}.
 #' @param type Run type: \code{"ROHom"} or \code{"ROHet"}.
 #'
-#' @return An \code{ROH} object usable with all downstream statistics and plot
+#' @return A \code{RUNS} object usable with all downstream statistics and plot
 #'   functions without supplying file paths.
 #' @export
 #'
@@ -135,13 +135,13 @@ as.data.frame.ROH <- function(x, ...) as.data.frame(x$runs)
 #'                          package = "detectRUNS")
 #'
 #' runs <- readExternalRuns(runsFile, program = "detectRUNS")
-#' roh  <- as_ROH(runs, mapFile = mapFile, genotypeFile = pedFile,
+#' roh  <- as_RUNS(runs, mapFile = mapFile, genotypeFile = pedFile,
 #'                method = "sliding", type = "ROHom")
 #'
 #' Froh_inbreeding(roh)
 #' summaryRuns(roh, Class = 2)
 #' }
-as_ROH <- function(runs,
+as_RUNS <- function(runs,
                    mapFile      = NULL,
                    genotypeFile = NULL,
                    bedFile      = NULL,
@@ -192,7 +192,7 @@ as_ROH <- function(runs,
 
   summary_df <- .build_summary_from_runs(runs, sample_info)
 
-  new_ROH(
+  new_RUNS(
     runs          = data.table::as.data.table(runs),
     summary       = data.table::as.data.table(summary_df),
     chrom_lengths = chrom_lengths,
@@ -259,39 +259,39 @@ as_ROH <- function(runs,
 }
 
 
-#' Extract the runs data.frame from an ROH object or return as-is
+#' Extract the runs data.frame from a RUNS object or return as-is
 #' @keywords internal
 .get_runs <- function(x) {
-  if (inherits(x, "ROH")) as.data.frame(x$runs) else as.data.frame(x)
+  if (inherits(x, "RUNS")) as.data.frame(x$runs) else as.data.frame(x)
 }
 
 
-#' Get chromosome lengths from an ROH object or by reading mapFile
+#' Get chromosome lengths from a RUNS object or by reading mapFile
 #' @keywords internal
 .get_chrom_lengths <- function(x, mapFile = NULL) {
-  if (inherits(x, "ROH")) return(x$chrom_lengths)
+  if (inherits(x, "RUNS")) return(x$chrom_lengths)
   if (!is.null(mapFile))  return(chromosomeLength(mapFile))
-  stop("Provide an ROH object from scanRUNS() / as_ROH(), or mapFile=.")
+  stop("Provide a RUNS object from scanRUNS() / as_RUNS(), or mapFile=.")
 }
 
 
-#' Get sample info from an ROH object or by reading genotypeFile
+#' Get sample info from a RUNS object or by reading genotypeFile
 #' @keywords internal
 .get_sample_info <- function(x, genotypeFile = NULL) {
-  if (inherits(x, "ROH")) return(x$sample_info)
+  if (inherits(x, "RUNS")) return(x$sample_info)
   if (!is.null(genotypeFile)) {
     pops <- as.data.frame(readPOPCpp(genotypeFile))
     colnames(pops) <- c("group", "id")
     return(pops)
   }
-  stop("Provide an ROH object from scanRUNS() / as_ROH(), or genotypeFile=.")
+  stop("Provide a RUNS object from scanRUNS() / as_RUNS(), or genotypeFile=.")
 }
 
 
-#' Get SNP map from an ROH object or by reading mapFile
+#' Get SNP map from a RUNS object or by reading mapFile
 #' @keywords internal
 .get_snp_map <- function(x, mapFile = NULL) {
-  if (inherits(x, "ROH")) return(x$snp_map)
+  if (inherits(x, "RUNS")) return(x$snp_map)
   if (!is.null(mapFile)) {
     raw <- as.data.frame(readMapFile(mapFile))
     return(data.frame(CHR      = raw$CHR,
@@ -299,5 +299,5 @@ as_ROH <- function(runs,
                       POSITION = raw$POSITION,
                       stringsAsFactors = FALSE))
   }
-  stop("Provide an ROH object from scanRUNS() / as_ROH(), or mapFile=.")
+  stop("Provide a RUNS object from scanRUNS() / as_RUNS(), or mapFile=.")
 }

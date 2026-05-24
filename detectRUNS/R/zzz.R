@@ -1,4 +1,26 @@
 
+# Deprecated aliases — old ROH-naming kept for backward compatibility
+#' @export
+saveROH <- function(...) {
+  .Deprecated("saveRUNS")
+  saveRUNS(...)
+}
+#' @export
+loadROH <- function(...) {
+  .Deprecated("loadRUNS")
+  loadRUNS(...)
+}
+#' @export
+as_ROH <- function(...) {
+  .Deprecated("as_RUNS")
+  as_RUNS(...)
+}
+#' @export
+rohIslands <- function(...) {
+  .Deprecated("runsIslands")
+  runsIslands(...)
+}
+
 # Suppress R CMD check NOTEs for column names used in data.table / ggplot2 NSE
 utils::globalVariables(c(
   "CLASS", "group", "chrom", "freq", "id",

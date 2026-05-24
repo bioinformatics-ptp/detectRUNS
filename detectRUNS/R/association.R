@@ -9,8 +9,8 @@
 #' and returns the effect size and p-value. Works with both runs of homozygosity
 #' (ROHom) and runs of heterozygosity (ROHet).
 #'
-#' @param runs an S3 object of class \code{ROH} (from \code{\link{scanRUNS}} or
-#'   \code{\link{as_ROH}}) or a plain data.frame with runs results.
+#' @param runs an S3 object of class \code{RUNS} (from \code{\link{scanRUNS}} or
+#'   \code{\link{as_RUNS}}) or a plain data.frame with runs results.
 #'   Must contain columns: \code{id}, \code{chrom}, \code{from}, \code{to}.
 #' @param pheno data.frame with at least two columns: \code{id} (matching the
 #'   individual IDs in \code{runs}, no duplicates allowed) and a numeric

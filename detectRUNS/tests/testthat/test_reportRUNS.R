@@ -64,9 +64,9 @@ test_that("scanRUNS PED stores meta", {
 })
 
 # ---------------------------------------------------------------------------
-# print.ROH shows Params and Scanned lines
+# print.RUNS shows Params and Scanned lines
 # ---------------------------------------------------------------------------
-test_that("print.ROH shows Params and Scanned lines", {
+test_that("print.RUNS shows Params and Scanned lines", {
   skip_if_no_data()
   roh <- scanRUNS(bed_file, method = "sliding", minSNP = 10, minLengthBps = 50000)
   out <- capture.output(print(roh))
@@ -151,7 +151,7 @@ test_that("reportRUNS overwrite=TRUE replaces existing file", {
 })
 
 test_that("reportRUNS errors when 'runs' is not an ROH object", {
-  expect_error(reportRUNS(data.frame()), "ROH object")
+  expect_error(reportRUNS(data.frame()), "RUNS object")
 })
 
 # ---------------------------------------------------------------------------

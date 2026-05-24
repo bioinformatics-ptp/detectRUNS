@@ -93,7 +93,7 @@ test_that("scanRUNS errors on non-character genoFile", {
 # ===========================================================================
 
 test_that("scanRUNS returns an ROH S3 object", {
-  expect_s3_class(.roh_normal, "ROH")
+  expect_s3_class(.roh_normal, "RUNS")
 })
 
 test_that("ROH object contains all expected named elements", {
@@ -127,22 +127,22 @@ test_that("ROH$type is ROHom or ROHet", {
   expect_true(.roh_normal$type %in% c("ROHom", "ROHet"))
 })
 
-test_that("print.ROH prints without error", {
+test_that("print.RUNS prints without error", {
   expect_output(print(.roh_normal))
 })
 
-test_that("print.ROH returns the ROH object invisibly", {
+test_that("print.RUNS returns the ROH object invisibly", {
   ret <- print(.roh_normal)
   expect_identical(ret, .roh_normal)
 })
 
-test_that("as.data.frame.ROH returns data.frame with correct columns", {
+test_that("as.data.frame.RUNS returns data.frame with correct columns", {
   df <- as.data.frame(.roh_normal)
   expect_s3_class(df, "data.frame")
   expect_named(df, c("group", "id", "chrom", "nSNP", "from", "to", "lengthBps"))
 })
 
-test_that("as.data.frame.ROH has the same rows as $runs", {
+test_that("as.data.frame.RUNS has the same rows as $runs", {
   expect_equal(nrow(as.data.frame(.roh_normal)), nrow(.roh_normal$runs))
 })
 
@@ -160,7 +160,7 @@ test_that("empty ROH: $summary still covers all individuals (n_ROH = 0)", {
   expect_true(all(.roh_empty$summary$n_ROH == 0L))
 })
 
-test_that("empty ROH: print.ROH does not error", {
+test_that("empty ROH: print.RUNS does not error", {
   expect_output(print(.roh_empty))
 })
 
@@ -196,77 +196,77 @@ test_that("empty ROH: summaryRuns does not error", {
 
 
 # ===========================================================================
-# 4. saveROH / loadROH roundtrip
+# 4. saveRUNS / loadRUNS roundtrip
 # ===========================================================================
 
-test_that("saveROH creates a file on disk", {
+test_that("saveRUNS creates a file on disk", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
-  saveROH(.roh_normal, tmp)
+  saveRUNS(.roh_normal, tmp)
   expect_true(file.exists(tmp))
 })
 
-test_that("loadROH returns a list with $runs element", {
+test_that("loadRUNS returns a list with $runs element", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
-  saveROH(.roh_normal, tmp)
-  roh2 <- loadROH(tmp)
+  saveRUNS(.roh_normal, tmp)
+  roh2 <- loadRUNS(tmp)
   expect_type(roh2, "list")
   expect_true("runs" %in% names(roh2))
 })
 
-test_that("saveROH/loadROH preserves runs exactly", {
+test_that("saveRUNS/loadRUNS preserves runs exactly", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
-  saveROH(.roh_normal, tmp)
-  roh2 <- loadROH(tmp)
+  saveRUNS(.roh_normal, tmp)
+  roh2 <- loadRUNS(tmp)
   orig <- as.data.frame(.roh_normal$runs)
   back <- as.data.frame(roh2$runs)
   expect_equal(orig, back)
 })
 
-test_that("saveROH/loadROH preserves full ROH object including method and type", {
+test_that("saveRUNS/loadRUNS preserves full ROH object including method and type", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
-  saveROH(.roh_normal, tmp)
-  roh2 <- loadROH(tmp)
-  expect_s3_class(roh2, "ROH")
+  saveRUNS(.roh_normal, tmp)
+  roh2 <- loadRUNS(tmp)
+  expect_s3_class(roh2, "RUNS")
   expect_equal(roh2$method, .roh_normal$method)
   expect_equal(roh2$type,   .roh_normal$type)
 })
 
-test_that("saveROH/loadROH roundtrip on empty-runs ROH object", {
+test_that("saveRUNS/loadRUNS roundtrip on empty-runs ROH object", {
   tmp <- tempfile(fileext = ".roh")
   on.exit(unlink(tmp), add = TRUE)
-  saveROH(.roh_empty, tmp)
-  roh2 <- loadROH(tmp)
+  saveRUNS(.roh_empty, tmp)
+  roh2 <- loadRUNS(tmp)
   expect_type(roh2, "list")
   expect_equal(nrow(roh2$runs), 0L)
 })
 
 
 # ===========================================================================
-# 5. as_ROH construction
+# 5. as_RUNS construction
 # ===========================================================================
 
-test_that("as_ROH builds a valid ROH object from an external CSV", {
+test_that("as_RUNS builds a valid ROH object from an external CSV", {
   ext_runs <- suppressMessages(
     readExternalRuns("test.ROHet.sliding.csv", program = "detectRUNS")
   )
   roh <- suppressWarnings(
-    as_ROH(ext_runs, mapFile = map_file, genotypeFile = ped_file,
+    as_RUNS(ext_runs, mapFile = map_file, genotypeFile = ped_file,
            method = "sliding", type = "ROHom")
   )
-  expect_s3_class(roh, "ROH")
+  expect_s3_class(roh, "RUNS")
   expect_equal(nrow(roh$runs), nrow(ext_runs))
 })
 
-test_that("as_ROH: Froh_inbreeding works on the resulting ROH object", {
+test_that("as_RUNS: Froh_inbreeding works on the resulting ROH object", {
   ext_runs <- suppressMessages(
     readExternalRuns("test.ROHet.sliding.csv", program = "detectRUNS")
   )
   roh <- suppressWarnings(
-    as_ROH(ext_runs, mapFile = map_file, genotypeFile = ped_file,
+    as_RUNS(ext_runs, mapFile = map_file, genotypeFile = ped_file,
            method = "sliding", type = "ROHom")
   )
   froh <- suppressMessages(Froh_inbreeding(roh, genome_wide = TRUE))
@@ -275,10 +275,10 @@ test_that("as_ROH: Froh_inbreeding works on the resulting ROH object", {
   expect_true(all(froh$Froh_genome >= 0, na.rm = TRUE))
 })
 
-test_that("as_ROH errors when neither mapFile nor bedFile is supplied", {
+test_that("as_RUNS errors when neither mapFile nor bedFile is supplied", {
   runs <- data.frame(group="X", id="a", chrom="1", nSNP=10L,
                      from=1L, to=100L, lengthBps=99L)
-  expect_error(as_ROH(runs, method = "consecutive", type = "ROHom"),
+  expect_error(as_RUNS(runs, method = "consecutive", type = "ROHom"),
                "Provide mapFile=|bedFile=")
 })
 
@@ -348,7 +348,7 @@ test_that("sliding method produces a valid ROH object", {
              windowSize = 10, threshold = 0.05,
              minSNP = 10, minLengthBps = 50000, verbose = FALSE)
   ))
-  expect_s3_class(roh_sliding, "ROH")
+  expect_s3_class(roh_sliding, "RUNS")
   expect_equal(roh_sliding$method, "sliding")
   expect_named(
     as.data.frame(roh_sliding$runs),
@@ -362,7 +362,7 @@ test_that("ROHet scan returns runs of heterozygosity", {
              ROHet = TRUE, windowSize = 5, threshold = 0.05,
              minSNP = 3, minLengthBps = 1000, verbose = FALSE)
   ))
-  expect_s3_class(roh_het, "ROH")
+  expect_s3_class(roh_het, "RUNS")
   expect_equal(roh_het$type, "ROHet")
 })
 

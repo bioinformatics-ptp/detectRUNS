@@ -24,8 +24,8 @@ reportRUNS(
 )
 }
 \arguments{
-\item{runs}{An \code{ROH} object returned by \code{\link{scanRUNS}} or
-\code{\link{as_ROH}}.}
+\item{runs}{A \code{RUNS} object returned by \code{\link{scanRUNS}} or
+\code{\link{as_RUNS}}.}
 
 \item{output_dir}{Directory where the report and plot sub-folder are written.
 The directory must already exist.  Default \code{"."}.}
@@ -33,7 +33,7 @@ The directory must already exist.  Default \code{"."}.}
 \item{prefix}{Base name for all output files.  When \code{NULL} (default),
 auto-generated as \code{"detectRUNS_report_<YYYYMMDD_HHMMSS>"}.}
 
-\item{islands}{Optional \code{ROHIslands} object from \code{\link{rohIslands}}.
+\item{islands}{Optional \code{RunsIslands} object from \code{\link{runsIslands}}.
 When supplied, an islands section and Manhattan plot are added.}
 
 \item{format}{Output format: \code{"markdown"} (default), \code{"html"}, or
@@ -85,7 +85,7 @@ Invisibly returns a named list:
 }
 }
 \description{
-Produces a summary report (Markdown, HTML, or PDF) from an \code{ROH} object
+Produces a summary report (Markdown, HTML, or PDF) from a \code{RUNS} object
 returned by \code{\link{scanRUNS}}.  The report includes dataset overview,
 scan parameters, run statistics, inbreeding coefficients, top chromosomes and
 SNPs in runs, common ROH regions, and (optionally) ROH island detection
@@ -103,7 +103,7 @@ out <- reportRUNS(runs, output_dir = tempdir())
 cat("Report at:", out$report_file, "\n")
 
 # HTML report with ROH islands
-islands <- rohIslands(runs, n_perm = 100, seed = 42)
+islands <- runsIslands(runs, n_perm = 100, seed = 42)
 reportRUNS(runs, islands = islands, format = "html",
            output_dir = tempdir(), prefix = "my_report")
 }
