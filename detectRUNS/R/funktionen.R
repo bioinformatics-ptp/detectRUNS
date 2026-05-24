@@ -221,6 +221,7 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @param oppositeAndMissingSNP indexed array of missing and opposite genotypes (SNP order in the genome is the index)
 #' @param maxOppRun max n. of opposite genotype SNPs in the run (not in the window!)
 #' @param maxMissRun max n. of missing SNPs in the run (not in the window!)
+#' @param maxGap max distance (bp) between consecutive SNPs; a gap >= this value breaks a run
 #'
 #' @return a data.frame with RUNS per animal
 #'

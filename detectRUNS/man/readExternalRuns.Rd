@@ -33,8 +33,8 @@ genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 
 # calculating runs of Homozygosity
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 
 write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 }

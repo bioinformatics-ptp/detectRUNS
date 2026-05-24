@@ -18,6 +18,9 @@ scanRUNS(
   maxGap = 1e+06,
   windowSize = 15,
   threshold = 0.05,
+  minDensity = 1/1000,
+  maxOppRun = NULL,
+  maxMissRun = NULL,
   nThreads = NULL,
   verbose = TRUE
 )
@@ -66,6 +69,25 @@ only).  Default 15.}
 \item{threshold}{Bjelland coverage-ratio threshold (strictly >); a SNP is
 called in a run when the fraction of overlapping passing windows exceeds
 this value (\code{method = "sliding"} only).  Default 0.05.}
+
+\item{minDensity}{Minimum SNP density expressed as SNPs per kbp.  Runs
+whose density falls below this threshold are discarded after detection.
+Default \code{1/1000} (= 0.001 SNPs/kbp = 1 SNP per 1 Mbp) — a very
+permissive filter that removes only extremely sparse runs.  Set to
+\code{1/50} (= 0.02 SNPs/kbp) to match PLINK's \code{--homozyg-density 50}
+default, or \code{NULL} / \code{0} to disable the filter entirely.}
+
+\item{maxOppRun}{Maximum number of opposite-type genotypes allowed across the
+entire run (\code{method = "sliding"} only).  This is a secondary,
+run-level filter applied after the window-based detection: a run is kept
+only if its total count of opposite genotypes does not exceed this value.
+\code{NULL} (default) disables the filter.  Supported for both BED and PED
+input.}
+
+\item{maxMissRun}{Maximum number of missing genotypes allowed across the
+entire run (\code{method = "sliding"} only).  Same semantics as
+\code{maxOppRun}.  \code{NULL} (default) disables the filter.  Supported
+for both BED and PED input.}
 
 \item{nThreads}{Number of parallel threads/cores.  For the BED engine this
 sets the OpenMP thread count; for the PED engine it sets the number of

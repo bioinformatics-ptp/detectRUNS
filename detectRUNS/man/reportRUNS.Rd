@@ -47,17 +47,20 @@ Default \code{2}.}
 
 \item{snp_table}{If \code{TRUE} (default), compute per-SNP run frequency via
 \code{summaryRuns(snpInRuns = TRUE)} and add a top-10 chromosomes and
-top-10 SNPs table.  Set to \code{FALSE} to skip this step on large datasets.}
+top-10 SNPs table.  Set to \code{FALSE} to skip this step on large
+datasets.}
 
 \item{table_threshold}{Frequency threshold (0-1) passed to
 \code{\link{tableRuns}}.  Default \code{0.50}.}
 
 \item{froh_class}{If \code{TRUE} (default), include an
-\code{\link{Froh_inbreedingClass}} table.}
+\code{\link{Froh_inbreedingClass}} table.  Ignored when
+\code{runs$type == "ROHet"}.}
 
 \item{include_plots}{If \code{TRUE} (default), generate and embed plots:
-violin (total run length), class distribution, Froh box plot, and (if
-\code{islands} is supplied) a Manhattan plot.}
+violin (total run length), class distribution, Froh box plot, SNP-frequency
+Manhattan plot, and (if \code{islands} is supplied) a ROH-island Manhattan
+plot.}
 
 \item{plot_width}{Plot width in inches.  Default \code{8}.}
 
@@ -86,10 +89,12 @@ Invisibly returns a named list:
 }
 \description{
 Produces a summary report (Markdown, HTML, or PDF) from a \code{RUNS} object
-returned by \code{\link{scanRUNS}}.  The report includes dataset overview,
-scan parameters, run statistics, inbreeding coefficients, top chromosomes and
-SNPs in runs, common ROH regions, and (optionally) ROH island detection
-results.  Works for both ROHom and ROHet objects.
+returned by \code{\link{scanRUNS}}.  The report includes an executive
+summary, dataset overview, scan parameters, run statistics, per-chromosome
+coverage, inbreeding coefficients, individual outlier flags, top chromosomes
+and SNPs in runs, common ROH regions, SNP-frequency Manhattan plot, and
+(optionally) ROH island detection results.  Works for both ROHom and ROHet
+objects, with ROHet-specific content when appropriate.
 }
 \examples{
 \dontrun{

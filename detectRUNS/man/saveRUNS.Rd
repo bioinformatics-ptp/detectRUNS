@@ -2,7 +2,7 @@
 % Please edit documentation in R/binary_runs.R
 \name{saveRUNS}
 \alias{saveRUNS}
-\title{Save ROH scan results to a compact binary file}
+\title{Save RUNS scan results to a compact binary file}
 \usage{
 saveRUNS(result, path)
 }

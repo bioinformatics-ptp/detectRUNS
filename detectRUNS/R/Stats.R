@@ -478,6 +478,8 @@ tableRuns <- function(runs=NULL, SnpInRuns=NULL, genotypeFile=NULL, mapFile=NULL
     sample_info     <- .get_sample_info(runs_input, genotypeFile)
     chroms          <- sort(unique(runs$CHROMOSOME))
     effective_cores <- if (.Platform$OS.type == "unix") nCores else 1L
+    if (nzchar(Sys.getenv("_R_CHECK_LIMIT_CORES_", "")))
+        effective_cores <- min(effective_cores, 2L)
     message(sprintf("tableRuns: using %d core(s) for parallel chromosome processing",
                     effective_cores))
 

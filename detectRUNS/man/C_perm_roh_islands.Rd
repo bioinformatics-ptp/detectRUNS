@@ -65,6 +65,6 @@ Named list with \code{thresholds} (named numeric vector, one per
   chromosome) and \code{is_island} (named logical vector, one per SNP).
 }
 \description{
-Low-level C++ entry point called by \code{runsIslands()}.
-Do not call directly; use \code{runsIslands()} instead.
+Low-level C++ entry point called by \code{rohIslands()}.
+Do not call directly; use \code{rohIslands()} instead.
 }
