@@ -143,7 +143,7 @@
 #'   \item{snp_freq}{Named integer vector counting how many individuals have a
 #'     ROH covering each SNP (BED engine only; \code{NULL} for PED input).}
 #'   \item{chrom_map}{Named integer vector mapping chromosome names to internal
-#'     indices used by \code{saveROH()} / \code{loadROH()} (BED engine only;
+#'     indices used by \code{saveRUNS()} / \code{loadRUNS()} (BED engine only;
 #'     \code{NULL} for PED input).}
 #' }
 #'
@@ -291,7 +291,7 @@ scanRUNS <- function(
             stringsAsFactors = FALSE
         )
 
-        return(new_ROH(
+        return(new_RUNS(
             runs          = result$runs,
             summary       = result$summary,
             chrom_lengths = chrom_len_bed,
@@ -397,7 +397,7 @@ scanRUNS <- function(
             stringsAsFactors = FALSE
         )
 
-        return(new_ROH(
+        return(new_RUNS(
             runs          = runs_dt,
             summary       = summ_dt,
             chrom_lengths = chrom_len_ped,

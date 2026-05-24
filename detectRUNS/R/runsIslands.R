@@ -1,26 +1,26 @@
 ###########################################################
-### Permutation-based ROH island detection
+### Permutation-based runs island detection
 ###########################################################
 
 
-#' Detect ROH islands via permutation testing
+#' Detect runs islands via permutation testing
 #'
-#' Implements the permutation-based ROH island detection method of
+#' Implements the permutation-based runs island detection method of
 #' Falchi et al. (2026, BMC Genomics).  For each chromosome, a null
 #' distribution of SNPROH values (the number of individuals that have a given
 #' SNP inside a ROH) is built by randomly permuting sample identity
-#' \code{n_perm} times and re-running the same ROH scan on the permuted data.
+#' \code{n_perm} times and re-running the same runs scan on the permuted data.
 #' The observed SNPROH of each SNP is then compared against the
 #' chromosome-specific threshold derived as the \code{percentile}-th quantile
 #' of the pooled null distribution.  SNPs whose real SNPROH exceeds the
-#' threshold are declared ROH islands.
+#' threshold are declared runs islands.
 #'
 #' Permutation is performed in C++ (OpenMP-parallel over permutations) so that
 #' even 1000 permutations finish in a reasonable time.  All scan parameters
-#' are taken directly from the \code{ROH} object so the permuted scans use
+#' are taken directly from the \code{RUNS} object so the permuted scans use
 #' exactly the same settings as the original scan.
 #'
-#' @param roh        An \code{ROH} object returned by \code{\link{scanRUNS}}
+#' @param roh        A \code{RUNS} object returned by \code{\link{scanRUNS}}
 #'   with BED-format input.  Must contain \code{$snp_freq}, \code{$bed_path},
 #'   and \code{$scan_params} (all present when the object was created with the
 #'   current package version).
@@ -37,7 +37,7 @@
 #' @param seed       Integer RNG seed for reproducibility.  Default 0 (random).
 #' @param verbose    If \code{TRUE} (default), print per-chromosome progress.
 #'
-#' @return An object of class \code{"ROHIslands"}, a named list with:
+#' @return An object of class \code{"RunsIslands"}, a named list with:
 #' \describe{
 #'   \item{islands}{A \code{data.table} of SNPs flagged as ROH islands with
 #'     columns \code{SNP_NAME}, \code{CHR}, \code{POSITION}, \code{snp_freq}
@@ -72,11 +72,11 @@
 #'                 minSNP = 15, maxOpp = 1, maxMiss = 1,
 #'                 minLengthBps = 100000)
 #' # Use a small n_perm for speed; increase to 1000 for publication-quality results
-#' islands <- rohIslands(roh, n_perm = 100, seed = 42)
+#' islands <- runsIslands(roh, n_perm = 100, seed = 42)
 #' print(islands)
 #' head(islands$islands)
 #' }
-rohIslands <- function(
+runsIslands <- function(
     roh,
     bed_path   = NULL,
     n_perm     = 1000L,
@@ -86,18 +86,18 @@ rohIslands <- function(
     verbose    = TRUE
 ) {
     # --- Input validation ---
-    if (!inherits(roh, "ROH"))
-        stop("'roh' must be an ROH object from scanRUNS()")
+    if (!inherits(roh, "RUNS"))
+        stop("'roh' must be a RUNS object from scanRUNS()")
     if (is.null(roh$snp_freq))
         stop(paste(
             "'roh$snp_freq' is NULL.",
-            "rohIslands() requires BED-format input (not PED).",
+            "runsIslands() requires BED-format input (not PED).",
             "Re-run scanRUNS() with a .bed file."))
     if (is.null(roh$scan_params))
         stop(paste(
             "'roh$scan_params' is NULL.",
             "Re-run scanRUNS() with the current package version",
-            "to store scan parameters in the ROH object."))
+            "to store scan parameters in the RUNS object."))
 
     bp <- if (!is.null(bed_path)) bed_path else roh$bed_path
     if (is.null(bp))
@@ -130,7 +130,7 @@ rohIslands <- function(
         nThreads <- min(nThreads, 2L)
     nThreads <- as.integer(nThreads)
 
-    # --- Decode method and scan params from ROH object ---
+    # --- Decode method and scan params from RUNS object ---
     method_int <- if (roh$method == "consecutive") 0L else 1L
     roh_type   <- if (roh$type   == "ROHet")       1L else 0L
     sp         <- roh$scan_params
@@ -139,7 +139,7 @@ rohIslands <- function(
 
     if (verbose)
         message(sprintf(
-            "rohIslands | method: %s | type: %s | n_perm: %d | percentile: %.3f | threads: %d",
+            "runsIslands | method: %s | type: %s | n_perm: %d | percentile: %.3f | threads: %d",
             roh$method, roh$type, as.integer(n_perm), percentile, nThreads))
 
     # --- Call C++ permutation engine ---
@@ -185,7 +185,7 @@ rohIslands <- function(
     islands   <- snp_table[snp_table$is_island == TRUE, ]
 
     if (verbose)
-        message(sprintf("rohIslands | %d ROH island SNPs identified across %d chromosome(s)",
+        message(sprintf("runsIslands | %d runs island SNPs identified across %d chromosome(s)",
                         nrow(islands), length(unique(islands$CHR))))
 
     structure(
@@ -197,21 +197,21 @@ rohIslands <- function(
             n_perm     = as.integer(n_perm),
             percentile = percentile
         ),
-        class = "ROHIslands"
+        class = "RunsIslands"
     )
 }
 
 
-#' Print a summary of an ROHIslands object
+#' Print a summary of an RunsIslands object
 #'
-#' @param x An \code{ROHIslands} object returned by \code{\link{rohIslands}}.
+#' @param x An \code{RunsIslands} object returned by \code{\link{runsIslands}}.
 #' @param ... Ignored.
 #' @return Invisibly returns \code{x}.
 #' @export
-print.ROHIslands <- function(x, ...) {
+print.RunsIslands <- function(x, ...) {
     n_isl  <- nrow(x$islands)
     n_chr  <- if (n_isl > 0L) length(unique(x$islands$CHR)) else 0L
-    cat(sprintf("ROHIslands  [n_perm: %d | percentile: %.3f | individuals: %d]\n",
+    cat(sprintf("RunsIslands  [n_perm: %d | percentile: %.3f | individuals: %d]\n",
                 x$n_perm, x$percentile, x$n_samples))
     cat(sprintf("  Island SNPs : %d  across %d chromosome%s\n",
                 n_isl, n_chr, if (n_chr != 1L) "s" else ""))
@@ -224,14 +224,14 @@ print.ROHIslands <- function(x, ...) {
 }
 
 
-#' Summarise ROH islands as contiguous genomic regions
+#' Summarise runs islands as contiguous genomic regions
 #'
 #' Groups consecutive island SNPs (adjacent in BIM order, on the same
 #' chromosome) into contiguous regions and returns one row per region with
 #' start/end coordinates, SNP count, peak SNPROH percentage, and region width.
 #'
-#' @param object An \code{ROHIslands} object returned by
-#'   \code{\link{rohIslands}}.
+#' @param object An \code{RunsIslands} object returned by
+#'   \code{\link{runsIslands}}.
 #' @param ...    Ignored.
 #'
 #' @return A \code{data.table} with columns:
@@ -244,7 +244,7 @@ print.ROHIslands <- function(x, ...) {
 #'   \item{width_mb}{Region width in megabases (\code{end_bp - start_bp}).}
 #' }
 #'
-#' @seealso \code{\link{rohIslands}}, \code{\link{plot.ROHIslands}}
+#' @seealso \code{\link{runsIslands}}, \code{\link{plot.RunsIslands}}
 #' @export
 #'
 #' @examples
@@ -253,10 +253,10 @@ print.ROHIslands <- function(x, ...) {
 #'                         package = "detectRUNS")
 #' roh     <- scanRUNS(bedFile, method = "consecutive", minSNP = 15,
 #'                     maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
-#' islands <- rohIslands(roh, n_perm = 100, seed = 42)
+#' islands <- runsIslands(roh, n_perm = 100, seed = 42)
 #' summary(islands)
 #' }
-summary.ROHIslands <- function(object, ...) {
+summary.RunsIslands <- function(object, ...) {
     df <- as.data.frame(object$snp_table)   # BIM order preserved
 
     empty <- data.table::data.table(
@@ -300,22 +300,22 @@ summary.ROHIslands <- function(object, ...) {
 }
 
 
-#' Manhattan plot of ROH island detection results
+#' Manhattan plot of runs island detection results
 #'
 #' Plots SNPROH frequency (percentage of individuals with a given SNP inside a
-#' ROH) across the genome, with chromosome-specific permutation thresholds
+#' runs) across the genome, with chromosome-specific permutation thresholds
 #' shown as dashed lines and island SNPs highlighted in a distinct colour.
 #' The plot mirrors Fig. 1 of Falchi et al. (2026, \emph{BMC Genomics}).
 #'
-#' @param x          An \code{ROHIslands} object returned by
-#'   \code{\link{rohIslands}}.
+#' @param x          An \code{RunsIslands} object returned by
+#'   \code{\link{runsIslands}}.
 #' @param col_island Colour for island SNPs.  Default \code{"firebrick"}.
 #' @param col_snp    Two-element character vector of alternating colours for
 #'   non-island SNPs (one per chromosome, alternating).
 #'   Default \code{c("grey60", "grey80")}.
 #' @param col_threshold Colour for the per-chromosome threshold lines.
 #'   Default \code{"steelblue"}.
-#' @param title      Plot title.  Default \code{"ROH Island Detection"}.
+#' @param title      Plot title.  Default \code{"Runs Island Detection"}.
 #' @param pt_size    Point size for SNPs.  Default \code{0.6}.
 #' @param pt_alpha   Point transparency.  Default \code{0.8}.
 #' @param ...        Ignored.
@@ -323,7 +323,7 @@ summary.ROHIslands <- function(object, ...) {
 #' @return A \code{ggplot2} object (invisible).  The plot is printed as a
 #'   side-effect.
 #'
-#' @seealso \code{\link{rohIslands}}, \code{\link{summary.ROHIslands}}
+#' @seealso \code{\link{runsIslands}}, \code{\link{summary.RunsIslands}}
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_segment scale_x_continuous scale_y_continuous expansion labs theme_bw theme element_blank element_text
 #' @export
@@ -334,15 +334,15 @@ summary.ROHIslands <- function(object, ...) {
 #'                         package = "detectRUNS")
 #' roh     <- scanRUNS(bedFile, method = "consecutive", minSNP = 15,
 #'                     maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
-#' islands <- rohIslands(roh, n_perm = 100, seed = 42)
+#' islands <- runsIslands(roh, n_perm = 100, seed = 42)
 #' plot(islands)
 #' }
-plot.ROHIslands <- function(
+plot.RunsIslands <- function(
     x,
     col_island     = "firebrick",
     col_snp        = c("grey60", "grey80"),
     col_threshold  = "steelblue",
-    title          = "ROH Island Detection",
+    title          = "Runs Island Detection",
     pt_size        = 0.6,
     pt_alpha       = 0.8,
     ...)

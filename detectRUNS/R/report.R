@@ -4,7 +4,7 @@
 
 #' Generate a comprehensive report for a RUNS object
 #'
-#' Produces a summary report (Markdown, HTML, or PDF) from an \code{ROH} object
+#' Produces a summary report (Markdown, HTML, or PDF) from a \code{RUNS} object
 #' returned by \code{\link{scanRUNS}}.  The report includes an executive
 #' summary, dataset overview, scan parameters, run statistics, per-chromosome
 #' coverage, inbreeding coefficients, individual outlier flags, top chromosomes
@@ -12,13 +12,13 @@
 #' (optionally) ROH island detection results.  Works for both ROHom and ROHet
 #' objects, with ROHet-specific content when appropriate.
 #'
-#' @param runs An \code{ROH} object returned by \code{\link{scanRUNS}} or
-#'   \code{\link{as_ROH}}.
+#' @param runs A \code{RUNS} object returned by \code{\link{scanRUNS}} or
+#'   \code{\link{as_RUNS}}.
 #' @param output_dir Directory where the report and plot sub-folder are written.
 #'   The directory must already exist.  Default \code{"."}.
 #' @param prefix Base name for all output files.  When \code{NULL} (default),
 #'   auto-generated as \code{"detectRUNS_report_<YYYYMMDD_HHMMSS>"}.
-#' @param islands Optional \code{ROHIslands} object from \code{\link{rohIslands}}.
+#' @param islands Optional \code{RunsIslands} object from \code{\link{runsIslands}}.
 #'   When supplied, an islands section and Manhattan plot are added.
 #' @param format Output format: \code{"markdown"} (default), \code{"html"}, or
 #'   \code{"pdf"}.  PDF requires the \pkg{rmarkdown} package and a working
@@ -76,7 +76,7 @@
 #' cat("Report at:", out$report_file, "\n")
 #'
 #' # HTML report with ROH islands
-#' islands <- rohIslands(runs, n_perm = 100, seed = 42)
+#' islands <- runsIslands(runs, n_perm = 100, seed = 42)
 #' reportRUNS(runs, islands = islands, format = "html",
 #'            output_dir = tempdir(), prefix = "my_report")
 #' }
@@ -101,10 +101,10 @@ reportRUNS <- function(
   # --------------------------------------------------------------------------
   # Validate
   # --------------------------------------------------------------------------
-  if (!inherits(runs, "ROH"))
-    stop("'runs' must be an ROH object from scanRUNS() or as_ROH().")
-  if (!is.null(islands) && !inherits(islands, "ROHIslands"))
-    stop("'islands' must be a ROHIslands object from rohIslands(), or NULL.")
+  if (!inherits(runs, "RUNS"))
+    stop("'runs' must be a RUNS object from scanRUNS() or as_RUNS().")
+  if (!is.null(islands) && !inherits(islands, "RunsIslands"))
+    stop("'islands' must be a RunsIslands object from runsIslands(), or NULL.")
   format <- match.arg(format)
   if (format == "pdf" && !requireNamespace("rmarkdown", quietly = TRUE))
     stop("format='pdf' requires the rmarkdown package.\n",

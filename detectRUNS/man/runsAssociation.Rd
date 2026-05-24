@@ -7,8 +7,8 @@
 runsAssociation(runs, pheno, minFreq = 0.1, phenoCol = "pheno")
 }
 \arguments{
-\item{runs}{an S3 object of class \code{ROH} (from \code{\link{scanRUNS}} or
-\code{\link{as_ROH}}) or a plain data.frame with runs results.
+\item{runs}{an S3 object of class \code{RUNS} (from \code{\link{scanRUNS}} or
+\code{\link{as_RUNS}}) or a plain data.frame with runs results.
 Must contain columns: \code{id}, \code{chrom}, \code{from}, \code{to}.}
 
 \item{pheno}{data.frame with at least two columns: \code{id} (matching the

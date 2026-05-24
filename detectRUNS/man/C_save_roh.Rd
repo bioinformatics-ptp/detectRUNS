@@ -14,6 +14,6 @@ C_save_roh(runs_df, chrom_map_r, path)
 \item{path}{Output file path}
 }
 \description{
-Low-level C++ entry point called by \code{saveROH()}.
+Low-level C++ entry point called by \code{saveRUNS()}.
 Do not call directly.
 }

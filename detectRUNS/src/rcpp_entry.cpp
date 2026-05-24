@@ -10,7 +10,7 @@
 // ===========================================================================
 
 // Build 'runs' data.frame: group | id | chrom | nSNP | from | to | lengthBps
-// Column format matches the output of slidingRUNS.run() / consecutiveRUNS.run().
+// Column format matches the output of scanRUNS().
 static Rcpp::DataFrame build_runs_df(
     const std::vector<RohRecord>& records,
     const FamData& fam,

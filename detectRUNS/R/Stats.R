@@ -68,8 +68,8 @@ chromosomeLength <- function(mapFile){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -82,9 +82,9 @@ chromosomeLength <- function(mapFile){
 Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
   LengthGenome <- .get_chrom_lengths(runs, mapFile)
 
-  # Use sample_info from ROH object (includes 0-run individuals);
+  # Use sample_info from RUNS object (includes 0-run individuals);
   # fall back to unique individuals in the runs data for plain data.frames.
-  if (inherits(runs, "ROH") && !is.null(runs$sample_info)) {
+  if (inherits(runs, "RUNS") && !is.null(runs$sample_info)) {
     info_breed <- as.data.frame(runs$sample_info)[, c("group", "id"), drop = FALSE]
   } else {
     info_breed <- unique(.get_runs(runs)[c('group','id')])
@@ -173,8 +173,8 @@ Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -237,8 +237,8 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
 
 #' Summary statistics on detected runs
 #'
-#' This function processes the results from \code{slidingRUNS.run} and
-#' \code{consecutiveRUNS.run} and produces a number of interesting descriptives
+#' This function processes the results from \code{scanRUNS} and produces a
+#' number of interesting descriptives
 #' statistics on results.
 #'
 #' @param genotypeFile Plink ped file (for SNP position)
@@ -281,8 +281,8 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -293,7 +293,7 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
 #'
 
 summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRuns=FALSE){
-  runs_input <- runs   # keep original ROH object for metadata extraction
+  runs_input <- runs   # keep original RUNS object for metadata extraction
   runs <- .get_runs(runs)
   message("Checking files...")
   message(paste("Using class:",Class))
@@ -432,6 +432,9 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
 #' proportion of individuals carrying that run (e.g. 70\%)
 #' @param SnpInRuns dataframe with the proportion of times each SNP falls inside a
 #' run in the population (output from \code{snpInsideRuns})
+#' @param nCores number of cores for parallel chromosome processing (default: all
+#'   physical cores). On Windows only 1 core is used regardless of this value,
+#'   as \code{parallel::mclapply} requires a Unix fork.
 #'
 #' @return A dataframe with the most common runs detected in the sampled individuals
 #' (the group/population, start and end position of the run, chromosome and number of SNP
@@ -446,8 +449,8 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -456,131 +459,132 @@ summaryRuns <- function(runs, mapFile=NULL, genotypeFile=NULL, Class=2, snpInRun
 #' tableRuns(runs = runsDF, genotypeFile = genotypeFile, mapFile = mapFile, threshold = 0.5)
 #'
 
-tableRuns <- function(runs=NULL,SnpInRuns=NULL,genotypeFile=NULL, mapFile=NULL, threshold = 0.5) {
+tableRuns <- function(runs=NULL, SnpInRuns=NULL, genotypeFile=NULL, mapFile=NULL,
+                      threshold=0.5,
+                      nCores=parallel::detectCores(logical=FALSE)) {
+
   if (!is.numeric(threshold) || length(threshold) != 1L || threshold < 0 || threshold > 1)
     stop("Threshold must be between 0 and 1")
 
-  runs_input <- runs
+  runs_input     <- runs
   if (!is.null(runs)) runs <- .get_runs(runs)
+  threshold_used <- threshold * 100
+  mappa          <- .get_snp_map(runs_input, mapFile)
 
-  #set a threshold
-  threshold_used=threshold*100
-  message(paste('Threshold used:',threshold_used))
-
-  # read map file
-  mappa <- .get_snp_map(runs_input, mapFile)
-
-  if(!is.null(runs) & is.null(SnpInRuns)){
+  if (!is.null(runs) & is.null(SnpInRuns)) {
     message('I found only Runs data frame. GOOD!')
-
-    #change colnames in runs file
     names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-    #Start calculation % SNP in ROH
-    message("Calculation % SNP in ROH")
-    all_SNPinROH <- data.frame("SNP_NAME"=character(),
-                               "CHR"=integer(),
-                               "POSITION"=numeric(),
-                               "COUNT"=integer(),
-                               "BREED"=factor(),
-                               "PERCENTAGE"=numeric(),
-                               stringsAsFactors=FALSE)
+    sample_info     <- .get_sample_info(runs_input, genotypeFile)
+    chroms          <- sort(unique(runs$CHROMOSOME))
+    effective_cores <- if (.Platform$OS.type == "unix") nCores else 1L
+    message(sprintf("tableRuns: using %d core(s) for parallel chromosome processing",
+                    effective_cores))
 
-    total <- length(unique(runs$CHROMOSOME))
-    message(paste('Chromosome founds: ',total))
+    .one_chrom <- function(chrom) {
+      runsC <- runs[runs$CHROMOSOME == chrom, ]
+      mapC  <- mappa[mappa$CHR == chrom, ]
+      if (nrow(runsC) == 0L || nrow(mapC) == 0L)
+        return(NULL)
 
-    if (total > 0L) {
-      n=0
-      pb <- txtProgressBar(min = 0, max = total, style = 3)
+      snp_pct        <- snpInsideRuns(runsC, mapC, sample_info)
+      snp_pct$Number <- match(snp_pct$SNP_NAME, mapC$SNP_NAME)
 
-      sample_info <- .get_sample_info(runs_input, genotypeFile)
+      group_list <- as.vector(unique(snp_pct$BREED))
+      grp_tables <- vector("list", length(group_list))
 
-      #SNP in ROH
-      for (chrom in sort(unique(runs$CHROMOSOME))) {
-        runsChrom <- runs[runs$CHROMOSOME==chrom,]
-        mapKrom <- mappa[mappa$CHR==chrom,]
-        snpInRuns_result <- snpInsideRuns(runsChrom, mapKrom, sample_info)
-        all_SNPinROH <- rbind.data.frame(all_SNPinROH, snpInRuns_result)
-        n=n+1
-        setTxtProgressBar(pb, n)
+      for (gi in seq_along(group_list)) {
+        grp <- group_list[gi]
+        gs  <- snp_pct[snp_pct$BREED == grp &
+                       snp_pct$PERCENTAGE > threshold_used, , drop = FALSE]
+        if (nrow(gs) == 0L) next
+
+        nums <- gs$Number
+        chrs <- gs$CHR
+        n    <- nrow(gs)
+
+        is_break  <- c(TRUE, nums[-1L] != nums[-n] + 1L | chrs[-1L] != chrs[-n])
+        isl_start <- which(is_break)
+        isl_end   <- c(isl_start[-1L] - 1L, n)
+
+        rows <- vector("list", length(isl_start))
+        for (j in seq_along(isl_start)) {
+          s <- isl_start[j]; e <- isl_end[j]
+          rows[[j]] <- data.frame(
+            Group     = as.character(gs[e, "BREED"]),
+            Start_SNP = gs[s, "SNP_NAME"],
+            End_SNP   = gs[e, "SNP_NAME"],
+            chrom     = gs[s, "CHR"],
+            nSNP      = e - s + 1L,
+            from      = gs[s, "POSITION"],
+            to        = gs[e, "POSITION"],
+            stringsAsFactors = FALSE
+          )
+        }
+        grp_tables[[gi]] <- do.call(rbind, rows)
       }
-      close(pb)
-      message("Calculation % SNP in ROH finish")
+      do.call(rbind, grp_tables)
     }
+
+    if (effective_cores > 1L) {
+      chrom_results <- parallel::mclapply(chroms, .one_chrom, mc.cores = effective_cores)
+    } else {
+      chrom_results <- lapply(chroms, .one_chrom)
+    }
+    final_table <- do.call(rbind, chrom_results)
+
   } else if (is.null(runs) & !is.null(SnpInRuns)) {
     message('I found only SNPinRuns data frame. GOOD!')
-    all_SNPinROH=SnpInRuns
-  } else{
+    all_SNPinROH        <- SnpInRuns
+    all_SNPinROH$Number <- seq_len(nrow(all_SNPinROH))
+
+    group_list <- as.vector(unique(all_SNPinROH$BREED))
+    grp_tables <- vector("list", length(group_list))
+
+    for (gi in seq_along(group_list)) {
+      grp <- group_list[gi]
+      gs  <- all_SNPinROH[all_SNPinROH$BREED == grp &
+                          all_SNPinROH$PERCENTAGE > threshold_used, , drop = FALSE]
+      if (nrow(gs) == 0L) next
+
+      nums <- gs$Number
+      chrs <- gs$CHR
+      n    <- nrow(gs)
+
+      is_break  <- c(TRUE, nums[-1L] != nums[-n] + 1L | chrs[-1L] != chrs[-n])
+      isl_start <- which(is_break)
+      isl_end   <- c(isl_start[-1L] - 1L, n)
+
+      rows <- vector("list", length(isl_start))
+      for (j in seq_along(isl_start)) {
+        s <- isl_start[j]; e <- isl_end[j]
+        rows[[j]] <- data.frame(
+          Group     = as.character(gs[e, "BREED"]),
+          Start_SNP = gs[s, "SNP_NAME"],
+          End_SNP   = gs[e, "SNP_NAME"],
+          chrom     = gs[s, "CHR"],
+          nSNP      = e - s + 1L,
+          from      = gs[s, "POSITION"],
+          to        = gs[e, "POSITION"],
+          stringsAsFactors = FALSE
+        )
+      }
+      grp_tables[[gi]] <- do.call(rbind, rows)
+    }
+    final_table <- do.call(rbind, grp_tables)
+
+  } else {
     stop('You gave me Runs and SNPinRuns! Please choose one!')
   }
 
-  #consecutive number
-  all_SNPinROH$Number <- seq_len(nrow(all_SNPinROH))
-
-  #final data frame
-  final_table <- data.frame("GROUP"=character(0),"Start_SNP"=character(0),"End_SNP"=character(0),
-                            "chrom"=character(0),"nSNP"=integer(0),"from"=integer(0),"to"=integer(0))
-
-
-  #vector of breeds
-  group_list=as.vector(unique(all_SNPinROH$BREED))
-
-  for (grp in group_list){
-    message(paste('checking: ',grp))
-
-    #create subset for group/thresold
-    group_subset=as.data.frame(all_SNPinROH[all_SNPinROH$BREED %in% c(grp) & all_SNPinROH$PERCENTAGE > threshold_used,])
-
-    #print(group_subset)
-
-    #variable
-    old_pos=group_subset[1,"Number"]
-    snp_pos1=group_subset[1,"POSITION"]
-    Start_SNP=group_subset[1,"SNP_NAME"]
-    snp_count=0
-
-    x=2
-    while(x <= length(rownames(group_subset))) {
-
-      snp_count = snp_count + 1
-      new_pos=group_subset[x,"Number"]
-      old_pos=group_subset[x-1,"Number"]
-      chr_old=group_subset[x-1,"CHR"]
-      chr_new =group_subset[x,"CHR"]
-
-      diff=new_pos-old_pos
-
-      if ((diff > 1) | (chr_new != chr_old) | x==length(rownames(group_subset))) {
-        if (x==length(rownames(group_subset))){
-          end_SNP=group_subset[x,"SNP_NAME"]
-          TO=group_subset[x,"POSITION"]
-        }else{
-          end_SNP=group_subset[x-1,"SNP_NAME"]
-          TO=group_subset[x-1,"POSITION"]
-        }
-
-        final_table <- rbind.data.frame(final_table,final_table=data.frame("Group"= group_subset[x-1,"BREED"],
-                                                                           "Start_SNP"=Start_SNP,
-                                                                           "End_SNP"=end_SNP,
-                                                                           "chrom"=group_subset[x-1,"CHR"],
-                                                                           "nSNP"=snp_count,
-                                                                           "from"=snp_pos1,
-                                                                           "to"=TO))
-
-        #reset variable
-        snp_count=0
-        snp_pos1=group_subset[x,"POSITION"]
-        Start_SNP=group_subset[x,"SNP_NAME"]
-      }
-
-      #upgrade x value
-      x <- x+1
-
-    }
-  }
+  if (is.null(final_table))
+    final_table <- data.frame(Group = character(0), Start_SNP = character(0),
+                              End_SNP = character(0), chrom = character(0),
+                              nSNP = integer(0), from = integer(0),
+                              to = integer(0), stringsAsFactors = FALSE)
 
   if (nrow(final_table) > 0L)
     rownames(final_table) <- seq_len(nrow(final_table))
-  return(final_table)
+  final_table
 }
 

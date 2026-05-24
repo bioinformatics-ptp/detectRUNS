@@ -34,8 +34,8 @@
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -151,8 +151,8 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -173,7 +173,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
   plot_list <- list()
   #select a POPULATION
   for (rasse in unique(runs$group)){
-    print(paste('Current population: ',rasse))
+    message(paste('Current population: ',rasse))
     teilsatz <- subset(runs,runs$group==rasse)
 
     chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
@@ -183,7 +183,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
     #select a chromosome
     for (chromosome in new_list_chr){
 
-      print(paste('CHR: ',chromosome))
+      message(paste('CHR: ',chromosome))
       krom <- subset(teilsatz,chrom==chromosome)
       krom <- krom[order(krom$from),]
 
@@ -285,8 +285,8 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #' # calculating runs of Homozygosity
 #' # skipping runs calculation
 #' \dontrun{
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -320,12 +320,12 @@ plot_SnpsInRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, savePlots=FAL
   plot_list <- list()
   for (chromosome in new_list_chr) {
 
-    print(paste("Chromosome is: ",chromosome))
+    message(paste("Chromosome is: ",chromosome))
     runsChrom <- runs[runs$CHROMOSOME==chromosome,]
-    print(paste("N. of runs:",nrow(runsChrom)))
+    message(paste("N. of runs:",nrow(runsChrom)))
 
     mapChrom <- mappa[mappa$CHR==chromosome,]
-    print(paste("N.of SNP is",nrow(mapChrom)))
+    message(paste("N.of SNP is",nrow(mapChrom)))
 
     snpInRuns <- snpInsideRuns(runsChrom, mapChrom, sample_info)
     krom <- subset(snpInRuns,CHR==chromosome)
@@ -391,8 +391,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, savePlots=FAL
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -422,7 +422,7 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
   sample_info <- .get_sample_info(runs_input, genotypeFile)
 
   #Start calculation % SNP in ROH
-  print("Calculation % SNP in ROH")
+  message("Calculation % SNP in ROH")
   all_SNPinROH <- data.frame("SNP_NAME"=character(),
                              "CHR"=integer(),
                              "POSITION"=numeric(),
@@ -433,7 +433,7 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
 
   # create progress bar
   total <- length(unique(runs$CHROMOSOME))
-  print(paste('Chromosome founds: ',total))
+  message(paste('Chromosome founds: ',total))
   n=0
   pb <- txtProgressBar(min = 0, max = total, style = 3)
 
@@ -446,13 +446,13 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
     setTxtProgressBar(pb, n)
   }
   close(pb)
-  print("Calculation % SNP in ROH finish")
+  message("Calculation % SNP in ROH finish")
 
-  print("Manhattan plot: START") #FILIPPO
+  message("Manhattan plot: START")
   group_list=unique(all_SNPinROH$BREED)
 
   for (group in group_list){
-    print(paste('Processing Groups:',group)) #FILIPPO
+    message(paste('Processing Groups:',group))
 
     #list of Groups
     subset_group=subset(all_SNPinROH,all_SNPinROH$BREED==group)
@@ -495,7 +495,7 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
       main_title <- paste("Manhattan Plot - % SNP in Runs for ",group) } # default title
 
     #Manhattan plot using ggplot2
-    print(paste("Creating Manhattan plot for ",group)) #FILIPPO
+    message(paste("Creating Manhattan plot for ",group))
     p <- ggplot(subset_group)
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
@@ -520,7 +520,7 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
              plot = roh_plot, device = file_type, width = plot_w, height = plot_h)
     } else { print(roh_plot) }
 
-    print(paste('Manhattan plot created for ',group)) #FILIPPO
+    message(paste('Manhattan plot created for ',group))
 
   }
 
@@ -555,8 +555,8 @@ plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_thresh
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -649,8 +649,8 @@ plot_PatternRuns <- function(runs,mapFile=NULL,method=c('sum','mean'), outputNam
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -731,8 +731,8 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -854,8 +854,8 @@ plot_InbreedingChr<- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("Chr
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
