@@ -304,7 +304,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 
   # setting other values
   dL$chrom <- as.character(chroms)
-  dL$lengthBps <- (dL$to-dL$from)
+  dL$lengthBps <- (dL$to - dL$from + 1L)
 
   # filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps >= minLengthBps,]
@@ -634,7 +634,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
       # update runData values
       runData$runH <- runData$runH+1
       runData$end <- currentPos
-      runData$lengte <- (runData$end - runData$start)
+      runData$lengte <- (runData$end - runData$start + 1L)
 
     } # condition: the genotype I want
 
@@ -653,7 +653,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
         # update runData values. This opposite genotype is a part of the RUN
         runData$runH <- runData$runH+1
         runData$end <- currentPos
-        runData$lengte <- (runData$end - runData$start)
+        runData$lengte <- (runData$end - runData$start + 1L)
 
       } else {
         # message("max opposite reached")
@@ -684,7 +684,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
         # update runData values. This missing genotype is a part of the RUN
         runData$runH <- runData$runH+1
         runData$end <- currentPos
-        runData$lengte <- (runData$end - runData$start)
+        runData$lengte <- (runData$end - runData$start + 1L)
 
       }
       else {
