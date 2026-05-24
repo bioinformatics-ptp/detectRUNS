@@ -36,7 +36,7 @@ static Rcpp::DataFrame build_runs_df(
         nSNP[k]      = r.n_snps;
         from[k]      = r.start_bp;
         to[k]        = r.end_bp;
-        lengthBps[k] = r.end_bp - r.start_bp;
+        lengthBps[k] = r.end_bp - r.start_bp + 1;
         nHet[k]      = r.n_het;
         nMissing[k]  = r.n_missing;
     }

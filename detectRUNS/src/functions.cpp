@@ -670,7 +670,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // update run_data values
       run_data.runH++;
       run_data.end = currentPos;
-      run_data.lengte = (run_data.end - run_data.start);
+      run_data.lengte = (run_data.end - run_data.start + 1);
 
     } // condition: the genotype I want
 
@@ -689,7 +689,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // update run_data values. This opposite genotype is a part of the RUN
         run_data.runH++;
         run_data.end = currentPos;
-        run_data.lengte = (run_data.end - run_data.start);
+        run_data.lengte = (run_data.end - run_data.start + 1);
 
       } else {
         // debug
@@ -721,7 +721,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
         // update run_data values. This missing genotype is a part of the RUN
         run_data.runH++;
         run_data.end = currentPos;
-        run_data.lengte = (run_data.end - run_data.start);
+        run_data.lengte = (run_data.end - run_data.start + 1);
       } else {
         // debug
         // Rcout << "max missing reached" << std::endl;
