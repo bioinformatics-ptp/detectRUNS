@@ -72,7 +72,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
   indexSNP <- seq(i,i+windowSize-1)[which(x==1 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
 
-  windowStatus <- ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  windowStatus <- ifelse(!(nHet > maxHet | nMiss > maxMiss), TRUE, FALSE)
   return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
 
@@ -101,7 +101,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
   indexSNP <- seq(i,i+windowSize-1)[which(x==0 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
 
-  windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss), TRUE, FALSE)
   return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
 
@@ -198,8 +198,8 @@ snpInRun <- function(RunVector,windowSize,threshold) {
   quotient <- hWin/nWin
 
 
-  #vector of SNP belonging to a ROH
-  snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
+  #vector of SNP belonging to a ROH (>= matches PLINK --homozyg behaviour)
+  snpRun <- ifelse(quotient >= threshold, TRUE, FALSE)
   # print(paste(
   #   "Lenght of output file:",
   #   length(snpRun),sep=" "))
@@ -470,6 +470,22 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
     snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
   }
 
+  # Run-level maxGap split (PLINK-compatible): if two consecutive in-ROH SNPs
+  # on the same chromosome have a gap > maxGap, break the run there.
+  # Note: sets the first SNP of the new segment to FALSE, so one boundary SNP
+  # per split is excluded (minor approximation; BED path handles this exactly).
+  if (parameters$maxGap > 0 && sum(snpRun) > 1) {
+    roh_idx <- which(snpRun)
+    for (k in seq_along(roh_idx)[-1]) {
+      prev_i <- roh_idx[k - 1L]
+      curr_i <- roh_idx[k]
+      if (curr_i == prev_i + 1L &&
+          mapFile$Chrom[curr_i] == mapFile$Chrom[prev_i] &&
+          mapFile$bps[curr_i] - mapFile$bps[prev_i] > parameters$maxGap) {
+        snpRun[curr_i] <- FALSE
+      }
+    }
+  }
 
   # TODO: check arguments names
   dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,

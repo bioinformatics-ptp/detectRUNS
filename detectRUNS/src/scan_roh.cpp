@@ -288,13 +288,23 @@ static void decide_snp_sw(
         h += st.win_pass_buf[w % (MAX_WINDOW * 2)];
 
     const int   n_cov  = to_win - from_win + 1;
-    const bool  in_roh = (static_cast<float>(h) / n_cov > p.threshold);
+    // >= matches PLINK --homozyg behaviour: a SNP where h/n_cov equals the
+    // threshold exactly is included in the run (vs old strict-greater-than).
+    // Both sides cast to float for consistency with the PED-path snpInRunCpp.
+    const bool  in_roh = (static_cast<float>(h) / n_cov >= static_cast<float>(p.threshold));
     const int8_t opp   = static_cast<int8_t>(1 - p.target);
 
     if (in_roh) {
+        const int32_t cur_bp = st.bp_buf[s % MAX_WINDOW];
+        // Run-level gap check (PLINK-compatible): if the distance from the
+        // last in-ROH SNP exceeds maxGap, close the current run and restart.
+        if (st.in_run && cur_bp - st.run_end_bp > p.max_gap) {
+            emit_sw(st, sample_idx, chrom_idx, p, out, sum, snp_freq);
+            st.in_run = 0;
+        }
         if (!st.in_run) {
             st.in_run        = 1;
-            st.run_start_bp  = st.bp_buf[s % MAX_WINDOW];
+            st.run_start_bp  = cur_bp;
             st.run_start_snp = first_snp_idx + s;
             st.n_opp_run     = 0;
             st.n_miss_run    = 0;
@@ -304,7 +314,7 @@ static void decide_snp_sw(
         if      (g == GENO_MISSING) ++st.n_miss_run;
         else if (g == opp)          ++st.n_opp_run;
         ++st.n_snp_run;
-        st.run_end_bp = st.bp_buf[s % MAX_WINDOW];
+        st.run_end_bp = cur_bp;
     } else {
         if (st.in_run) {
             emit_sw(st, sample_idx, chrom_idx, p, out, sum, snp_freq);
@@ -334,17 +344,9 @@ static void update_sw(
     if (pos >= W - 1) {
         const int w = pos - W + 1;
 
-        // Evaluate window w = [w .. pos]
-        bool gap_fail = false;
-        for (int k = w; k < pos; ++k) {
-            if (st.bp_buf[(k + 1) % MAX_WINDOW] - st.bp_buf[k % MAX_WINDOW] > p.max_gap) {
-                gap_fail = true;
-                break;
-            }
-        }
-
+        // Evaluate window w = [w .. pos] — gap check is now run-level (see decide_snp_sw).
         int8_t win_pass = 0;
-        if (!gap_fail) {
+        {
             int n_opp = 0, n_miss = 0;
             for (int k = w; k <= pos; ++k) {
                 const int8_t g = st.geno_buf[k % MAX_WINDOW];
