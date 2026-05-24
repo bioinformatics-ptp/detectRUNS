@@ -2,7 +2,7 @@
 % Please edit documentation in R/runsIslands.R
 \name{runsIslands}
 \alias{runsIslands}
-\title{Detect ROH islands via permutation testing}
+\title{Detect runs islands via permutation testing}
 \usage{
 runsIslands(
   roh,
@@ -54,15 +54,15 @@ An object of class \code{"RunsIslands"}, a named list with:
 }
 }
 \description{
-Implements the permutation-based ROH island detection method of
+Implements the permutation-based runs island detection method of
 Falchi et al. (2026, BMC Genomics).  For each chromosome, a null
 distribution of SNPROH values (the number of individuals that have a given
 SNP inside a ROH) is built by randomly permuting sample identity
-\code{n_perm} times and re-running the same ROH scan on the permuted data.
+\code{n_perm} times and re-running the same runs scan on the permuted data.
 The observed SNPROH of each SNP is then compared against the
 chromosome-specific threshold derived as the \code{percentile}-th quantile
 of the pooled null distribution.  SNPs whose real SNPROH exceeds the
-threshold are declared ROH islands.
+threshold are declared runs islands.
 }
 \details{
 Permutation is performed in C++ (OpenMP-parallel over permutations) so that

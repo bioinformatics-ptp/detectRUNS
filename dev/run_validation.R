@@ -44,8 +44,9 @@ if (length(script_path) > 0L) {
 # =============================================================================
 # CONFIG
 # =============================================================================
-EXT_DIR <- "Ext_Data"
-RES_DIR <- file.path(EXT_DIR, "results")
+EXT_DIR  <- "Ext_Data"
+RES_DIR  <- file.path(EXT_DIR, "results")
+N_CORES  <- parallel::detectCores(logical = FALSE)
 START_TIME <- Sys.time()
 
 DATASETS <- list(
@@ -262,12 +263,14 @@ for (dsname in names(DATASETS)) {
                                  minSNP = p$minSNP, maxOpp = p$maxOpp,
                                  maxMiss = p$maxMiss, minLengthBps = p$minLengthBps,
                                  maxGap = p$maxGap, windowSize = p$windowSize,
-                                 threshold = p$threshold)
+                                 threshold = p$threshold, nThreads = N_CORES,
+                                 verbose = FALSE)
                     } else {
                         scanRUNS(ds$bed, method = "consecutive", ROHet = ROHet_flag,
                                  minSNP = p$minSNP, maxOpp = p$maxOpp,
                                  maxMiss = p$maxMiss, minLengthBps = p$minLengthBps,
-                                 maxGap = p$maxGap)
+                                 maxGap = p$maxGap, nThreads = N_CORES,
+                                 verbose = FALSE)
                     }
                 }, error = function(e) {
                     cat("  SCAN ERROR:", conditionMessage(e), "\n")
@@ -581,7 +584,8 @@ for (dsname in names(DATASETS)) {
             scanRUNS(ds$ped, mapFile = ds$map, method = "sliding", ROHet = FALSE,
                      minSNP = p$minSNP, maxOpp = p$maxOpp, maxMiss = p$maxMiss,
                      minLengthBps = p$minLengthBps, maxGap = p$maxGap,
-                     windowSize = p$windowSize, threshold = p$threshold),
+                     windowSize = p$windowSize, threshold = p$threshold,
+                     verbose = FALSE),
             error = function(e) { cat("  PED scan ERROR:", conditionMessage(e), "\n"); NULL }
         )
         scan_bed <- scan_results[["ROHom_sliding_lenient"]]

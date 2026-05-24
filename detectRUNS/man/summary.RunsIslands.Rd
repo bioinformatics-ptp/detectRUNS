@@ -2,7 +2,7 @@
 % Please edit documentation in R/runsIslands.R
 \name{summary.RunsIslands}
 \alias{summary.RunsIslands}
-\title{Summarise ROH islands as contiguous genomic regions}
+\title{Summarise runs islands as contiguous genomic regions}
 \usage{
 \method{summary}{RunsIslands}(object, ...)
 }

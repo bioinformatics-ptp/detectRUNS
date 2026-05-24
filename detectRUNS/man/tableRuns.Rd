@@ -9,7 +9,8 @@ tableRuns(
   SnpInRuns = NULL,
   genotypeFile = NULL,
   mapFile = NULL,
-  threshold = 0.5
+  threshold = 0.5,
+  nCores = parallel::detectCores(logical = FALSE)
 )
 
 tableRuns(
@@ -17,7 +18,8 @@ tableRuns(
   SnpInRuns = NULL,
   genotypeFile = NULL,
   mapFile = NULL,
-  threshold = 0.5
+  threshold = 0.5,
+  nCores = parallel::detectCores(logical = FALSE)
 )
 }
 \arguments{
@@ -32,6 +34,10 @@ run in the population (output from \code{snpInsideRuns})}
 
 \item{threshold}{value from 0 to 1 (default 0.7) that controls the desired
 proportion of individuals carrying that run (e.g. 70\%)}
+
+\item{nCores}{number of cores for parallel chromosome processing (default: all
+physical cores). On Windows only 1 core is used regardless of this value,
+as \code{parallel::mclapply} requires a Unix fork.}
 }
 \value{
 A dataframe with the most common runs detected in the sampled individuals
@@ -63,9 +69,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile,
-  windowSize = 15, threshold = 0.1, minSNP = 15,
-  ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+  ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000
 )
 }
 # loading pre-calculated data
@@ -83,8 +88,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 }
 # loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")

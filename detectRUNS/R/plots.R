@@ -23,6 +23,7 @@
 #' @return plot of runs by chromosome
 #' @export
 #'
+#' @import ggplot2
 #' @import utils
 #' @importFrom grDevices dev.off pdf
 #'

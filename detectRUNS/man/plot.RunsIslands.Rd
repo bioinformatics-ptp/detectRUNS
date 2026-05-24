@@ -2,7 +2,7 @@
 % Please edit documentation in R/runsIslands.R
 \name{plot.RunsIslands}
 \alias{plot.RunsIslands}
-\title{Manhattan plot of ROH island detection results}
+\title{Manhattan plot of runs island detection results}
 \usage{
 \method{plot}{RunsIslands}(
   x,
@@ -42,7 +42,7 @@ A \code{ggplot2} object (invisible).  The plot is printed as a
 }
 \description{
 Plots SNPROH frequency (percentage of individuals with a given SNP inside a
-ROH) across the genome, with chromosome-specific permutation thresholds
+runs) across the genome, with chromosome-specific permutation thresholds
 shown as dashed lines and island SNPs highlighted in a distinct colour.
 The plot mirrors Fig. 1 of Falchi et al. (2026, \emph{BMC Genomics}).
 }

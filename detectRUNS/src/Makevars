@@ -1,8 +1,2 @@
-ifeq ($(shell uname -s), Darwin)
-  LIBOMP_PREFIX = $(shell brew --prefix libomp 2>/dev/null || echo /opt/homebrew/opt/libomp)
-  PKG_CXXFLAGS = -Xclang -fopenmp -I$(LIBOMP_PREFIX)/include
-  PKG_LIBS     = -L$(LIBOMP_PREFIX)/lib -lomp
-else
-  PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
-  PKG_LIBS     = $(SHLIB_OPENMP_CXXFLAGS)
-endif
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS     = $(SHLIB_OPENMP_CXXFLAGS)

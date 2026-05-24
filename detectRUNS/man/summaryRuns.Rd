@@ -39,8 +39,8 @@ statistics on detected runs. The list contains 9 dataframes:
 9) result_Froh_class: genome-wide inbreeding (\eqn{F_{ROH}}) per individual and size-class (Mb) of runs.
 }
 \description{
-This function processes the results from \code{slidingRUNS.run} and
-\code{consecutiveRUNS.run} and produces a number of interesting descriptives
+This function processes the results from \code{scanRUNS} and produces a
+number of interesting descriptives
 statistics on results.
 }
 \details{
@@ -61,8 +61,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 }
 # loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")

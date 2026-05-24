@@ -2,7 +2,7 @@
 % Please edit documentation in R/binary_runs.R
 \name{loadRUNS}
 \alias{loadRUNS}
-\title{Load ROH scan results from a binary file}
+\title{Load RUNS scan results from a binary file}
 \usage{
 loadRUNS(path)
 }

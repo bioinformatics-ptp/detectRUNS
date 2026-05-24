@@ -1,21 +1,37 @@
 
 # Deprecated aliases — old ROH-naming kept for backward compatibility
+
+#' Deprecated: use \code{\link{saveRUNS}} instead
+#' @param ... passed to \code{saveRUNS}
 #' @export
+#' @keywords internal
 saveROH <- function(...) {
   .Deprecated("saveRUNS")
   saveRUNS(...)
 }
+
+#' Deprecated: use \code{\link{loadRUNS}} instead
+#' @param ... passed to \code{loadRUNS}
 #' @export
+#' @keywords internal
 loadROH <- function(...) {
   .Deprecated("loadRUNS")
   loadRUNS(...)
 }
+
+#' Deprecated: use \code{\link{as_RUNS}} instead
+#' @param ... passed to \code{as_RUNS}
 #' @export
+#' @keywords internal
 as_ROH <- function(...) {
   .Deprecated("as_RUNS")
   as_RUNS(...)
 }
+
+#' Deprecated: use \code{\link{runsIslands}} instead
+#' @param ... passed to \code{runsIslands}
 #' @export
+#' @keywords internal
 rohIslands <- function(...) {
   .Deprecated("runsIslands")
   runsIslands(...)
