@@ -230,8 +230,9 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
 createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                         minDensity = 1/10, oppositeAndMissingSNP, maxOppRun=NULL,
-                        maxMissRun=NULL) {
+                        maxMissRun=NULL, maxGap=NULL) {
 
+  bps_all <- mapFile$bps
   dd <- cbind.data.frame(snpRun,"Chrom"=mapFile$Chrom,"n"=seq(1,nrow(mapFile)))
 
   parts <- split(dd, dd$Chrom)
@@ -248,6 +249,32 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
     to_bis <- c(cutPoints, length(x$snpRun))
     # count SNPs in each run segment
     lengte <- mapply(function(a, b) sum(x$snpRun[a:b]), from_bis, to_bis)
+
+    # Run-level gap split (PLINK-compatible): for each TRUE run segment,
+    # split into sub-runs wherever two consecutive SNPs have gap > maxGap.
+    # Both boundary SNPs are kept (no SNP loss, unlike the snpRun-vector trick).
+    if (!is.null(maxGap) && maxGap > 0L && any(lengte > 0L)) {
+      exp_from <- integer(0); exp_to <- integer(0); exp_nsnp <- integer(0)
+      for (i in seq_along(from)) {
+        f <- from[i]; t <- to[i]
+        if (lengte[i] == 0L) {
+          exp_from <- c(exp_from, f); exp_to <- c(exp_to, t); exp_nsnp <- c(exp_nsnp, 0L)
+        } else {
+          cur_f <- f
+          for (j in seq(f, t - 1L)) {
+            if (bps_all[j + 1L] - bps_all[j] > maxGap) {
+              exp_from <- c(exp_from, cur_f); exp_to <- c(exp_to, j)
+              exp_nsnp <- c(exp_nsnp, j - cur_f + 1L)
+              cur_f <- j + 1L
+            }
+          }
+          exp_from <- c(exp_from, cur_f); exp_to <- c(exp_to, t)
+          exp_nsnp <- c(exp_nsnp, t - cur_f + 1L)
+        }
+      }
+      from <- exp_from; to <- exp_to; lengte <- exp_nsnp
+    }
+
     # get n of rows
     n_rows <- length(lengte)
 
@@ -470,27 +497,11 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
     snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
   }
 
-  # Run-level maxGap split (PLINK-compatible): if two consecutive in-ROH SNPs
-  # on the same chromosome have a gap > maxGap, break the run there.
-  # Note: sets the first SNP of the new segment to FALSE, so one boundary SNP
-  # per split is excluded (minor approximation; BED path handles this exactly).
-  if (parameters$maxGap > 0 && sum(snpRun) > 1) {
-    roh_idx <- which(snpRun)
-    for (k in seq_along(roh_idx)[-1]) {
-      prev_i <- roh_idx[k - 1L]
-      curr_i <- roh_idx[k]
-      if (curr_i == prev_i + 1L &&
-          mapFile$Chrom[curr_i] == mapFile$Chrom[prev_i] &&
-          mapFile$bps[curr_i] - mapFile$bps[prev_i] > parameters$maxGap) {
-        snpRun[curr_i] <- FALSE
-      }
-    }
-  }
-
   # TODO: check arguments names
   dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
                       parameters$minDensity, res$oppositeAndMissingGenotypes,
-                      parameters$maxOppRun, parameters$maxMissRun)
+                      parameters$maxOppRun, parameters$maxMissRun,
+                      maxGap = parameters$maxGap)
 
   # manipulate dRUN to order columns
   dRUN <- as.data.frame(dRUN)
