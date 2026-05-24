@@ -120,13 +120,13 @@ if (file.exists(PED_FILE)) {
 }
 
 # =============================================================================
-# 5. saveROH / loadROH round-trip
+# 5. saveRUNS / loadRUNS round-trip
 # =============================================================================
-.section("5. saveROH / loadROH")
+.section("5. saveRUNS / loadRUNS")
 
 roh_file <- file.path(OUT_DIR, "roh_slide.roh")
-saveROH(roh_slide, roh_file)
-roh2 <- loadROH(roh_file)
+saveRUNS(roh_slide, roh_file)
+roh2 <- loadRUNS(roh_file)
 cat("Round-trip OK:", isTRUE(all.equal(
     roh_slide$runs, roh2$runs, check.attributes = FALSE)), "\n")
 cat("method preserved:", roh2$method, "\n")
@@ -258,11 +258,11 @@ cat("  plot_manhattanRuns (ROHet)...\n")
      function() plot_manhattanRuns(roh_het), w = 14, h = 6)
 
 # =============================================================================
-# 12. rohIslands — two methods and percentiles
+# 12. runsIslands — two methods and percentiles
 # =============================================================================
-.section("12. rohIslands | sliding | p99 | n_perm=500")
+.section("12. runsIslands | sliding | p99 | n_perm=500")
 
-isl_slide_p99 <- rohIslands(
+isl_slide_p99 <- runsIslands(
     roh_slide,
     n_perm     = 500,
     percentile = 0.99,
@@ -271,9 +271,9 @@ isl_slide_p99 <- rohIslands(
 print(isl_slide_p99)
 cat("Islands (sliding p99):", nrow(isl_slide_p99$islands), "\n")
 
-.section("12b. rohIslands | consecutive | p95 | n_perm=500")
+.section("12b. runsIslands | consecutive | p95 | n_perm=500")
 
-isl_cons_p95 <- rohIslands(
+isl_cons_p95 <- runsIslands(
     roh_cons,
     n_perm     = 500,
     percentile = 0.95,
@@ -281,28 +281,28 @@ isl_cons_p95 <- rohIslands(
 )
 cat("Islands (consecutive p95):", nrow(isl_cons_p95$islands), "\n")
 
-cat("  summary.ROHIslands...\n")
+cat("  summary.RunsIslands...\n")
 print(summary(isl_slide_p99))
 
-cat("  plot.ROHIslands (sliding p99)...\n")
+cat("  plot.RunsIslands (sliding p99)...\n")
 .pdf("18_islands_sliding_p99",
      function() print(plot(isl_slide_p99)), w = 16, h = 5)
 
-cat("  plot.ROHIslands (consecutive p95)...\n")
+cat("  plot.RunsIslands (consecutive p95)...\n")
 .pdf("19_islands_consecutive_p95",
      function() print(plot(isl_cons_p95)), w = 16, h = 5)
 
 # =============================================================================
-# 13. as_ROH / as.data.frame
+# 13. as_RUNS / as.data.frame
 # =============================================================================
-.section("13. as_ROH / as.data.frame.ROH")
+.section("13. as_RUNS / as.data.frame.RUNS")
 
 df <- as.data.frame(roh_slide)
 cat("as.data.frame: rows =", nrow(df), "  cols =", ncol(df), "\n")
 
-roh_rebuilt <- as_ROH(roh_slide$runs, bedFile = BED_FILE,
+roh_rebuilt <- as_RUNS(roh_slide$runs, bedFile = BED_FILE,
                       method = "sliding", type = "ROHom")
-cat("as_ROH S3 class:", inherits(roh_rebuilt, "ROH"), "\n")
+cat("as_RUNS S3 class:", inherits(roh_rebuilt, "RUNS"), "\n")
 cat("runs identical  :", isTRUE(all.equal(
     roh_slide$runs, roh_rebuilt$runs, check.attributes = FALSE)), "\n")
 
