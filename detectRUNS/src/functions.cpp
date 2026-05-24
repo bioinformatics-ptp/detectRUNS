@@ -169,13 +169,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //'
 // [[Rcpp::export]]
 bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap) {
-  // check gaps
-  for (int i=0; i< gaps.size(); i++) {
-    if (gaps[i] > maxGap) {
-      return false;
-    }
-  }
-
   // count Heterozygots
   int nHet = std::count(x.begin(), x.end(), 1);
 
@@ -208,13 +201,6 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //'
 // [[Rcpp::export]]
 bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int maxMiss, int maxGap) {
-  // check gaps
-  for (int i=0; i< gaps.size(); i++) {
-    if (gaps[i] > maxGap) {
-      return false;
-    }
-  }
-
   // count Homozygots
   int nHom = std::count(x.begin(), x.end(), 0);
 
@@ -467,8 +453,8 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
     //calc quotient
     quotient = hWin/nWin[i];
 
-    //vector of SNP belonging to a ROH. True if yes (quotient > threshold)
-    if (quotient > threshold) {
+    //vector of SNP belonging to a ROH. True if yes (quotient >= threshold, matches PLINK)
+    if (quotient >= threshold) {
       snpRun[i] = true;
     }
 
