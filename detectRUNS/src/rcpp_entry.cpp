@@ -19,7 +19,7 @@ static Rcpp::DataFrame build_runs_df(
     const int n = static_cast<int>(records.size());
 
     Rcpp::CharacterVector group(n), id(n), chrom(n);
-    Rcpp::IntegerVector   nSNP(n), from(n), to(n), lengthBps(n);
+    Rcpp::IntegerVector   nSNP(n), from(n), to(n), lengthBps(n), nHet(n), nMissing(n);
 
     for (int k = 0; k < n; ++k) {
         const RohRecord&  r = records[k];
@@ -37,6 +37,8 @@ static Rcpp::DataFrame build_runs_df(
         from[k]      = r.start_bp;
         to[k]        = r.end_bp;
         lengthBps[k] = r.end_bp - r.start_bp;
+        nHet[k]      = r.n_het;
+        nMissing[k]  = r.n_missing;
     }
 
     return Rcpp::DataFrame::create(
@@ -47,6 +49,8 @@ static Rcpp::DataFrame build_runs_df(
         Rcpp::Named("from")      = from,
         Rcpp::Named("to")        = to,
         Rcpp::Named("lengthBps") = lengthBps,
+        Rcpp::Named("nHet")      = nHet,
+        Rcpp::Named("nMissing")  = nMissing,
         Rcpp::_["stringsAsFactors"] = false
     );
 }

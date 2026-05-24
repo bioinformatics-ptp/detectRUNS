@@ -124,6 +124,22 @@
 #' @param threshold Bjelland coverage-ratio threshold (strictly >); a SNP is
 #'   called in a run when the fraction of overlapping passing windows exceeds
 #'   this value (\code{method = "sliding"} only).  Default 0.05.
+#' @param minDensity Minimum SNP density expressed as SNPs per kbp.  Runs
+#'   whose density falls below this threshold are discarded after detection.
+#'   Default \code{1/1000} (= 0.001 SNPs/kbp = 1 SNP per 1 Mbp) — a very
+#'   permissive filter that removes only extremely sparse runs.  Set to
+#'   \code{1/50} (= 0.02 SNPs/kbp) to match PLINK's \code{--homozyg-density 50}
+#'   default, or \code{NULL} / \code{0} to disable the filter entirely.
+#' @param maxOppRun Maximum number of opposite-type genotypes allowed across the
+#'   entire run (\code{method = "sliding"} only).  This is a secondary,
+#'   run-level filter applied after the window-based detection: a run is kept
+#'   only if its total count of opposite genotypes does not exceed this value.
+#'   \code{NULL} (default) disables the filter.  Supported for both BED and PED
+#'   input.
+#' @param maxMissRun Maximum number of missing genotypes allowed across the
+#'   entire run (\code{method = "sliding"} only).  Same semantics as
+#'   \code{maxOppRun}.  \code{NULL} (default) disables the filter.  Supported
+#'   for both BED and PED input.
 #' @param nThreads Number of parallel threads/cores.  For the BED engine this
 #'   sets the OpenMP thread count; for the PED engine it sets the number of
 #'   \code{mclapply} workers (Mac/Linux only — Windows always uses 1).
@@ -186,10 +202,25 @@ scanRUNS <- function(
     maxGap       = 1e6,
     windowSize   = 15,
     threshold    = 0.05,
+    minDensity   = 1/1000,
+    maxOppRun    = NULL,
+    maxMissRun   = NULL,
     nThreads     = NULL,
     verbose      = TRUE
 ) {
     method <- match.arg(method)
+
+    # --- Normalise minDensity (NULL or 0 → disabled) ---
+    if (is.null(minDensity) || identical(minDensity, 0) || identical(minDensity, 0L))
+        minDensity <- 0
+    minDensity <- as.double(minDensity)
+
+    .apply_density_filter <- function(runs_dt, min_dens) {
+        if (min_dens <= 0) return(runs_dt)
+        # density = nSNP / (lengthBps / 1000)  [SNP per kbp]
+        keep <- (runs_dt$nSNP / (runs_dt$lengthBps / 1000)) >= min_dens
+        runs_dt[keep, ]
+    }
 
     # --- Resolve nThreads ---
     # NULL  → auto-detect physical cores
@@ -272,7 +303,19 @@ scanRUNS <- function(
             verbose       = isTRUE(verbose)
         )
 
-        result$runs    <- data.table::as.data.table(result$runs)
+        result$runs <- data.table::as.data.table(result$runs)
+
+        # Apply run-level opposite / missing filters (nHet / nMissing come from C++)
+        if (!is.null(maxOppRun))
+            result$runs <- result$runs[result$runs$nHet     <= maxOppRun, ]
+        if (!is.null(maxMissRun))
+            result$runs <- result$runs[result$runs$nMissing <= maxMissRun, ]
+
+        # Drop internal columns before returning — not part of the public run table
+        data.table::set(result$runs, j = "nHet",     value = NULL)
+        data.table::set(result$runs, j = "nMissing", value = NULL)
+
+        result$runs    <- .apply_density_filter(result$runs, minDensity)
         result$summary <- data.table::as.data.table(result$summary)
 
         if (verbose)
@@ -315,6 +358,9 @@ scanRUNS <- function(
                 maxGap       = as.integer(maxGap),
                 windowSize   = as.integer(windowSize),
                 threshold    = as.double(threshold),
+                minDensity   = minDensity,
+                maxOppRun    = maxOppRun,
+                maxMissRun   = maxMissRun,
                 ROHet        = ROHet,
                 nThreads     = nThreads
             ),
@@ -356,7 +402,7 @@ scanRUNS <- function(
                 verbose      = isTRUE(verbose)
             )
         } else {
-            gaps <- diff(map_df$bps)
+            gaps <- pmax(diff(map_df$bps), 0L)
             runs_df <- .sliding_ped(
                 ped_file      = ped_path,
                 map_df        = map_df,
@@ -369,16 +415,16 @@ scanRUNS <- function(
                 maxMissWindow = maxMiss,
                 maxGap        = maxGap,
                 minLengthBps  = minLengthBps,
-                minDensity    = 1/1000,
-                maxOppRun     = NULL,
-                maxMissRun    = NULL,
+                minDensity    = minDensity,
+                maxOppRun     = maxOppRun,
+                maxMissRun    = maxMissRun,
                 nCores        = nThreads,
                 verbose       = isTRUE(verbose)
             )
         }
 
-        runs_dt  <- data.table::as.data.table(runs_df)
-        summ_dt  <- .build_ped_summary(runs_df, ped_path)
+        runs_dt  <- .apply_density_filter(data.table::as.data.table(runs_df), minDensity)
+        summ_dt  <- .build_ped_summary(as.data.frame(runs_dt), ped_path)
 
         if (verbose)
             .print_scan_summary(runs_dt, summ_dt, method, ROHet,
@@ -420,6 +466,9 @@ scanRUNS <- function(
                 maxGap       = as.integer(maxGap),
                 windowSize   = as.integer(windowSize),
                 threshold    = as.double(threshold),
+                minDensity   = minDensity,
+                maxOppRun    = maxOppRun,
+                maxMissRun   = maxMissRun,
                 ROHet        = ROHet,
                 nThreads     = nThreads
             ),
