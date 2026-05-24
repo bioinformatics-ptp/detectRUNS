@@ -37,7 +37,7 @@ readMapFile <- function(mapFile) {
     # using data.table to read data
     mappa <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
   } else {
-    stop(paste("file", mapFile, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exist"))
   }
   
   # set column names
