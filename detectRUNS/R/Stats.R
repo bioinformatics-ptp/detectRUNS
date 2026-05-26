@@ -475,13 +475,8 @@ tableRuns <- function(runs=NULL, SnpInRuns=NULL, genotypeFile=NULL, mapFile=NULL
     message('I found only Runs data frame. GOOD!')
     names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
-    sample_info     <- .get_sample_info(runs_input, genotypeFile)
-    chroms          <- sort(unique(runs$CHROMOSOME))
-    effective_cores <- if (.Platform$OS.type == "unix") nCores else 1L
-    if (nzchar(Sys.getenv("_R_CHECK_LIMIT_CORES_", "")))
-        effective_cores <- min(effective_cores, 2L)
-    message(sprintf("tableRuns: using %d core(s) for parallel chromosome processing",
-                    effective_cores))
+    sample_info <- .get_sample_info(runs_input, genotypeFile)
+    chroms      <- sort(unique(runs$CHROMOSOME))
 
     .one_chrom <- function(chrom) {
       runsC <- runs[runs$CHROMOSOME == chrom, ]
@@ -528,11 +523,7 @@ tableRuns <- function(runs=NULL, SnpInRuns=NULL, genotypeFile=NULL, mapFile=NULL
       do.call(rbind, grp_tables)
     }
 
-    if (effective_cores > 1L) {
-      chrom_results <- parallel::mclapply(chroms, .one_chrom, mc.cores = effective_cores)
-    } else {
-      chrom_results <- lapply(chroms, .one_chrom)
-    }
+    chrom_results <- lapply(chroms, .one_chrom)
     final_table <- do.call(rbind, chrom_results)
 
   } else if (is.null(runs) & !is.null(SnpInRuns)) {
