@@ -13,3 +13,4 @@
 ^\.Rcheck/
 ^Coding_AI/
 ^performance/
+^vignettes/.*\.html$
