@@ -11,7 +11,7 @@
 ##   4 param sets x 2 types (ROHom/ROHet) x 2 methods (sliding/consecutive)
 ##   x 4 datasets = 64 scans
 ##
-## Per scan: saveRUNS, summaryRuns (4 classes), tableRuns (5 thresholds),
+## Per scan: saveRUNS, summaryRuns (4 how iclasses), tableRuns (5 thresholds),
 ##           Froh (3 classes), all plots, runsIslands (2 percentiles),
 ##           reportRUNS, sanity checks
 ##
@@ -49,36 +49,61 @@ RES_DIR  <- file.path(EXT_DIR, "results")
 N_CORES  <- parallel::detectCores(logical = FALSE)
 START_TIME <- Sys.time()
 
+# Support single-dataset mode: DATASET_FILTER env var selects one dataset.
+# Each run saves its summaries under results/{dsname}/ so nothing is lost.
+DS_FILTER     <- Sys.getenv("DATASET_FILTER", "")
+TYPE_FILTER   <- Sys.getenv("TYPE_FILTER",    "")   # ROHom | ROHet
+METHOD_FILTER <- Sys.getenv("METHOD_FILTER",  "")   # sliding | consecutive
+PARAMS_FILTER <- Sys.getenv("PARAMS_FILTER",  "")   # very_lenient | lenient | strict | very_strict
+PER_SCAN_MODE <- nzchar(TYPE_FILTER) && nzchar(METHOD_FILTER) && nzchar(PARAMS_FILTER)
+
 DATASETS <- list(
     ADAPTmap = list(
         bed      = file.path(EXT_DIR, "ADAPTmap_genotypeTOP_20161201.bed"),
         ped      = file.path(EXT_DIR, "ADAPTmap_genotypeTOP_20161201_auto.ped"),
         map      = file.path(EXT_DIR, "ADAPTmap_genotypeTOP_20161201_auto.map"),
         species  = "goat",
-        n_breeds = 144
+        n_breeds = 144,
+        n_samples = 4653
     ),
     SELMOL = list(
         bed      = file.path(EXT_DIR, "SELMOL_codACGT.bed"),
         ped      = file.path(EXT_DIR, "SELMOL_codACGT_auto.ped"),
         map      = file.path(EXT_DIR, "SELMOL_codACGT_auto.map"),
         species  = "cattle",
-        n_breeds = 5
+        n_breeds = 5,
+        n_samples = 4095
     ),
     pigData = list(
         bed      = file.path(EXT_DIR, "suini_12_plink.bed"),
         ped      = file.path(EXT_DIR, "suini_12_plink.ped"),
         map      = file.path(EXT_DIR, "suini_12_plink.map"),
         species  = "pig",
-        n_breeds = NULL
+        n_breeds = NULL,
+        n_samples = 1208
     ),
     Innovagen_HD = list(
         bed      = file.path(EXT_DIR, "Innovagen_HD.bed"),
         ped      = NULL,
         map      = NULL,
         species  = "bovine",
-        n_breeds = 1
+        n_breeds = 1,
+        n_samples = 1009
     )
 )
+
+# Filter to single dataset if requested
+if (nzchar(DS_FILTER)) {
+    if (!DS_FILTER %in% names(DATASETS))
+        stop(sprintf("DATASET_FILTER '%s' not in DATASETS. Valid: %s",
+                     DS_FILTER, paste(names(DATASETS), collapse=", ")))
+    DATASETS <- DATASETS[DS_FILTER]
+    cat(sprintf("Single-dataset mode: %s\n\n", DS_FILTER))
+}
+
+if (PER_SCAN_MODE)
+    cat(sprintf("Per-scan mode: %s | %s | %s | %s\n\n",
+                DS_FILTER, TYPE_FILTER, METHOD_FILTER, PARAMS_FILTER))
 
 # 4 parameter sets: very_lenient → lenient → strict → very_strict
 PARAMS <- list(
@@ -124,7 +149,7 @@ TABLRUNS_THRESHOLDS  <- c(0.10, 0.25, 0.50, 0.75, 0.90)
 SUMMARY_CLASSES      <- c(1, 2, 4, 8)
 FROH_CLASSES         <- c(1, 2, 4)
 ISLANDS_PERCENTILES  <- c(0.95, 0.99)
-ISLANDS_NPERMS       <- 200L
+ISLANDS_NPERMS       <- 100L
 
 # Master log of all scans for end-of-run summary
 master_log <- data.frame(
@@ -196,16 +221,16 @@ step_log <- data.frame(
 }
 
 .pdf_check <- function(path, fn, w = 12, h = 7, keep = TRUE) {
+    if (!keep) return(invisible(FALSE))   # skip computation entirely if output won't be kept
     ok <- tryCatch({
         grDevices::pdf(path, width = w, height = h)
-        tryCatch(fn(), finally = grDevices::dev.off())
+        tryCatch(quietly(fn()), finally = grDevices::dev.off())
         file.exists(path) && file.info(path)$size > 500
     }, error = function(e) {
         try(grDevices::dev.off(), silent = TRUE)
         cat("    PDF ERROR:", conditionMessage(e), "\n")
         FALSE
     })
-    if (!keep && ok) file.remove(path)
     invisible(ok)
 }
 
@@ -221,6 +246,16 @@ step_log <- data.frame(
         result = result, detail = as.character(detail),
         stringsAsFactors = FALSE
     ))
+}
+
+# Suppress chatty output from package functions.
+# message() goes to stderr — suppressMessages() handles it.
+# cat()/print() go to stdout — capture.output() handles it.
+# Errors still propagate to the outer tryCatch.
+quietly <- function(expr) {
+    result <- NULL
+    suppressMessages(utils::capture.output(result <- expr))
+    invisible(result)
 }
 
 # =============================================================================
@@ -240,11 +275,16 @@ for (dsname in names(DATASETS)) {
     }
 
     many_breeds  <- !is.null(ds$n_breeds) && ds$n_breeds > 20
+    many_samples <- !is.null(ds$n_samples) && ds$n_samples > 2000
     scan_results <- list()
 
-    for (type in c("ROHom", "ROHet")) {
-        for (method in c("sliding", "consecutive")) {
-            for (param_name in names(PARAMS)) {
+    types_to_run   <- if (nzchar(TYPE_FILTER))   TYPE_FILTER   else c("ROHom", "ROHet")
+    methods_to_run <- if (nzchar(METHOD_FILTER)) METHOD_FILTER else c("sliding", "consecutive")
+    params_to_run  <- if (nzchar(PARAMS_FILTER)) PARAMS_FILTER else names(PARAMS)
+
+    for (type in types_to_run) {
+        for (method in methods_to_run) {
+            for (param_name in params_to_run) {
                 p        <- PARAMS[[param_name]]
                 tag      <- paste(type, method, param_name, sep = "_")
                 scan_out <- file.path(out, tag)
@@ -341,8 +381,10 @@ for (dsname in names(DATASETS)) {
                 # -------------------------------------------------------
                 cat("  summaryRuns...\n")
                 for (cls in SUMMARY_CLASSES) {
+                    # snpInRuns builds a sample×SNP matrix (~1-3 GB for large datasets)
+                    use_snp <- (cls == 2) && !many_breeds
                     sm <- tryCatch(
-                        summaryRuns(scan, Class = cls, snpInRuns = (cls == 2)),
+                        quietly(summaryRuns(scan, Class = cls, snpInRuns = use_snp)),
                         error = function(e) { cat("  summaryRuns ERROR (Class=",cls,"): ",conditionMessage(e),"\n"); NULL }
                     )
                     if (!is.null(sm)) {
@@ -366,7 +408,7 @@ for (dsname in names(DATASETS)) {
                 any_table <- FALSE
                 for (thr in TABLRUNS_THRESHOLDS) {
                     tbl <- tryCatch(
-                        tableRuns(scan, threshold = thr),
+                        quietly(tableRuns(scan, threshold = thr)),
                         error = function(e) { cat("  tableRuns ERROR:", conditionMessage(e), "\n"); NULL }
                     )
                     if (!is.null(tbl) && nrow(tbl) > 0) {
@@ -387,7 +429,7 @@ for (dsname in names(DATASETS)) {
                 # -------------------------------------------------------
                 cat("  Froh...\n")
                 froh_gw <- tryCatch(
-                    Froh_inbreeding(scan, genome_wide = TRUE),
+                    quietly(Froh_inbreeding(scan, genome_wide = TRUE)),
                     error = function(e) { cat("  Froh ERROR:", conditionMessage(e), "\n"); NULL }
                 )
                 froh_mean <- froh_min <- froh_max <- NA
@@ -404,7 +446,7 @@ for (dsname in names(DATASETS)) {
                 }
                 for (cls in FROH_CLASSES) {
                     fc <- tryCatch(
-                        Froh_inbreedingClass(scan, Class = cls),
+                        quietly(Froh_inbreedingClass(scan, Class = cls)),
                         error = function(e) NULL
                     )
                     if (!is.null(fc))
@@ -437,11 +479,11 @@ for (dsname in names(DATASETS)) {
 
                 .pdf_check(file.path(scan_out, "snps_in_runs.pdf"),
                     function() plot_SnpsInRuns(scan), w = 16, h = 8,
-                    keep = !many_breeds)
+                    keep = !many_breeds && !many_samples)
 
                 .pdf_check(file.path(scan_out, "stacked_runs.pdf"),
                     function() plot_StackedRuns(scan), w = 16, h = 8,
-                    keep = !many_breeds)
+                    keep = !many_breeds && !many_samples)
 
                 .pdf_check(file.path(scan_out, "plot_runs.pdf"),
                     function() plot_Runs(scan), w = 16, h = 10,
@@ -497,31 +539,33 @@ for (dsname in names(DATASETS)) {
                 }
 
                 # -------------------------------------------------------
-                # reportRUNS — markdown + HTML for small-breed datasets
+                # reportRUNS — skipped only for many_breeds (>20 breeds)
+                #   where per-breed plots become unreadable.
+                #   Large sample / run counts are handled internally by
+                #   reportRUNS itself (auto-degrades snp_table and plots).
                 # -------------------------------------------------------
-                cat("  reportRUNS...\n")
-                isl_obj <- if (length(isl_list) > 0) isl_list[[length(isl_list)]] else NULL
-                rep_out <- tryCatch(
-                    reportRUNS(scan,
-                               islands    = isl_obj,
-                               format     = "markdown",
-                               output_dir = scan_out,
-                               prefix     = paste0(dsname, "_", tag),
-                               overwrite  = TRUE),
-                    error = function(e) { cat("  reportRUNS ERROR:", conditionMessage(e), "\n"); NULL }
-                )
-                if (!is.null(rep_out))
-                    cat("  Report:", basename(rep_out$report_file), "\n")
-
-                # HTML report for datasets with few breeds (faster to render)
                 if (!many_breeds) {
+                    cat("  reportRUNS...\n")
+                    isl_obj <- if (length(isl_list) > 0) isl_list[[length(isl_list)]] else NULL
+                    rep_out <- tryCatch(
+                        quietly(reportRUNS(scan,
+                                   islands    = isl_obj,
+                                   format     = "markdown",
+                                   output_dir = scan_out,
+                                   prefix     = paste0(dsname, "_", tag),
+                                   overwrite  = TRUE)),
+                        error = function(e) { cat("  reportRUNS ERROR:", conditionMessage(e), "\n"); NULL }
+                    )
+                    if (!is.null(rep_out))
+                        cat("  Report:", basename(rep_out$report_file), "\n")
+
                     tryCatch(
-                        reportRUNS(scan,
+                        quietly(reportRUNS(scan,
                                    islands    = isl_obj,
                                    format     = "html",
                                    output_dir = scan_out,
                                    prefix     = paste0(dsname, "_", tag, "_html"),
-                                   overwrite  = TRUE),
+                                   overwrite  = TRUE)),
                         error = function(e) cat("  HTML report skipped:", conditionMessage(e), "\n")
                     )
                 }
@@ -537,13 +581,24 @@ for (dsname in names(DATASETS)) {
                     scan_s=scan_s, total_s=total_s, peak_mem_mb=peak_mem,
                     status="OK", stringsAsFactors=FALSE))
 
+                # Only keep ROHom+sliding scans for cross-scan comparison.
+                # Free everything else immediately to bound peak memory.
+                if (!(method == "sliding" && type == "ROHom")) {
+                    rm(scan); gc(verbose = FALSE)
+                }
+
             } # param_name
         } # method
     } # type
 
     # -------------------------------------------------------------------
     # Cross-scan comparisons — lenient vs strict (ROHom sliding)
+    # Skipped in per-scan mode (only one scan object in memory).
     # -------------------------------------------------------------------
+    if (PER_SCAN_MODE) {
+        rm(scan_results); gc(verbose = FALSE)
+        next
+    }
     s_vl <- scan_results[["ROHom_sliding_very_lenient"]]
     s_le <- scan_results[["ROHom_sliding_lenient"]]
     s_st <- scan_results[["ROHom_sliding_strict"]]
@@ -606,21 +661,47 @@ for (dsname in names(DATASETS)) {
 
     cat(sprintf("\n%s COMPLETE. Output in: %s\n", dsname, out))
 
+    # Free all scan objects for this dataset before moving to the next one
+    rm(scan_results); gc(verbose = FALSE)
+
 } # dsname
 
 # =============================================================================
 # Final summary + markdown report
 # =============================================================================
-.section("ALL DATASETS DONE")
+.section(if (nzchar(DS_FILTER)) paste("DONE:", DS_FILTER) else "ALL DATASETS DONE")
 
 dir.create(RES_DIR, showWarnings = FALSE, recursive = TRUE)
 total_elapsed <- difftime(Sys.time(), START_TIME, units = "mins")
 cat(sprintf("Total elapsed: %.1f minutes\n\n", total_elapsed))
 
-# Write CSVs
-write.csv(master_log, file.path(RES_DIR, "master_summary.csv"),    row.names = FALSE)
-write.csv(check_log,  file.path(RES_DIR, "sanity_checks.csv"),     row.names = FALSE)
-write.csv(step_log,   file.path(RES_DIR, "step_timing.csv"),       row.names = FALSE)
+# Always save per-dataset CSVs so sequential runs don't overwrite each other.
+# Also save to RES_DIR root when running all datasets together.
+# In per-scan mode, append rows so 64 sequential subprocesses accumulate results.
+save_csvs <- function(dir) {
+    dir.create(dir, showWarnings = FALSE, recursive = TRUE)
+    .save_one <- function(df, filename) {
+        path <- file.path(dir, filename)
+        if (PER_SCAN_MODE && file.exists(path)) {
+            write.table(df, path, sep = ",", row.names = FALSE,
+                        col.names = FALSE, append = TRUE, quote = TRUE)
+        } else {
+            write.csv(df, path, row.names = FALSE)
+        }
+    }
+    .save_one(master_log, "master_summary.csv")
+    .save_one(check_log,  "sanity_checks.csv")
+    .save_one(step_log,   "step_timing.csv")
+    cat(sprintf("  Summaries saved to: %s\n", dir))
+}
+
+if (nzchar(DS_FILTER)) {
+    # Single-dataset mode: save to results/{dsname}/
+    save_csvs(file.path(RES_DIR, DS_FILTER))
+} else {
+    # All-datasets mode: save to results/ root
+    save_csvs(RES_DIR)
+}
 
 # Sanity check counts
 n_pass  <- sum(check_log$result == "PASS",  na.rm = TRUE)
