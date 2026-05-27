@@ -481,7 +481,7 @@ reportRUNS <- function(
     .hr()
   }
 
-  # -- 7. Common regions — summarised by group x chromosome
+  # -- 7. Common regions -- summarised by group x chromosome
   .sec(sprintf("Common RUNS Regions (>= %.0f%% of individuals)", table_threshold * 100))
   if (nrow(tbl_runs) > 0) {
     # Summarise: one row per group x chromosome
@@ -504,7 +504,7 @@ reportRUNS <- function(
     }))
     chr_sum <- chr_sum[order(chr_sum$Group, as.integer(chr_sum$CHR)), , drop = FALSE]
     rownames(chr_sum) <- NULL
-    .p(sprintf("**%d total regions** across %d group × chromosome combinations  ",
+    .p(sprintf("**%d total regions** across %d group \u00d7 chromosome combinations  ",
                nrow(tbl_runs), nrow(chr_sum)))
     .p(sprintf("*(full region list available in `tableRuns_%02d.csv`)*",
                as.integer(table_threshold * 100)))
