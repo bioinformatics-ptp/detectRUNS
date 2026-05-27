@@ -10,7 +10,7 @@ extern "C" { void R_FlushConsole(void); }
 #include <omp.h>
 #endif
 
-// Print a 40-char progress bar via Rprintf; call only from one thread (non-OpenMP path).
+// Progress bars — only defined when OpenMP is absent (single-threaded path).
 #ifndef _OPENMP
 static inline void print_progress(int j, int M) {
     const int pct    = (j + 1) * 100 / M;
@@ -19,6 +19,15 @@ static inline void print_progress(int j, int M) {
     for (int b = 0; b < 40; ++b) bar[b] = (b < filled) ? '#' : '.';
     bar[40] = '\0';
     Rprintf("\r  Progress: [%s] %3d%%  (%d/%d SNPs)", bar, pct, j + 1, M);
+    R_FlushConsole();
+}
+static inline void print_progress_indiv(int i, int N) {
+    const int pct    = (i + 1) * 100 / N;
+    const int filled = pct * 40 / 100;
+    char bar[41];
+    for (int b = 0; b < 40; ++b) bar[b] = (b < filled) ? '#' : '.';
+    bar[40] = '\0';
+    Rprintf("\r  Progress: [%s] %3d%%  (%d/%d individuals)", bar, pct, i + 1, N);
     R_FlushConsole();
 }
 #endif  // !_OPENMP
@@ -154,127 +163,6 @@ static void update_consec(
     }
 
     s.last_bp = snp.bp_pos;
-}
-
-// ===========================================================================
-// CHROMOSOME RANGE TABLE
-// Built from BIM data (no I/O) to drive chromosome-parallel dispatch.
-// ===========================================================================
-
-struct ChromRange {
-    int     snp_start;   // inclusive global BIM index
-    int     snp_end;     // exclusive global BIM index
-    uint8_t chrom_idx;
-};
-
-static std::vector<ChromRange> build_chrom_ranges(const BimData& bim)
-{
-    std::vector<ChromRange> ranges;
-    const int M = static_cast<int>(bim.snps.size());
-    if (M == 0) return ranges;
-    int     start = 0;
-    uint8_t cur   = bim.snps[0].chrom_idx;
-    for (int j = 1; j < M; ++j) {
-        if (bim.snps[j].chrom_idx != cur) {
-            ranges.push_back({start, j, cur});
-            start = j;
-            cur   = bim.snps[j].chrom_idx;
-        }
-    }
-    ranges.push_back({start, M, cur});
-    return ranges;
-}
-
-
-// ===========================================================================
-// CONSECUTIVE METHOD
-// ===========================================================================
-
-// Chromosome-parallel strategy (SNP-major BED):
-//   Outer loop over chromosomes distributed across threads (omp for dynamic).
-//   Each thread processes ALL individuals for its assigned chromosomes with
-//   no barriers — sequential SNP reads per chromosome, zero synchronisation.
-//   Thread-local state, records, snp_freq, and summaries; merged at the end.
-static void scan_consecutive(
-    const BedFile& bed, const BimData& bim, const FamData& fam,
-    const ScanParams& params,
-    std::vector<RohRecord>& records,
-    std::vector<IndivSummary>& summaries,
-    std::vector<int32_t>& snp_freq)
-{
-    const int N = static_cast<int>(fam.samples.size());
-    const int M = static_cast<int>(bim.snps.size());
-
-#ifdef _OPENMP
-    const auto chrom_ranges = build_chrom_ranges(bim);
-    const int  n_chrom      = static_cast<int>(chrom_ranges.size());
-    const int  req          = (params.n_threads > 0) ? params.n_threads : 1;
-    const int  actual       = (n_chrom > 0) ? std::min(req, n_chrom) : 1;
-#else
-    const int actual = 1;
-#endif
-
-    std::vector<std::vector<RohRecord>>    tl_rec(actual);
-    std::vector<std::vector<int32_t>>      tl_freq(actual, std::vector<int32_t>(M, 0));
-    std::vector<std::vector<IndivSummary>> tl_sum(actual,
-        std::vector<IndivSummary>(N, IndivSummary{0, 0LL, 0}));
-
-#ifdef _OPENMP
-    #pragma omp parallel num_threads(actual)
-    {
-        const int tid = omp_get_thread_num();
-        std::vector<ConsecState> states(N);
-        std::vector<int8_t>      row_buf(N);
-
-        #pragma omp for schedule(dynamic, 1)
-        for (int c = 0; c < n_chrom; ++c) {
-            const int js = chrom_ranges[c].snp_start;
-            const int je = chrom_ranges[c].snp_end;
-
-            for (int i = 0; i < N; ++i) states[i] = make_consec_state();
-
-            for (int j = js; j < je; ++j) {
-                decode_snp_row(bed, j, row_buf.data());
-                const SnpInfo& snp = bim.snps[j];
-                for (int i = 0; i < N; ++i)
-                    update_consec(states[i], row_buf[i], snp, j, i,
-                                  params, tl_rec[tid], tl_sum[tid][i], tl_freq[tid]);
-            }
-            for (int i = 0; i < N; ++i)
-                if (states[i].in_run)
-                    emit_consec(states[i], i, params,
-                                tl_rec[tid], tl_sum[tid][i], tl_freq[tid]);
-        }
-    }
-    if (params.verbose) Rprintf("\n");
-#else
-    std::vector<ConsecState> states(N);
-    for (int i = 0; i < N; ++i) states[i] = make_consec_state();
-    std::vector<int8_t> row_buf(N);
-    for (int j = 0; j < M; ++j) {
-        decode_snp_row(bed, j, row_buf.data());
-        if (params.verbose && (j * 20 / M != (j - 1) * 20 / M || j == M - 1))
-            print_progress(j, M);
-        const SnpInfo& snp = bim.snps[j];
-        for (int i = 0; i < N; ++i)
-            update_consec(states[i], row_buf[i], snp, j, i,
-                          params, tl_rec[0], tl_sum[0][i], tl_freq[0]);
-    }
-    if (params.verbose) Rprintf("\n");
-    for (int i = 0; i < N; ++i)
-        if (states[i].in_run)
-            emit_consec(states[i], i, params, tl_rec[0], tl_sum[0][i], tl_freq[0]);
-#endif
-
-    for (int t = 0; t < actual; ++t) {
-        records.insert(records.end(), tl_rec[t].begin(), tl_rec[t].end());
-        for (int j = 0; j < M; ++j) snp_freq[j] += tl_freq[t][j];
-        for (int i = 0; i < N; ++i) {
-            summaries[i].n_roh           += tl_sum[t][i].n_roh;
-            summaries[i].total_length_bp += tl_sum[t][i].total_length_bp;
-            summaries[i].n_snps_in_roh   += tl_sum[t][i].n_snps_in_roh;
-        }
-    }
 }
 
 
@@ -453,10 +341,106 @@ static void flush_chrom_sw(
     st.chrom_pos = 0;
 }
 
-// Single-pass streaming sliding window scan.
-// O(N × W) working memory (IndivStateSW ring buffers), one BED pass.
-// OpenMP: chromosome-parallel — each thread owns whole chromosomes, no barriers.
-static void scan_sliding(
+// ===========================================================================
+// SNP-MAJOR BED — individual-parallel scan (no extra memory)
+//
+// The standard PLINK BED is SNP-major: one row per SNP, all N individuals
+// packed 4-per-byte.  Individual i's genotype at SNP j lives at:
+//
+//   bed.data[3 + j * row_bytes + i/4],  bits (i%4)*2 and (i%4)*2+1
+//
+// decode_individual_snp_major() walks the mmap at stride row_bytes and
+// extracts M genotypes for one individual — no copy of the file, no matrix
+// allocation.  Each thread allocates only int8_t[M] as a scratch buffer
+// (≤ 778 KB even for Innovagen_HD).
+//
+// Outer loop: individuals distributed across threads (omp parallel for).
+// Inner loop: SNPs in BIM order — sequential per individual, zero barriers.
+// Each thread owns disjoint individuals → summaries[i] has no race condition.
+// ===========================================================================
+
+static const int8_t BED_BITS_TO_GENO[4] = {
+    GENO_HOM,      // 00 — homozygous first allele
+    GENO_MISSING,  // 01 — missing
+    GENO_HET,      // 10 — heterozygous
+    GENO_HOM       // 11 — homozygous second allele
+};
+
+// Decode all M genotypes for individual ind_idx from a SNP-major BED.
+// Reads one byte per SNP at stride row_bytes through the mmap — no allocation.
+static void decode_individual_snp_major(
+    const BedFile& bed, int ind_idx, int M, int8_t* out)
+{
+    const int      byte_off = ind_idx / 4;
+    const int      bit_sh   = (ind_idx % 4) * 2;
+    const uint8_t* base     = bed.data + 3;   // skip 3-byte BED header
+
+    for (int j = 0; j < M; ++j) {
+        const uint8_t b = base[static_cast<size_t>(j) * bed.row_bytes + byte_off];
+        out[j] = BED_BITS_TO_GENO[(b >> bit_sh) & 0x03];
+    }
+}
+
+static void scan_consecutive_snp_major(
+    const BedFile& bed, const BimData& bim, const FamData& fam,
+    const ScanParams& params,
+    std::vector<RohRecord>& records,
+    std::vector<IndivSummary>& summaries,
+    std::vector<int32_t>& snp_freq)
+{
+    const int N = static_cast<int>(fam.samples.size());
+    const int M = static_cast<int>(bim.snps.size());
+
+#ifdef _OPENMP
+    const int actual = (params.n_threads > 0) ? params.n_threads : 1;
+#else
+    const int actual = 1;
+#endif
+
+    std::vector<std::vector<RohRecord>> tl_rec(actual);
+    std::vector<std::vector<int32_t>>   tl_freq(actual, std::vector<int32_t>(M, 0));
+
+#ifdef _OPENMP
+    #pragma omp parallel num_threads(actual)
+    {
+        const int tid = omp_get_thread_num();
+        std::vector<int8_t> ind_buf(M);
+
+        #pragma omp for schedule(static)
+        for (int i = 0; i < N; ++i) {
+            decode_individual_snp_major(bed, i, M, ind_buf.data());
+            ConsecState s = make_consec_state();
+            for (int j = 0; j < M; ++j)
+                update_consec(s, ind_buf[j], bim.snps[j], j, i, params,
+                              tl_rec[tid], summaries[i], tl_freq[tid]);
+            if (s.in_run)
+                emit_consec(s, i, params, tl_rec[tid], summaries[i], tl_freq[tid]);
+        }
+    }
+    if (params.verbose) Rprintf("\n");
+#else
+    std::vector<int8_t> ind_buf(M);
+    for (int i = 0; i < N; ++i) {
+        decode_individual_snp_major(bed, i, M, ind_buf.data());
+        if (params.verbose && (i * 20 / N != (i - 1) * 20 / N || i == N - 1))
+            print_progress_indiv(i, N);
+        ConsecState s = make_consec_state();
+        for (int j = 0; j < M; ++j)
+            update_consec(s, ind_buf[j], bim.snps[j], j, i, params,
+                          tl_rec[0], summaries[i], tl_freq[0]);
+        if (s.in_run)
+            emit_consec(s, i, params, tl_rec[0], summaries[i], tl_freq[0]);
+    }
+    if (params.verbose) Rprintf("\n");
+#endif
+
+    for (int t = 0; t < actual; ++t) {
+        records.insert(records.end(), tl_rec[t].begin(), tl_rec[t].end());
+        for (int j = 0; j < M; ++j) snp_freq[j] += tl_freq[t][j];
+    }
+}
+
+static void scan_sliding_snp_major(
     const BedFile& bed, const BimData& bim, const FamData& fam,
     const ScanParams& params,
     std::vector<RohRecord>& records,
@@ -464,100 +448,90 @@ static void scan_sliding(
     std::vector<int32_t>& snp_freq)
 {
     if (params.window_size > MAX_WINDOW)
-        throw std::runtime_error(
-            "window_size exceeds MAX_WINDOW (256); reduce windowSize");
+        throw std::runtime_error("window_size exceeds MAX_WINDOW (256); reduce windowSize");
 
     const int N = static_cast<int>(fam.samples.size());
     const int M = static_cast<int>(bim.snps.size());
     if (M == 0) return;
 
+    const uint8_t first_chrom = bim.snps[0].chrom_idx;
+
 #ifdef _OPENMP
-    const auto chrom_ranges = build_chrom_ranges(bim);
-    const int  n_chrom      = static_cast<int>(chrom_ranges.size());
-    const int  req          = (params.n_threads > 0) ? params.n_threads : 1;
-    const int  actual       = (n_chrom > 0) ? std::min(req, n_chrom) : 1;
+    const int actual = (params.n_threads > 0) ? params.n_threads : 1;
 #else
     const int actual = 1;
 #endif
 
-    std::vector<std::vector<RohRecord>>    tl_rec(actual);
-    std::vector<std::vector<int32_t>>      tl_freq(actual, std::vector<int32_t>(M, 0));
-    std::vector<std::vector<IndivSummary>> tl_sum(actual,
-        std::vector<IndivSummary>(N, IndivSummary{0, 0LL, 0}));
+    std::vector<std::vector<RohRecord>> tl_rec(actual);
+    std::vector<std::vector<int32_t>>   tl_freq(actual, std::vector<int32_t>(M, 0));
 
 #ifdef _OPENMP
     #pragma omp parallel num_threads(actual)
     {
         const int tid = omp_get_thread_num();
-        std::vector<IndivStateSW> states(N);
-        std::vector<int8_t>       row_buf(N);
+        std::vector<int8_t> ind_buf(M);
 
-        #pragma omp for schedule(dynamic, 1)
-        for (int c = 0; c < n_chrom; ++c) {
-            const int     js    = chrom_ranges[c].snp_start;
-            const int     je    = chrom_ranges[c].snp_end;
-            const uint8_t chrom = chrom_ranges[c].chrom_idx;
+        #pragma omp for schedule(static)
+        for (int i = 0; i < N; ++i) {
+            decode_individual_snp_major(bed, i, M, ind_buf.data());
+            IndivStateSW st;
+            memset(&st, 0, sizeof(IndivStateSW));
+            int     first_snp_idx = 0;
+            uint8_t cur_chrom     = first_chrom;
 
-            for (int i = 0; i < N; ++i)
-                memset(&states[i], 0, sizeof(IndivStateSW));
-
-            for (int j = js; j < je; ++j) {
-                decode_snp_row(bed, j, row_buf.data());
-                for (int i = 0; i < N; ++i)
-                    update_sw(states[i], row_buf[i], bim.snps[j].bp_pos,
-                              i, js, chrom,
-                              params, tl_rec[tid], tl_sum[tid][i], tl_freq[tid]);
+            for (int j = 0; j < M; ++j) {
+                const SnpInfo& snp = bim.snps[j];
+                if (snp.chrom_idx != cur_chrom) {
+                    flush_chrom_sw(st, i, first_snp_idx, cur_chrom, params,
+                                   tl_rec[tid], summaries[i], tl_freq[tid]);
+                    first_snp_idx = j;
+                    cur_chrom     = snp.chrom_idx;
+                }
+                update_sw(st, ind_buf[j], snp.bp_pos, i, first_snp_idx, cur_chrom,
+                          params, tl_rec[tid], summaries[i], tl_freq[tid]);
             }
-            for (int i = 0; i < N; ++i)
-                flush_chrom_sw(states[i], i, js, chrom,
-                               params, tl_rec[tid], tl_sum[tid][i], tl_freq[tid]);
+            flush_chrom_sw(st, i, first_snp_idx, cur_chrom, params,
+                           tl_rec[tid], summaries[i], tl_freq[tid]);
         }
     }
     if (params.verbose) Rprintf("\n");
 #else
-    std::vector<IndivStateSW> states(N);
-    for (int i = 0; i < N; ++i)
-        memset(&states[i], 0, sizeof(IndivStateSW));
-    std::vector<int8_t> row_buf(N);
-    int     first_snp_idx = 0;
-    uint8_t cur_chrom     = bim.snps[0].chrom_idx;
-    for (int j = 0; j < M; ++j) {
-        decode_snp_row(bed, j, row_buf.data());
-        if (params.verbose && (j * 20 / M != (j - 1) * 20 / M || j == M - 1))
-            print_progress(j, M);
-        const SnpInfo& snp = bim.snps[j];
-        if (snp.chrom_idx != cur_chrom) {
-            for (int i = 0; i < N; ++i)
-                flush_chrom_sw(states[i], i, first_snp_idx, cur_chrom,
-                               params, tl_rec[0], tl_sum[0][i], tl_freq[0]);
-            first_snp_idx = j;
-            cur_chrom     = snp.chrom_idx;
+    std::vector<int8_t> ind_buf(M);
+    for (int i = 0; i < N; ++i) {
+        decode_individual_snp_major(bed, i, M, ind_buf.data());
+        if (params.verbose && (i * 20 / N != (i - 1) * 20 / N || i == N - 1))
+            print_progress_indiv(i, N);
+        IndivStateSW st;
+        memset(&st, 0, sizeof(IndivStateSW));
+        int     first_snp_idx = 0;
+        uint8_t cur_chrom     = first_chrom;
+
+        for (int j = 0; j < M; ++j) {
+            const SnpInfo& snp = bim.snps[j];
+            if (snp.chrom_idx != cur_chrom) {
+                flush_chrom_sw(st, i, first_snp_idx, cur_chrom, params,
+                               tl_rec[0], summaries[i], tl_freq[0]);
+                first_snp_idx = j;
+                cur_chrom     = snp.chrom_idx;
+            }
+            update_sw(st, ind_buf[j], snp.bp_pos, i, first_snp_idx, cur_chrom,
+                      params, tl_rec[0], summaries[i], tl_freq[0]);
         }
-        for (int i = 0; i < N; ++i)
-            update_sw(states[i], row_buf[i], snp.bp_pos,
-                      i, first_snp_idx, cur_chrom, params,
-                      tl_rec[0], tl_sum[0][i], tl_freq[0]);
+        flush_chrom_sw(st, i, first_snp_idx, cur_chrom, params,
+                       tl_rec[0], summaries[i], tl_freq[0]);
     }
     if (params.verbose) Rprintf("\n");
-    for (int i = 0; i < N; ++i)
-        flush_chrom_sw(states[i], i, first_snp_idx, cur_chrom,
-                       params, tl_rec[0], tl_sum[0][i], tl_freq[0]);
 #endif
 
     for (int t = 0; t < actual; ++t) {
         records.insert(records.end(), tl_rec[t].begin(), tl_rec[t].end());
         for (int j = 0; j < M; ++j) snp_freq[j] += tl_freq[t][j];
-        for (int i = 0; i < N; ++i) {
-            summaries[i].n_roh           += tl_sum[t][i].n_roh;
-            summaries[i].total_length_bp += tl_sum[t][i].total_length_bp;
-            summaries[i].n_snps_in_roh   += tl_sum[t][i].n_snps_in_roh;
-        }
     }
 }
 
 
 // ===========================================================================
-// INDIVIDUAL-MAJOR BED — Phase 7
+// INDIVIDUAL-MAJOR BED — direct path (unchanged)
 //
 // When the BED file is stored in individual-major layout (one row per sample,
 // M genotypes per row), each individual is completely independent.  This makes
@@ -569,18 +543,6 @@ static void scan_sliding(
 //
 // Progress bar is printed in the sequential (single-thread) path only.
 // ===========================================================================
-
-#ifndef _OPENMP
-static inline void print_progress_indiv(int i, int N) {
-    const int pct    = (i + 1) * 100 / N;
-    const int filled = pct * 40 / 100;
-    char bar[41];
-    for (int b = 0; b < 40; ++b) bar[b] = (b < filled) ? '#' : '.';
-    bar[40] = '\0';
-    Rprintf("\r  Progress: [%s] %3d%%  (%d/%d individuals)", bar, pct, i + 1, N);
-    R_FlushConsole();
-}
-#endif
 
 static void scan_consecutive_indiv_major(
     const BedFile& bed, const BimData& bim, const FamData& fam,
@@ -755,10 +717,13 @@ void scan_roh_bed(
     if (N == 0 || M == 0) return;
 
     if (bed.layout == BedLayout::SNP_MAJOR) {
+        // Individual-parallel: N work units vs ~30 chromosomes.
+        // Each thread reads one individual at a time via strided mmap access
+        // (no extra memory allocation beyond n_threads × M bytes scratch).
         if (params.method == 0)
-            scan_consecutive(bed, bim, fam, params, records, summaries, snp_freq);
+            scan_consecutive_snp_major(bed, bim, fam, params, records, summaries, snp_freq);
         else
-            scan_sliding(bed, bim, fam, params, records, summaries, snp_freq);
+            scan_sliding_snp_major(bed, bim, fam, params, records, summaries, snp_freq);
     } else {
         if (params.method == 0)
             scan_consecutive_indiv_major(bed, bim, fam, params, records, summaries, snp_freq);
