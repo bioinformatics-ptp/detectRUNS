@@ -466,7 +466,7 @@ snpInsideRuns <- function(runsChrom, mapChrom, sample_info) {
 #' @param mapFile Plink map file (for SNP position)
 #' @param gaps distance between SNPs
 #' @param parameters list of parameters
-#' @param cpp use cpp functions or not (DEBUG)
+#' @param cpp logical; use C++ implementation if TRUE
 #'
 #' @details
 #' This method uses sliding windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
@@ -498,7 +498,6 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
     snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
   }
 
-  # TODO: check arguments names
   dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
                       parameters$minDensity, res$oppositeAndMissingGenotypes,
                       parameters$maxOppRun, parameters$maxMissRun,

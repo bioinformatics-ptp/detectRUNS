@@ -54,3 +54,17 @@ detectRUNS/src/*.so
 CHANGES_PERSONAL.md
 Coding_AI/
 Rplots.pdf
+
+# External datasets and development scripts — local only
+Ext_Data/
+dev/
+
+# Editor and AI tool directories
+.claude/
+.vscode/
+
+# Generated package files not covered elsewhere
+detectRUNS/NEWS.html
+detectRUNS/src/symbols.rds
+detectRUNS/tests/testthat/test.hh
+detectRUNS/tests/testthat/test.log
