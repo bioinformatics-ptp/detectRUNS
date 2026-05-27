@@ -1,6 +1,8 @@
 ###############################################################################
-## Smoke test — all Ext_Data datasets, 2 parameter sets, BED path
-## Goal: no crashes, sane run counts, timing overview with 1 vs 10 CPU
+## Smoke test — all Ext_Data datasets, 2 parameter sets
+## BED path: 1 / 10 / N_CORES threads
+## PED path: 1 thread (legacy R engine, no OpenMP)
+## Goal: no crashes, sane run counts, BED vs PED consistency check
 ###############################################################################
 
 suppressPackageStartupMessages(library(detectRUNS))
@@ -132,3 +134,86 @@ out <- do.call(rbind, lapply(summary_rows, as.data.frame))
 names(out)[names(out) == "t_Ncpu"] <- sprintf("t_%dcpu", N_CORES)
 write.csv(out, "dev/smoke_test_results.csv", row.names = FALSE)
 cat("Results saved to dev/smoke_test_results.csv\n")
+
+# =============================================================================
+# PED/MAP PATH — legacy R engine, single-threaded
+# Note: _auto files contain autosomes only, so n_runs < BED (which includes
+# sex chromosomes). We verify no crashes and report timing + run counts.
+# =============================================================================
+ped_datasets <- list(
+    list(name = "SELMOL_auto",
+         ped = "Ext_Data/SELMOL_codACGT_auto.ped",
+         map = "Ext_Data/SELMOL_codACGT_auto.map"),
+    list(name = "ADAPTmap_auto",
+         ped = "Ext_Data/ADAPTmap_genotypeTOP_20161201_auto.ped",
+         map = "Ext_Data/ADAPTmap_genotypeTOP_20161201_auto.map"),
+    list(name = "suini_12",
+         ped = "Ext_Data/suini_12_plink.ped",
+         map = "Ext_Data/suini_12_plink.map")
+)
+
+cat(sprintf("\n%s  PED/MAP PATH — legacy R engine (1 thread)\n", .ts()))
+cat(strrep("=", 80), "\n")
+cat(sprintf("  %-14s  %-8s  %-12s  %10s  %8s  %8s\n",
+            "dataset", "params", "method", "n_runs", "time(s)", "mem(MB)"))
+cat(sprintf("  %s\n", strrep("-", 70)))
+
+ped_rows <- list()
+for (ds in ped_datasets) {
+    if (!file.exists(ds$ped)) { cat("  SKIP:", ds$name, "(not found)\n"); next }
+    snps <- nrow(read.table(ds$map, header = FALSE))
+    inds <- nrow(read.table(ds$ped, header = FALSE))
+    cat(sprintf("\n  %s  (%d SNPs | %d ind)\n", ds$name, snps, inds))
+
+    for (ps in param_sets) {
+        for (method in c("sliding", "consecutive")) {
+            args <- list(
+                genoFile     = ds$ped,
+                mapFile      = ds$map,
+                method       = method,
+                minSNP       = ps$minSNP,
+                maxOpp       = ps$maxOpp,
+                maxMiss      = ps$maxMiss,
+                minLengthBps = ps$minLengthBps,
+                maxGap       = ps$maxGap,
+                minDensity   = ps$minDensity,
+                nThreads     = 1L,
+                verbose      = FALSE
+            )
+            if (method == "sliding") {
+                args$windowSize <- ps$windowSize
+                args$threshold  <- ps$threshold
+            }
+            res <- NULL; status <- "PASS"
+            t <- tryCatch(
+                system.time(res <- do.call(scanRUNS, args)),
+                error = function(e) { status <<- "FAIL"; cat("  ERROR:", conditionMessage(e), "\n"); NULL }
+            )
+            nr  <- if (!is.null(res)) nrow(res$runs) else NA_integer_
+            sec <- if (!is.null(t))   round(t["elapsed"], 2) else NA_real_
+            mem <- .mem()
+            cat(sprintf("  %-14s  %-8s  %-12s  %10s  %8s  %8s\n",
+                        ds$name, ps$label, method,
+                        format(nr, big.mark = ","),
+                        ifelse(is.na(sec), "FAIL", sprintf("%.1f", sec)),
+                        ifelse(is.na(mem), "N/A",  sprintf("%.0f", mem))))
+            ped_rows[[length(ped_rows) + 1]] <- list(
+                dataset = ds$name, snps = snps, animals = inds,
+                params = ps$label, method = method, path = "PED",
+                n_runs = nr, t_1cpu = sec, peak_mem_mb = mem, status = status)
+            gc(verbose = FALSE)
+        }
+    }
+}
+
+cat(sprintf("\n%s  PED section DONE\n", .ts()))
+
+# Append PED rows to CSV
+ped_out <- do.call(rbind, lapply(ped_rows, function(r) {
+    data.frame(dataset=r$dataset, snps=r$snps, animals=r$animals,
+               params=r$params, method=r$method, path=r$path,
+               n_runs=r$n_runs, t_1cpu=r$t_1cpu, t_10cpu=NA, peak_mem_mb=r$peak_mem_mb,
+               stringsAsFactors=FALSE)
+}))
+write.csv(ped_out, "dev/smoke_test_ped_results.csv", row.names = FALSE)
+cat("PED results saved to dev/smoke_test_ped_results.csv\n")

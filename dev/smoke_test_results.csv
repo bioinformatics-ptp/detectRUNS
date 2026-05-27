@@ -1,0 +1,17 @@
+"dataset","snps","animals","params","method","n_runs","t_1cpu","t_10cpu","t_14cpu","peak_mem_mb"
+"SELMOL",44191,4095,"default","sliding",1274826,4.01,0.8,0.67,507.2
+"SELMOL",44191,4095,"default","consecutive",1162765,1.28,0.48,0.48,533
+"SELMOL",44191,4095,"strict","sliding",156693,4.28,0.63,0.59,607.4
+"SELMOL",44191,4095,"strict","consecutive",135774,1.15,0.35,0.32,618.4
+"ADAPTmap",53347,4653,"default","sliding",1027255,4.95,0.85,0.87,582.9
+"ADAPTmap",53347,4653,"default","consecutive",1031555,1.69,0.57,0.56,629.2
+"ADAPTmap",53347,4653,"strict","sliding",283722,5.68,0.86,0.77,570.8
+"ADAPTmap",53347,4653,"strict","consecutive",318302,1.59,0.46,0.46,583
+"suini_12",54089,1208,"default","sliding",536964,1.44,0.35,0.31,627.1
+"suini_12",54089,1208,"default","consecutive",642569,0.54,0.25,0.25,632
+"suini_12",54089,1208,"strict","sliding",201582,1.6,0.31,0.3,495.1
+"suini_12",54089,1208,"strict","consecutive",222344,0.47,0.19,0.19,495.2
+"Innovagen_HD",777962,1009,"default","sliding",243880,18.89,3.3,3.16,612.8
+"Innovagen_HD",777962,1009,"default","consecutive",329866,7.22,2.11,2.36,635.8
+"Innovagen_HD",777962,1009,"strict","sliding",86784,21.46,3.52,3.38,618.3
+"Innovagen_HD",777962,1009,"strict","consecutive",153617,7.25,2.08,2.37,610.6
