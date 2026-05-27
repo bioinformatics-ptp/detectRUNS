@@ -1,0 +1,66 @@
+
+[00:49:24]  SMOKE TEST — all Ext_Data datasets (max 14 cores)
+================================================================================ 
+
+[00:49:24]  SELMOL  (44191 SNPs | 4095 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding    1,274,826       4.0       0.8       0.7       507
+  default   consecutive   1,162,765       1.3       0.5       0.5       533
+  strict    sliding      156,693       4.3       0.6       0.6       607
+  strict    consecutive     135,774       1.1       0.3       0.3       618
+
+[00:49:39]  ADAPTmap  (53347 SNPs | 4653 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding    1,027,255       5.0       0.8       0.9       583
+  default   consecutive   1,031,555       1.7       0.6       0.6       629
+  strict    sliding      283,722       5.7       0.9       0.8       571
+  strict    consecutive     318,302       1.6       0.5       0.5       583
+
+[00:49:59]  suini_12  (54089 SNPs | 1208 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding      536,964       1.4       0.3       0.3       627
+  default   consecutive     642,569       0.5       0.2       0.2       632
+  strict    sliding      201,582       1.6       0.3       0.3       495
+  strict    consecutive     222,344       0.5       0.2       0.2       495
+
+[00:50:07]  Innovagen_HD  (777962 SNPs | 1009 ind)
+  params    method        n_runs  1 CPU(s)  10 CPU(s)  14CPU(s)   mem(MB)
+  ----------------------------------------------------------------------
+  default   sliding      243,880      18.9       3.3       3.2       613
+  default   consecutive     329,866       7.2       2.1       2.4       636
+  strict    sliding       86,784      21.5       3.5       3.4       618
+  strict    consecutive     153,617       7.2       2.1       2.4       611
+
+[00:51:26]  DONE
+Machine: 14 physical cores
+
+Results saved to dev/smoke_test_results.csv
+
+[00:51:26]  PED/MAP PATH — legacy R engine (1 thread)
+================================================================================ 
+  dataset         params    method            n_runs   time(s)   mem(MB)
+  ----------------------------------------------------------------------
+
+  SELMOL_auto  (44191 SNPs | 4095 ind)
+  SELMOL_auto     default   sliding        1,274,835     289.6     17048
+  SELMOL_auto     default   consecutive    1,162,765     132.3     16950
+  SELMOL_auto     strict    sliding          156,738     288.6     16240
+  SELMOL_auto     strict    consecutive      135,774     124.8     16103
+
+  ADAPTmap_auto  (52538 SNPs | 4653 ind)
+  ADAPTmap_auto   default   sliding        1,025,705     389.4     17945
+  ADAPTmap_auto   default   consecutive    1,030,266     177.1     17251
+  ADAPTmap_auto   strict    sliding          283,740    2253.4     16202
+  ADAPTmap_auto   strict    consecutive      318,300    1539.0     15139
+
+  suini_12  (62163 SNPs | 1208 ind)
+  suini_12        default   sliding          552,505    1090.3     17314
+  suini_12        default   consecutive      671,206      58.4     17511
+  suini_12        strict    sliding          203,565    1034.2     16827
+  suini_12        strict    consecutive      224,991     157.5     16698
+
+[02:59:38]  PED section DONE
+PED results saved to dev/smoke_test_ped_results.csv

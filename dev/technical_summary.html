@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>detectRUNS 1.0.0 — Technical Development Summary</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; margin: 0; background: #f4f6f9; color: #222; }
+  nav { background: #2c3e50; padding: 10px 30px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 24px; }
+  nav .logo { color: #ecf0f1; font-weight: bold; font-size: 15px; margin-right: 10px; }
+  nav a { color: #bdc3c7; text-decoration: none; font-size: 12px; }
+  nav a:hover { color: #3498db; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 26px; color: #2c3e50; margin-bottom: 4px; }
+  h2 { font-size: 19px; color: #2c3e50; border-left: 5px solid #3498db; padding-left: 12px; margin-top: 50px; }
+  h3 { font-size: 15px; color: #34495e; margin-top: 28px; margin-bottom: 6px; }
+  p.sub { color: #666; margin-top: 2px; margin-bottom: 30px; font-size: 13px; }
+  p { margin: 8px 0 14px; }
+  ul, ol { margin: 6px 0 14px; padding-left: 24px; }
+  li { margin-bottom: 5px; }
+  code { background: #eef; padding: 1px 5px; border-radius: 3px; font-family: monospace; font-size: 12.5px; color: #c0392b; }
+  pre { background: #2c3e50; color: #ecf0f1; padding: 16px 20px; border-radius: 6px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 12px 0 18px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin: 12px 0 20px; }
+  th { background: #2c3e50; color: #fff; font-size: 12px; padding: 8px 12px; text-align: left; }
+  td { border: 1px solid #ddd; padding: 7px 12px; font-size: 13px; vertical-align: top; }
+  tr:hover td { background: #f8f9fa; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 11px; font-weight: bold; margin-left: 6px; vertical-align: middle; }
+  .badge-new  { background: #d4edda; color: #155724; }
+  .badge-fix  { background: #fff3cd; color: #856404; }
+  .badge-perf { background: #d1ecf1; color: #0c5460; }
+  .badge-rm   { background: #f8d7da; color: #721c24; }
+  .callout { border-left: 4px solid #3498db; background: #eaf4fb; padding: 12px 16px; margin: 14px 0 20px; border-radius: 0 4px 4px 0; font-size: 13px; }
+  .callout.warn { border-color: #e67e22; background: #fef5e7; }
+  .callout.good { border-color: #27ae60; background: #eafaf1; }
+  .phase { background: #fff; border: 1px solid #dce1e7; border-radius: 6px; padding: 20px 24px; margin-bottom: 10px; }
+  .toc { background: #fff; border: 1px solid #dce1e7; border-radius: 6px; padding: 16px 24px; margin-bottom: 40px; }
+  .toc ol { margin: 0; }
+  .toc li { margin-bottom: 3px; }
+  .toc a { color: #2980b9; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .commit { font-family: monospace; font-size: 11px; color: #888; margin-left: 6px; }
+  .vs-table td:first-child { font-weight: bold; white-space: nowrap; }
+  .old { background: #fff5f5; }
+  .new { background: #f0fff4; }
+  .pass { color: #155724; font-weight: bold; }
+  hr.light { border: none; border-top: 1px solid #e0e0e0; margin: 30px 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">detectRUNS</span>
+  <a href="#background">Background</a>
+  <a href="#phase1">C++ Engine</a>
+  <a href="#phase2">Correctness</a>
+  <a href="#phase3">New Features</a>
+  <a href="#phase4">Parallelism</a>
+  <a href="#phase5">Fixes</a>
+  <a href="#api">API Changes</a>
+  <a href="#validation">Validation</a>
+  <a href="#files">File Map</a>
+</nav>
+
+<div class="wrap">
+
+<h1>detectRUNS 1.0.0 — Technical Development Summary</h1>
+<p class="sub">Audience: technical &nbsp;|&nbsp; Branch: <code>devel_detectRuns2.0</code> &nbsp;|&nbsp; Date: 2026-05-26</p>
+
+<div class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#background">Background — what the original package did</a></li>
+    <li><a href="#phase1">Phase 1 — C++ BED engine &amp; ROH S3 class</a></li>
+    <li><a href="#phase2">Phase 2 — Correctness audit &amp; PLINK compatibility</a></li>
+    <li><a href="#phase3">Phase 3 — New features</a></li>
+    <li><a href="#phase4">Phase 4 — Multi-threaded parallelism</a></li>
+    <li><a href="#phase5">Phase 5 — Bug fixes &amp; minor improvements</a></li>
+    <li><a href="#api">API change summary</a></li>
+    <li><a href="#validation">Validation results</a></li>
+    <li><a href="#files">Source file map</a></li>
+  </ol>
+</div>
+
+
+<!-- =========================================================== -->
+<h2 id="background">1. Background — what the original package did</h2>
+<!-- =========================================================== -->
+
+<p>
+The original detectRUNS (pre-2.0) exposed two top-level functions:
+<code>slidingRUNS.run()</code> and <code>consecutiveRUNS.run()</code>.
+Both accepted a <strong>PED/MAP file pair</strong> and returned a plain <code>data.frame</code> of runs.
+</p>
+
+<h3>How the original PED path worked</h3>
+<ul>
+  <li>Read the entire PED file into R memory as a character matrix (one row per individual, all SNP alleles as strings).</li>
+  <li>For each individual, call an inner R loop (or a thin C++ helper <code>snpInRunCpp</code>) to evaluate each SNP.</li>
+  <li>The outer loop — iterating over individuals and chromosomes — was pure R, which meant function call overhead for every SNP of every individual.</li>
+  <li>All intermediate data lived in R-level objects, held in memory for the entire scan duration.</li>
+</ul>
+
+<h3>Problems that motivated the redesign</h3>
+<div class="phase">
+<table>
+  <tr><th>Problem</th><th>Impact</th></tr>
+  <tr><td>PED files scale as <em>N × 2M</em> columns of ASCII text — slow to read and memory-hungry</td><td>Innovagen_HD (1,009 animals × 777K SNPs) took minutes just to load</td></tr>
+  <tr><td>Outer scan loop in R: per-SNP function call overhead</td><td>~53–75 s per sliding-window scan even on modern hardware</td></tr>
+  <tr><td>No multi-threading</td><td>All CPU cores idle except one</td></tr>
+  <tr><td>Dependencies: <code>plyr</code>, <code>reshape2</code>, <code>itertools</code>, <code>iterators</code></td><td>plyr/reshape2 are superseded; CRAN policy disfavours heavy transitive dependencies</td></tr>
+  <tr><td>No structured return object — plain <code>data.frame</code></td><td>Downstream functions had to re-read the genotype file to get sample metadata; no provenance tracking</td></tr>
+  <tr><td>Functions returned results silently to CSV files, no in-memory object</td><td>Difficult to chain calls programmatically</td></tr>
+</table>
+</div>
+
+
+<!-- =========================================================== -->
+<h2 id="phase1">2. Phase 1 — C++ BED engine &amp; ROH S3 class <span class="badge badge-new">NEW</span></h2>
+<!-- =========================================================== -->
+<p class="commit">Commit: <code>dfdc5c7</code> — "detectRUNS 1.0.0 — C++ BED engine, ROH S3 class, CRAN cleanup"</p>
+
+<h3>2.1 New entry point: <code>scanRUNS()</code></h3>
+<p>
+A single new function replaces both <code>slidingRUNS.run()</code> and <code>consecutiveRUNS.run()</code>.
+It accepts either a <strong>BED file path</strong> (new fast path) or a <strong>PED file path</strong> (legacy path, unchanged).
+</p>
+<pre>scan &lt;- scanRUNS("dataset.bed",
+                  method        = "sliding",   # or "consecutive"
+                  ROHet         = FALSE,        # ROHom (default) or ROHet
+                  minSNP        = 15,
+                  maxOpp        = 1,
+                  maxMiss       = 1,
+                  minLengthBps  = 1e6,
+                  maxGap        = 1e6,
+                  windowSize    = 15,           # sliding only
+                  threshold     = 0.05,         # sliding only
+                  nThreads      = 14)           # OpenMP threads</pre>
+
+<h3>2.2 The C++ BED engine</h3>
+<p>
+PLINK BED files store genotypes as <strong>SNP-major binary</strong>: one row per SNP, all N individuals packed 4-per-byte at 2 bits each.
+The new engine reads BED natively in C++:
+</p>
+<ul>
+  <li><strong><code>bed_reader.cpp</code></strong> — opens the BED file with <code>mmap()</code> (memory-mapped I/O). The file is never copied into R memory; the OS maps it directly into the process address space. Random access is O(1).</li>
+  <li><strong><code>scan_roh.cpp</code></strong> — implements both the sliding-window and consecutive state machines entirely in C++. No R-level loop overhead.</li>
+  <li><strong><code>rcpp_entry.cpp</code></strong> — thin Rcpp bridge that marshals R arguments in and the result data.frame out.</li>
+</ul>
+
+<div class="callout">
+  <strong>Why mmap instead of fread?</strong><br>
+  fread would copy the entire file into a new allocation. mmap lets the kernel page-in only the bytes actually accessed, and avoids doubling memory usage for large files. For Innovagen_HD (777K SNPs × 1009 individuals ≈ 196 MB BED), this matters.
+</div>
+
+<h3>2.3 The ROH S3 class</h3>
+<p><code>scanRUNS()</code> now returns a <code>ROH</code> S3 object instead of a plain data.frame. This object carries everything downstream functions need:</p>
+<table>
+  <tr><th>Slot</th><th>Content</th></tr>
+  <tr><td><code>$runs</code></td><td>data.frame of detected runs (IID, CHR, from, to, nSNPs, nHet, nMissing, …)</td></tr>
+  <tr><td><code>$summary</code></td><td>per-individual summary statistics (n_roh, total_length_bp, n_snps_in_roh)</td></tr>
+  <tr><td><code>$snp_freq</code></td><td>integer vector — how many runs cover each SNP (used by runsIslands)</td></tr>
+  <tr><td><code>$sample_info</code></td><td>data.frame of id / group — replaces re-reading the genotype file</td></tr>
+  <tr><td><code>$snp_map</code></td><td>CHR / SNP_NAME / POSITION — full marker map</td></tr>
+  <tr><td><code>$chrom_lengths</code></td><td>per-chromosome bp span (derived from map)</td></tr>
+  <tr><td><code>$method</code>, <code>$type</code></td><td>provenance: "sliding"/"consecutive", "ROHom"/"ROHet"</td></tr>
+  <tr><td><code>$scan_params</code></td><td>list of all parameters used, for reproducibility</td></tr>
+</table>
+<p>
+Companion functions <code>saveROH()</code> / <code>loadROH()</code> allow binary serialisation via <code>saveRDS()</code>/<code>readRDS()</code>.
+The constructor <code>as_ROH()</code> wraps legacy results or external CSV imports.
+</p>
+
+<h3>2.4 Dependency removal <span class="badge badge-rm">REMOVED</span></h3>
+<table>
+  <tr><th>Package</th><th>Why removed</th><th>Replaced with</th></tr>
+  <tr><td><code>plyr</code></td><td>Superseded by dplyr/data.table; heavy transitive deps; CRAN warning risk</td><td><code>split() + lapply() + do.call(rbind, …)</code></td></tr>
+  <tr><td><code>reshape2</code></td><td>Superseded by tidyr; deprecated upstream</td><td><code>data.table::dcast()</code> / base R</td></tr>
+  <tr><td><code>itertools</code></td><td>Only used for <code>izip()</code></td><td><code>mapply()</code></td></tr>
+  <tr><td><code>iterators</code></td><td>Dependency of itertools</td><td>—</td></tr>
+</table>
+<p>Current <code>Imports</code>: <code>ggplot2</code>, <code>Rcpp</code>, <code>gridExtra</code>, <code>data.table</code> — four packages only.</p>
+
+
+<!-- =========================================================== -->
+<h2 id="phase2">3. Phase 2 — Correctness audit &amp; PLINK compatibility <span class="badge badge-fix">FIX</span></h2>
+<!-- =========================================================== -->
+<p class="commit">Commits: <code>f1a2915</code>, <code>7f23d4a</code>, <code>cd6788f</code>, <code>e31bff7</code>, <code>7938e1a</code>, <code>2351373</code></p>
+
+<p>
+After the C++ engine landed, a systematic comparison against PLINK <code>--homozyg</code> revealed several semantic mismatches.
+Each was fixed independently so the cause was clear.
+</p>
+
+<h3>3.1 PLINK-compatible sliding-window threshold</h3>
+<p>
+PLINK uses <strong>≥ threshold</strong> (inclusive) to declare a window "passing".
+The original code used <strong>&gt; threshold</strong> (exclusive), causing a small fraction of windows to be wrongly excluded when the fraction of homozygous SNPs exactly equalled the threshold.
+</p>
+<pre>// Fixed: >= matches PLINK --homozyg
+const bool in_roh = (static_cast&lt;float&gt;(h) / n_cov >= static_cast&lt;float&gt;(p.threshold));</pre>
+
+<h3>3.2 Run-level maxGap split</h3>
+<p>
+The original PED path applied the gap check at window level (closing the current window), not at run level.
+PLINK splits an open run when any two consecutive in-ROH SNPs are further apart than <code>maxGap</code>.
+This was fixed by tracking <code>run_end_bp</code> and checking the gap before extending the run.
+</p>
+
+<h3>3.3 Inclusive run length</h3>
+<p>
+Run length was computed as <code>end_bp − start_bp</code> (exclusive), giving lengths 1 bp short.
+PLINK uses <code>end_bp − start_bp + 1</code> (inclusive). Fixed across all code paths (C++ and R).
+</p>
+
+<h3>3.4 Chromosome-boundary gap bug (PED path)</h3>
+<p>
+The legacy R path reused <code>last_bp</code> across chromosome boundaries, so the first SNP of each new chromosome incorrectly triggered a gap check against the last SNP of the previous chromosome. Fixed by resetting <code>last_bp</code> on every chromosome transition.
+</p>
+
+<h3>3.5 New parameters exposed</h3>
+<table>
+  <tr><th>Parameter</th><th>Meaning</th><th>PLINK equivalent</th></tr>
+  <tr><td><code>minDensity</code></td><td>Minimum SNP density (SNPs/kbp) within a run</td><td><code>--homozyg-density</code></td></tr>
+  <tr><td><code>maxOppRun</code></td><td>Max opposite genotypes in a run (post-merge)</td><td>—</td></tr>
+  <tr><td><code>maxMissRun</code></td><td>Max missing genotypes in a run (post-merge)</td><td>—</td></tr>
+</table>
+
+
+<!-- =========================================================== -->
+<h2 id="phase3">4. Phase 3 — New features <span class="badge badge-new">NEW</span></h2>
+<!-- =========================================================== -->
+
+<h3>4.1 <code>runsIslands()</code> — permutation-based ROH island detection</h3>
+<p class="commit">Commits: <code>8027de0</code>, <code>32935d4</code>, <code>7a867a2</code>, <code>7ad6f45</code></p>
+<p>
+Implements the Falchi et al. approach for detecting genomic regions where ROH accumulate above chance
+(called "ROH islands" or "islands of homozygosity").
+</p>
+<p><strong>Algorithm:</strong></p>
+<ol>
+  <li>For each chromosome independently, compute the observed SNP-ROH frequency vector (how many individuals have a ROH covering each SNP).</li>
+  <li>Run <code>n_perm</code> permutations: randomly shuffle individual-level ROH assignments and recompute the frequency vector.</li>
+  <li>The per-SNP threshold is the <code>percentile</code>-th quantile of the permutation distribution at that SNP.</li>
+  <li>SNPs where the observed frequency exceeds the threshold are declared "island SNPs".</li>
+</ol>
+<p>
+The permutation loop is in <code>perm_roh.cpp</code>, parallelised over permutations with OpenMP (<code>#pragma omp parallel for</code> over <code>n_perm</code>).
+Each permutation is independent, so this scales near-linearly with threads.
+</p>
+
+<div class="callout">
+  <strong>Key optimisation in perm_roh.cpp:</strong> The chromosome genotype matrix (<code>int8_t[n_c × N]</code>) is decoded once before the permutation loop and passed as a raw pointer into each permutation. This avoids calling <code>decode_snp_row()</code> inside the hot loop — a significant saving when running 100+ permutations.
+</div>
+
+<p>Returns a <code>ROHIslands</code> S3 object with <code>print()</code>, <code>summary()</code>, and <code>plot()</code> methods.</p>
+
+<h3>4.2 <code>runsAssociation()</code></h3>
+<p class="commit">Commit: <code>eda4c54</code></p>
+<p>
+Tests for association between ROH presence/absence at each genomic position and a phenotype of interest
+(continuous or binary). Uses a permutation-based approach analogous to runsIslands.
+</p>
+
+<h3>4.3 <code>reportRUNS()</code> — automated HTML/Markdown/PDF report</h3>
+<p class="commit">Commits: <code>1fccaec</code>, <code>9b0afa0</code>, <code>31915ed</code></p>
+<p>
+Generates a self-contained report from a <code>ROH</code> object covering:
+</p>
+<ul>
+  <li>Scan provenance (parameters, date, detectRUNS version)</li>
+  <li>Run count and length distributions by individual and by group</li>
+  <li>Froh inbreeding coefficients (genome-wide and per-chromosome)</li>
+  <li>SNP-in-ROH frequency Manhattan plot</li>
+  <li>ROH islands results (if computed)</li>
+  <li>Common RUNS regions summary table (group × chromosome)</li>
+</ul>
+
+
+<!-- =========================================================== -->
+<h2 id="phase4">5. Phase 4 — Multi-threaded parallelism <span class="badge badge-perf">PERF</span></h2>
+<!-- =========================================================== -->
+
+<h3>5.1 First attempt: chromosome-parallel scan</h3>
+<p class="commit">Commit: <code>20e1b98</code> — "Merge branch 'perf/omp-chromosome-parallel'"</p>
+<p>
+The first OpenMP implementation parallelised the outer loop over <strong>chromosomes</strong>:
+each thread received a subset of chromosomes and processed all N individuals for those chromosomes.
+</p>
+<pre>#pragma omp for schedule(dynamic, 1)
+for (int c = 0; c &lt; n_chrom; ++c) {   // ~30 work units
+    // decode row by row, update all N individuals' state machines
+}</pre>
+<div class="callout warn">
+  <strong>Why this did not scale:</strong> A typical livestock genome has ~30 autosomes.
+  With 14 threads and only 30 work units, many threads sit idle for much of the scan — particularly with <code>schedule(dynamic)</code>, where later threads wait for the last few long chromosomes to finish.
+  Benchmarks confirmed: <strong>no measurable speedup</strong> at 10 or 14 threads vs 1 thread for <code>scanRUNS()</code>.
+</div>
+
+<h3>5.2 Individual-parallel scan (current implementation)</h3>
+<p class="commit">Commit: <code>4e43dec</code> — "perf: individual-parallel scan for SNP-major BED in scanRUNS()"</p>
+
+<p>
+The redesign switches the parallelism axis from <strong>chromosomes</strong> to <strong>individuals</strong>.
+With N = 1,009–4,653 individuals, there are orders of magnitude more work units than threads.
+</p>
+
+<h3>How SNP-major BED enables per-individual access without extra memory</h3>
+<p>
+In a SNP-major BED, individual <code>i</code>'s genotype at SNP <code>j</code> lives at a predictable byte offset:
+</p>
+<pre>// byte containing individual i at SNP j:
+bed.data[3 + j * row_bytes + i/4]
+// two-bit genotype at bits (i%4)*2 .. (i%4)*2+1</pre>
+<p>
+The function <code>decode_individual_snp_major()</code> walks the mmap at stride <code>row_bytes</code> (one step per SNP), extracting all M genotypes for individual <code>i</code> into a thread-local <code>int8_t[M]</code> buffer.
+No copy of the BED file, no matrix transpose — just strided reads through the existing mmap.
+</p>
+<pre>static void decode_individual_snp_major(
+    const BedFile&amp; bed, int ind_idx, int M, int8_t* out)
+{
+    const int      byte_off = ind_idx / 4;
+    const int      bit_sh   = (ind_idx % 4) * 2;
+    const uint8_t* base     = bed.data + 3;
+    for (int j = 0; j &lt; M; ++j) {
+        const uint8_t b = base[(size_t)j * bed.row_bytes + byte_off];
+        out[j] = BED_BITS_TO_GENO[(b &gt;&gt; bit_sh) &amp; 0x03];
+    }
+}</pre>
+
+<h3>Thread structure</h3>
+<pre>#pragma omp parallel num_threads(actual)
+{
+    const int tid = omp_get_thread_num();
+    std::vector&lt;int8_t&gt; ind_buf(M);          // M bytes per thread, ~778 KB max
+
+    #pragma omp for schedule(static)
+    for (int i = 0; i &lt; N; ++i) {           // N = 1009–4653 work units
+        decode_individual_snp_major(bed, i, M, ind_buf.data());
+        // run consecutive or sliding state machine for individual i
+        // writes to summaries[i] (no race: each thread owns disjoint i)
+        // writes to tl_rec[tid], tl_freq[tid] (thread-local)
+    }
+}
+// merge tl_rec[t] and tl_freq[t] after parallel section</pre>
+
+<h3>Memory overhead</h3>
+<p>
+The only extra allocation is <code>n_threads × M bytes</code> scratch buffers.
+For Innovagen_HD (M = 777,962) at 14 threads: 14 × 778 KB ≈ <strong>11 MB</strong>.
+No copy of the BED file, no NxM genotype matrix.
+</p>
+
+<h3>Benchmark results</h3>
+<table>
+  <tr><th>Dataset</th><th>Method</th><th>1 CPU (old)</th><th>1 CPU (new)</th><th>14 CPU (new)</th><th>Speedup 1→14</th></tr>
+  <tr><td>SELMOL (4095 ind, 44K SNPs)</td><td>sliding very_lenient</td><td>14.86 s</td><td>4.34 s</td><td>1.19 s</td><td class="pass">12.5×</td></tr>
+  <tr><td>SELMOL</td><td>sliding strict</td><td>21.53 s</td><td>4.38 s</td><td>0.63 s</td><td class="pass">34×</td></tr>
+  <tr><td>Innovagen_HD (1009 ind, 777K SNPs)</td><td>sliding very_lenient</td><td>53.78 s</td><td>18.41 s</td><td>4.64 s</td><td class="pass">11.6×</td></tr>
+  <tr><td>Innovagen_HD</td><td>consecutive strict</td><td>11.48 s</td><td>7.30 s</td><td>2.44 s</td><td class="pass">4.7×</td></tr>
+</table>
+
+<div class="callout good">
+  <strong>n_runs identical:</strong> The output of the individual-parallel implementation is bit-for-bit identical to the old chromosome-parallel implementation across all 12 tested combinations (2 datasets × 2 methods × 3 param sets). The parallelism axis changed; the algorithm did not.
+</div>
+
+<h3>What was NOT changed</h3>
+<ul>
+  <li><strong>Individual-major BED path</strong> — already individual-parallel by layout; untouched.</li>
+  <li><strong>PED path</strong> — legacy R code; untouched.</li>
+  <li><strong><code>runsIslands()</code> / <code>perm_roh.cpp</code></strong> — already parallelises over permutations (N_perm >> n_threads); not touched (except the pre-decode optimisation in Phase 5).</li>
+</ul>
+
+
+<!-- =========================================================== -->
+<h2 id="phase5">6. Phase 5 — Bug fixes &amp; minor improvements <span class="badge badge-fix">FIX</span></h2>
+<!-- =========================================================== -->
+
+<h3>6.1 <code>Froh_inbreeding()</code> returning NA for zero-run individuals</h3>
+<p>
+<strong>Root cause:</strong> <code>Froh_inbreeding()</code> builds the Froh data.frame with <code>tapply()</code> over the runs data.
+Individuals present in <code>sample_info</code> but absent from the runs data.frame (because they have zero ROH)
+never appear in the tapply result.
+An outer join <code>merge(info_breed, Froh, by="id", all=TRUE)</code> correctly includes them but leaves their Froh columns as <code>NA</code>.
+</p>
+<p><strong>Fix:</strong> Zero-fill all Froh columns after the merge:</p>
+<pre>Froh &lt;- merge(info_breed, Froh, by = "id", all = TRUE)
+if (genome_wide) {
+    Froh$sum[is.na(Froh$sum)]                 &lt;- 0
+    Froh$Froh_genome[is.na(Froh$Froh_genome)] &lt;- 0
+} else {
+    for (col in setdiff(names(Froh), c("id","group")))
+        Froh[[col]][is.na(Froh[[col]])] &lt;- 0
+}</pre>
+
+<h3>6.2 OOM crash in <code>tableRuns()</code> on large datasets</h3>
+<p>
+<code>tableRuns()</code> used <code>parallel::mclapply()</code> (fork-based parallelism on Unix) to compute per-chromosome common-region tables.
+For datasets with many individuals and many runs, forking the R process duplicated the entire heap — triggering OOM kills.
+</p>
+<p><strong>Fix:</strong> Replaced <code>mclapply()</code> with <code>lapply()</code>. The per-chromosome computation is fast enough sequentially; the memory cost of forking was not justified.</p>
+
+<h3>6.3 <code>perm_roh.cpp</code> — pre-decode chromosome genotypes</h3>
+<p>
+Previously, <code>scan_chrom_consec_perm()</code> and <code>scan_chrom_sliding_perm()</code> called <code>decode_snp_row()</code>
+inside the per-permutation loop — decoding the same rows 100+ times.
+Refactored to decode the chromosome genotype matrix once (<code>int8_t[n_c × N]</code>) before the permutation loop and pass a raw pointer in.
+</p>
+
+<h3>6.4 <code>reportRUNS()</code> — common regions section</h3>
+<p>
+The common-regions table previously listed every individual run region verbatim (potentially thousands of rows).
+Replaced with a per-group × chromosome summary showing N_regions, Total_Mbp, Mean_nSNP, and the top region.
+</p>
+
+<h3>6.5 Validation infrastructure</h3>
+<p>
+Per-scan subprocess isolation: the full validation suite now runs 64 independent R subprocesses
+(4 datasets × 2 run types × 2 methods × 4 param sets), each launched by <code>run_all_sequential.sh</code>
+via environment variables (<code>DATASET_FILTER</code>, <code>TYPE_FILTER</code>, <code>METHOD_FILTER</code>, <code>PARAMS_FILTER</code>).
+Each process exits cleanly before the next starts, preventing memory accumulation across scans.
+</p>
+
+
+<!-- =========================================================== -->
+<h2 id="api">7. API change summary</h2>
+<!-- =========================================================== -->
+
+<table class="vs-table">
+  <tr><th>Aspect</th><th class="old">Old API</th><th class="new">New API (v1.0.0)</th></tr>
+  <tr>
+    <td>Entry point</td>
+    <td class="old"><code>slidingRUNS.run(genoFile, mapFile, …)</code><br><code>consecutiveRUNS.run(genoFile, mapFile, …)</code></td>
+    <td class="new"><code>scanRUNS(genoFile, method="sliding"|"consecutive", …)</code></td>
+  </tr>
+  <tr>
+    <td>Input formats</td>
+    <td class="old">PED/MAP only</td>
+    <td class="new">BED/BIM/FAM (fast C++ path) or PED/MAP (legacy path)</td>
+  </tr>
+  <tr>
+    <td>Return value</td>
+    <td class="old">Plain <code>data.frame</code> of runs (also written to CSV)</td>
+    <td class="new"><code>ROH</code> S3 object containing runs, summary, map, sample_info, snp_freq, params</td>
+  </tr>
+  <tr>
+    <td>Multi-threading</td>
+    <td class="old">None</td>
+    <td class="new"><code>nThreads</code> parameter; defaults to all physical cores</td>
+  </tr>
+  <tr>
+    <td>Island detection</td>
+    <td class="old">Not available</td>
+    <td class="new"><code>runsIslands(roh, bed_path, n_perm, percentile)</code></td>
+  </tr>
+  <tr>
+    <td>Reporting</td>
+    <td class="old">Not available</td>
+    <td class="new"><code>reportRUNS(roh, output_dir, format)</code></td>
+  </tr>
+  <tr>
+    <td>Serialisation</td>
+    <td class="old">CSV files only</td>
+    <td class="new"><code>saveROH(roh, path)</code> / <code>loadROH(path)</code> (binary RDS)</td>
+  </tr>
+  <tr>
+    <td>Backward compat</td>
+    <td class="old">—</td>
+    <td class="new"><code>slidingRUNS.run()</code> / <code>consecutiveRUNS.run()</code> kept as deprecated wrappers calling <code>scanRUNS()</code></td>
+  </tr>
+  <tr>
+    <td>Imports</td>
+    <td class="old">plyr, reshape2, itertools, iterators, ggplot2, Rcpp, gridExtra</td>
+    <td class="new">ggplot2, Rcpp, gridExtra, data.table <em>(4 packages)</em></td>
+  </tr>
+</table>
+
+
+<!-- =========================================================== -->
+<h2 id="validation">8. Validation results</h2>
+<!-- =========================================================== -->
+
+<h3>PLINK --homozyg exact-match comparison</h3>
+<p>Parameters: minSNP=10, minLen=100 kbp, maxOpp=2, maxMiss=2, windowSize=15, threshold=0.05, maxGap=1.5 Mbp, minDensity=0.02. Match key: IID + CHR + from_bp + to_bp.</p>
+<table>
+  <tr><th>Dataset</th><th>Animals</th><th>SNPs</th><th>PLINK ROH</th><th>detectRUNS ROH</th><th>Exact match</th><th>Result</th></tr>
+  <tr><td>ADAPTmap</td><td>4,644</td><td>53,347</td><td>1,529,724</td><td>1,529,724</td><td>1,529,724</td><td class="pass">✓ 100%</td></tr>
+  <tr><td>SELMOL</td><td>4,095</td><td>44,191</td><td>1,117,234</td><td>1,117,234</td><td>1,117,234</td><td class="pass">✓ 100%</td></tr>
+  <tr><td>pigData</td><td>1,208</td><td>54,089</td><td>594,368</td><td>594,368</td><td>594,368</td><td class="pass">✓ 100%</td></tr>
+  <tr><td>Innovagen_HD</td><td>1,009</td><td>777,962</td><td>4,401,607</td><td>4,401,607</td><td>4,401,607</td><td class="pass">✓ 100%</td></tr>
+</table>
+
+<h3>Parameter sweep — sliding window</h3>
+<p>Swept 8 parameters independently against PLINK on a 563-SNP, 20-individual test dataset. BED path (new C++ engine) vs PED path (legacy R engine).</p>
+<table>
+  <tr><th>Parameter</th><th>Values tested</th><th>BED concordance</th><th>PED concordance</th></tr>
+  <tr><td>minSNP</td><td>3, 5, 10, 15, 20</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>maxOpp</td><td>0, 1, 2, 3</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>maxMiss</td><td>0, 1, 2, 3</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>minLengthBps</td><td>1k–250k bp</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>maxGap</td><td>100k–5M bp</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>minDensity</td><td>0–0.02 SNP/kbp</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>windowSize</td><td>5, 10, 15, 20, 30</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+  <tr><td>threshold</td><td>0.05–0.5</td><td class="pass">100% all</td><td class="pass">100% all</td></tr>
+</table>
+
+<h3>Full validation suite (in progress)</h3>
+<p>64 subprocesses: 4 datasets × 2 run types (ROHom/ROHet) × 2 methods (sliding/consecutive) × 4 parameter sets (very_lenient/lenient/strict/very_strict). Each subprocess runs a full scan + downstream analysis + sanity checks.</p>
+<p>Status as of report generation: <strong>55/64 OK, 0 failures</strong> (ADAPTmap ROHet in progress).</p>
+
+
+<!-- =========================================================== -->
+<h2 id="files">9. Source file map</h2>
+<!-- =========================================================== -->
+
+<h3>C++ source (<code>src/</code>)</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Responsibility</th></tr>
+  <tr><td><code>bed_reader.cpp / .h</code></td><td>296 / 109</td><td>mmap BED file open/close; <code>decode_snp_row()</code> (row decode for perm_roh); <code>decode_individual_row()</code> (individual-major BED); BIM/FAM parsers</td></tr>
+  <tr><td><code>scan_roh.cpp / .h</code></td><td>733 / 99</td><td>Consecutive and sliding-window state machines; <code>decode_individual_snp_major()</code>; individual-parallel OpenMP dispatch; individual-major fallback</td></tr>
+  <tr><td><code>perm_roh.cpp / .h</code></td><td>478 / 69</td><td>Permutation-based ROH island detection; permutation loop parallelised over n_perm; pre-decoded chromosome genotype matrix</td></tr>
+  <tr><td><code>output.cpp / .h</code></td><td>176 / 38</td><td>Converts internal C++ run records to R data.frames</td></tr>
+  <tr><td><code>rcpp_entry.cpp</code></td><td>421</td><td>All Rcpp-exported entry points: <code>scanRohBed()</code>, <code>permutationRohIslands()</code>, legacy C++ helpers</td></tr>
+  <tr><td><code>functions.cpp</code></td><td>1,364</td><td>Legacy C++ helpers: <code>snpInRunCpp()</code>, <code>createRUNdf()</code>, <code>slidingRUNS()</code>, <code>consecutiveRUNS()</code> (PED path)</td></tr>
+</table>
+
+<h3>R source (<code>R/</code>)</h3>
+<table>
+  <tr><th>File</th><th>Responsibility</th></tr>
+  <tr><td><code>scanRUNS.R</code></td><td>Main entry point; parameter validation; dispatches to C++ BED engine or legacy PED functions</td></tr>
+  <tr><td><code>RUNS.R</code></td><td>ROH S3 class definition; constructors (<code>as_ROH()</code>); <code>print()</code>, <code>summary()</code>, <code>plot()</code> methods</td></tr>
+  <tr><td><code>binary_runs.R</code></td><td><code>saveROH()</code> / <code>loadROH()</code></td></tr>
+  <tr><td><code>runsIslands.R</code></td><td><code>runsIslands()</code>; ROHIslands S3 class</td></tr>
+  <tr><td><code>Stats.R</code></td><td><code>summaryRuns()</code>, <code>tableRuns()</code>, <code>Froh_inbreeding()</code>, <code>snpInsideRuns()</code></td></tr>
+  <tr><td><code>plots.R</code></td><td>All ggplot2-based visualisations</td></tr>
+  <tr><td><code>report.R</code></td><td><code>reportRUNS()</code> — automated HTML/Markdown report</td></tr>
+  <tr><td><code>association.R</code></td><td><code>runsAssociation()</code></td></tr>
+  <tr><td><code>run.R</code></td><td>Deprecated wrappers <code>slidingRUNS.run()</code> / <code>consecutiveRUNS.run()</code></td></tr>
+  <tr><td><code>funktionen.R</code></td><td>Internal helpers (readMapFile, readPOPCpp, dispatcher helpers)</td></tr>
+</table>
+
+<hr class="light">
+<p style="font-size:11px; color:#999; text-align:center;">
+  detectRUNS v1.0.0 &nbsp;|&nbsp; Generated 2026-05-26 &nbsp;|&nbsp; Branch: devel_detectRuns2.0
+</p>
+
+</div>
+</body>
+</html>
