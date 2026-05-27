@@ -1,25 +1,15 @@
 ---
-title: "detectRUNS 1.0.0 — Technical Report"
+title: "detectRUNS 1.0.0 - Technical Report"
 subtitle: "Architecture, Algorithms, Validation and Benchmarks"
 author: "Filippo Biscarini, Paolo Cozzi, Giustino Gaspa, Gabriele Marras"
 date: "`r Sys.Date()`"
 output:
-  html_document:
-    toc: true
-    toc_depth: 4
-    toc_float: true
-    theme: flatly
-    highlight: tango
-    number_sections: true
-    self_contained: true
-    code_folding: show
-  pdf_document:
+  rmarkdown::html_vignette:
     toc: true
     toc_depth: 4
     number_sections: true
-    highlight: tango
 vignette: >
-  %\VignetteIndexEntry{detectRUNS 1.0.0 — Technical Report}
+  %\VignetteIndexEntry{detectRUNS 1.0.0 - Technical Report}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
