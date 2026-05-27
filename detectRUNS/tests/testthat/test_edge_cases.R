@@ -424,58 +424,40 @@ test_that("tableRuns threshold validation rejects values outside [0,1]", {
 
 
 # ===========================================================================
-# 8. BED vs PED consistency (extdata sheep subset — consecutive method)
+# 8. BED vs PED consistency (local test files — same dataset, two formats)
 # ===========================================================================
 
 test_that("BED and PED engines produce the same run count (consecutive)", {
-  bed_file <- system.file("extdata", "Kijas2016_Sheep_subset.bed", package = "detectRUNS")
-  ped_file_ext <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-
-  skip_if(bed_file == "", "extdata BED file not found")
-  skip_if(ped_file_ext == "", "extdata PED file not found")
-
   roh_bed <- suppressWarnings(suppressMessages(
-    scanRUNS(bed_file, method = "consecutive",
-             minSNP = 20, maxOpp = 1, maxMiss = 1,
-             minLengthBps = 250000, verbose = FALSE)
+    scanRUNS("test.bed", method = "consecutive",
+             minSNP = 10, maxOpp = 1, maxMiss = 1,
+             minLengthBps = 50000, verbose = FALSE)
   ))
   roh_ped <- suppressWarnings(suppressMessages(
-    scanRUNS(ped_file_ext, method = "consecutive",
-             minSNP = 20, maxOpp = 1, maxMiss = 1,
-             minLengthBps = 250000, verbose = FALSE)
+    scanRUNS(ped_file, method = "consecutive",
+             minSNP = 10, maxOpp = 1, maxMiss = 1,
+             minLengthBps = 50000, verbose = FALSE)
   ))
-
   expect_equal(nrow(roh_bed$runs), nrow(roh_ped$runs))
 })
 
 test_that("BED and PED engines produce the same run positions (consecutive)", {
-  bed_file <- system.file("extdata", "Kijas2016_Sheep_subset.bed", package = "detectRUNS")
-  ped_file_ext <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
-
-  skip_if(bed_file == "", "extdata BED file not found")
-  skip_if(ped_file_ext == "", "extdata PED file not found")
-
   roh_bed <- suppressWarnings(suppressMessages(
-    scanRUNS(bed_file, method = "consecutive",
-             minSNP = 20, maxOpp = 1, maxMiss = 1,
-             minLengthBps = 250000, verbose = FALSE)
+    scanRUNS("test.bed", method = "consecutive",
+             minSNP = 10, maxOpp = 1, maxMiss = 1,
+             minLengthBps = 50000, verbose = FALSE)
   ))
   roh_ped <- suppressWarnings(suppressMessages(
-    scanRUNS(ped_file_ext, method = "consecutive",
-             minSNP = 20, maxOpp = 1, maxMiss = 1,
-             minLengthBps = 250000, verbose = FALSE)
+    scanRUNS(ped_file, method = "consecutive",
+             minSNP = 10, maxOpp = 1, maxMiss = 1,
+             minLengthBps = 50000, verbose = FALSE)
   ))
-
-  ord <- c("id", "chrom", "from", "to")
-  bed_df <- as.data.frame(roh_bed$runs)[order(roh_bed$runs$id,
-                                               roh_bed$runs$chrom,
-                                               roh_bed$runs$from), ]
-  ped_df <- as.data.frame(roh_ped$runs)[order(roh_ped$runs$id,
-                                               roh_ped$runs$chrom,
-                                               roh_ped$runs$from), ]
+  bed_df <- as.data.frame(roh_bed$runs)
+  ped_df <- as.data.frame(roh_ped$runs)
+  bed_df <- bed_df[order(bed_df$id, bed_df$chrom, bed_df$from), ]
+  ped_df <- ped_df[order(ped_df$id, ped_df$chrom, ped_df$from), ]
   row.names(bed_df) <- NULL
   row.names(ped_df) <- NULL
-
   expect_equal(bed_df$from, ped_df$from)
   expect_equal(bed_df$to,   ped_df$to)
   expect_equal(bed_df$id,   ped_df$id)

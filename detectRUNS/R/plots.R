@@ -791,7 +791,7 @@ plot_InbreedingChr<- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("Chr
   # Plot BarPlot, BoxPlot, Froh BoxPlot
   # BarPlot by Chromosome style = ChrBarPlot
   head(final_DF)
-  if (style == "ChrBarPlot" | style == "All") {
+  if (method == "ChrBarPlot" || method == "All") {
     g1 <- ggplot(data=final_DF, aes(x=variable, y=value, fill=group))
     g1 <- g1 +  geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 +  scale_x_discrete(labels=list_chr)
@@ -803,7 +803,7 @@ plot_InbreedingChr<- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("Chr
 
   # BoxPlot by Chromosome by group - style = ChrBoxPlot
   head(long_DF)
-  if (style == "ChrBoxPlot" | style == "All") {
+  if (method == "ChrBoxPlot" || method == "All") {
     g2 <- ggplot(data=long_DF, aes(x=variable, y=value, fill=group))
     g2 <- g2 + geom_boxplot()
     g2 <- g2 + scale_x_discrete(labels=list_chr)
@@ -815,7 +815,7 @@ plot_InbreedingChr<- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("Chr
 
   # BoxPlot Froh by group - style = FrohBoxPlot
   head(Genome_Inbreeding)
-  if (style == "FrohBoxPlot" | style == "All") {
+  if (method == "FrohBoxPlot" || method == "All") {
     g3 <- ggplot(data=Genome_Inbreeding, aes(x=group, y=Froh_genome, colour=group))
     g3 <- g3 + geom_violin(aes(fill=group))
     g3 <- g3 + geom_boxplot(width=0.1)
@@ -959,7 +959,7 @@ plot_DistributionRuns <- function(runs, mapFile=NULL , groupSplit=TRUE, style=c(
   ########
   # Plot MeanClass, MeanChr, RunsPCT, RunsPCT_Chr
   # Runs mean by class
-  if (style == "MeanClass" | style == "All") {
+  if (method == "MeanClass" || method == "All") {
     long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_mean_class), id.vars="CLASS")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g1 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group))
@@ -971,7 +971,7 @@ plot_DistributionRuns <- function(runs, mapFile=NULL , groupSplit=TRUE, style=c(
   }
 
   # Runs Mean by Chromosome
-  if (style == "MeanChr" | style == "All") {
+  if (method == "MeanChr" || method == "All") {
     summary_ROH_mean_chr=reorderDF(summary_ROH_mean_chr)
     long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_mean_chr), id.vars="chrom")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
@@ -984,7 +984,7 @@ plot_DistributionRuns <- function(runs, mapFile=NULL , groupSplit=TRUE, style=c(
   }
 
   # Runs percentage by Class
-  if (style == "RunsPCT" | style == "All") {
+  if (method == "RunsPCT" || method == "All") {
     long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_percentage), id.vars="CLASS")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g3 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group))
@@ -996,7 +996,7 @@ plot_DistributionRuns <- function(runs, mapFile=NULL , groupSplit=TRUE, style=c(
   }
 
   # Runs percentage by Chromosome
-  if (style == "RunsPCT_Chr" | style == "All") {
+  if (method == "RunsPCT_Chr" || method == "All") {
     summary_ROH_percentage_chr = reorderDF(summary_ROH_percentage_chr)
     long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_percentage_chr), id.vars="chrom")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
