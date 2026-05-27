@@ -14,3 +14,4 @@
 ^Coding_AI/
 ^performance/
 ^vignettes/.*\.html$
+^NEWS\.html$
