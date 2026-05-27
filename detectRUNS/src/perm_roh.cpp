@@ -143,7 +143,7 @@ static void update_consec_perm(
 // perm[i] = which BED-decoded slot individual i reads from.
 // Fills snp_freq_out[0..n_c-1] (caller must zero-initialise before calling).
 static void scan_chrom_consec_perm(
-    const BedFile&          bed,
+    const int8_t*           chrom_genos,   // [n_c × N] row-major, pre-decoded
     const BimData&          bim,
     int                     first_snp,
     int                     n_c,
@@ -155,13 +155,11 @@ static void scan_chrom_consec_perm(
     std::vector<ConsecStatePerm> states(N);
     for (int i = 0; i < N; ++i) states[i] = make_consec_state_perm();
 
-    std::vector<int8_t> row_buf(N);
-
     for (int s = 0; s < n_c; ++s) {
-        decode_snp_row(bed, first_snp + s, row_buf.data());
-        const int32_t bp = bim.snps[first_snp + s].bp_pos;
+        const int8_t* row = chrom_genos + static_cast<size_t>(s) * N;
+        const int32_t bp  = bim.snps[first_snp + s].bp_pos;
         for (int i = 0; i < N; ++i)
-            update_consec_perm(states[i], row_buf[perm[i]], bp, s, params, snp_freq_out);
+            update_consec_perm(states[i], row[perm[i]], bp, s, params, snp_freq_out);
     }
 
     // Flush open runs at chromosome end
@@ -192,7 +190,7 @@ static void scan_chrom_consec_perm(
 // ===========================================================================
 
 static void scan_chrom_sliding_perm(
-    const BedFile&          bed,
+    const int8_t*           chrom_genos,   // [n_c × N] row-major, pre-decoded
     const BimData&          bim,
     int                     first_snp,
     int                     n_c,
@@ -230,16 +228,14 @@ static void scan_chrom_sliding_perm(
     std::vector<IndivFast> states(N);
     for (auto& st : states) memset(&st, 0, sizeof(IndivFast));
 
-    std::vector<int8_t> row_buf(N);
-
     for (int s = 0; s < n_c; ++s) {
-        decode_snp_row(bed, first_snp + s, row_buf.data());
-        const int32_t bp = bim.snps[first_snp + s].bp_pos;
+        const int8_t* row = chrom_genos + static_cast<size_t>(s) * N;
+        const int32_t bp  = bim.snps[first_snp + s].bp_pos;
 
         for (int i = 0; i < N; ++i) {
             IndivFast&   st  = states[i];
             const int    pos = st.chrom_pos;
-            const int8_t g   = row_buf[perm[i]];
+            const int8_t g   = row[perm[i]];
             const int    ri  = pos % (MAX_WINDOW * 2);   // ring index
 
             st.geno_buf[ri] = g;
@@ -437,6 +433,12 @@ PermResult permutation_roh_islands(
                 cr.n_snps, n_perm);
         R_FlushConsole();
 
+        // Decode every SNP row for this chromosome once; permutations reuse the cache.
+        std::vector<int8_t> chrom_genos(static_cast<size_t>(cr.n_snps) * N);
+        for (int s = 0; s < cr.n_snps; ++s)
+            decode_snp_row(bed, cr.first_snp + s,
+                           chrom_genos.data() + static_cast<size_t>(s) * N);
+
 #ifdef _OPENMP
         #pragma omp parallel for num_threads(actual) schedule(dynamic, 4)
 #endif
@@ -444,10 +446,10 @@ PermResult permutation_roh_islands(
             std::vector<int32_t> freq_local(cr.n_snps, 0);
 
             if (params.method == 0)
-                scan_chrom_consec_perm(bed, bim, cr.first_snp, cr.n_snps, N,
+                scan_chrom_consec_perm(chrom_genos.data(), bim, cr.first_snp, cr.n_snps, N,
                                        perms[p], params, freq_local);
             else
-                scan_chrom_sliding_perm(bed, bim, cr.first_snp, cr.n_snps, N,
+                scan_chrom_sliding_perm(chrom_genos.data(), bim, cr.first_snp, cr.n_snps, N,
                                         perms[p], params, freq_local);
 
             for (int s = 0; s < cr.n_snps; ++s)

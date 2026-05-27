@@ -481,10 +481,34 @@ reportRUNS <- function(
     .hr()
   }
 
-  # -- 7. Common regions
+  # -- 7. Common regions — summarised by group x chromosome
   .sec(sprintf("Common RUNS Regions (>= %.0f%% of individuals)", table_threshold * 100))
   if (nrow(tbl_runs) > 0) {
-    .tbl(tbl_runs)
+    # Summarise: one row per group x chromosome
+    tbl_runs$width_Mbp <- round((tbl_runs$to - tbl_runs$from) / 1e6, 3)
+    chr_sum <- do.call(rbind, lapply(split(tbl_runs, list(tbl_runs$Group, tbl_runs$chrom),
+                                          drop = TRUE), function(d) {
+      data.frame(
+        Group      = d$Group[1L],
+        CHR        = d$chrom[1L],
+        N_regions  = nrow(d),
+        Total_Mbp  = round(sum(d$width_Mbp), 2),
+        Mean_nSNP  = round(mean(d$nSNP), 1),
+        Top_region = sprintf("chr%s:%s-%s (%d SNPs)",
+                             d$chrom[1L],
+                             format(d$from[which.max(d$nSNP)], big.mark = ","),
+                             format(d$to[which.max(d$nSNP)],   big.mark = ","),
+                             max(d$nSNP)),
+        stringsAsFactors = FALSE
+      )
+    }))
+    chr_sum <- chr_sum[order(chr_sum$Group, as.integer(chr_sum$CHR)), , drop = FALSE]
+    rownames(chr_sum) <- NULL
+    .p(sprintf("**%d total regions** across %d group × chromosome combinations  ",
+               nrow(tbl_runs), nrow(chr_sum)))
+    .p(sprintf("*(full region list available in `tableRuns_%02d.csv`)*",
+               as.integer(table_threshold * 100)))
+    .tbl(chr_sum)
   } else {
     .bq(sprintf("No regions found in >= %.0f%% of individuals.", table_threshold * 100))
   }
@@ -516,6 +540,8 @@ reportRUNS <- function(
       cls_data  <- froh_cls[, setdiff(names(froh_cls), drop_cols), drop = FALSE]
       cls_means <- aggregate(. ~ group, data = cls_data, FUN = mean)
       cls_means[, -1L] <- round(cls_means[, -1L, drop = FALSE], 4)
+      froh_cols <- grep("^Sum_Class", names(cls_means), value = TRUE)
+      cls_means <- cls_means[, setdiff(names(cls_means), froh_cols), drop = FALSE]
       .tbl(cls_means)
     }
 

@@ -143,6 +143,17 @@ Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
 
   Froh=merge(info_breed,Froh,by="id",all=TRUE)
 
+  # Individuals present in sample_info but absent from runs have no ROH;
+  # their Froh is 0, not NA.
+  if (genome_wide) {
+    Froh$sum[is.na(Froh$sum)] <- 0
+    Froh$Froh_genome[is.na(Froh$Froh_genome)] <- 0
+  } else {
+    chr_cols <- setdiff(names(Froh), c("id", "group"))
+    for (col in chr_cols)
+      Froh[[col]][is.na(Froh[[col]])] <- 0
+  }
+
   return(Froh)
 }
 
