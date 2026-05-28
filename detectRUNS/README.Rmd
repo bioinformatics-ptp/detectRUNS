@@ -57,3 +57,35 @@ summaryList <- summaryRuns(runs = runs, mapFile = mapFilePath, genotypeFile = ge
 plot_Runs(runs = runs)
 ```
 
+## Development
+
+This repository is configured for AI-assisted development with [Claude Code](https://claude.ai/code). A `CLAUDE.md` file at the repo root documents the full project structure, build commands, and development conventions for the AI assistant.
+
+### Setting up a development environment
+
+```r
+# 1. Install pak if not already available
+install.packages("pak")
+
+# 2. Install all package dependencies (Imports + Suggests)
+pak::local_install_deps("detectRUNS", dependencies = TRUE)
+
+# 3. Load the package for interactive development
+devtools::load_all("detectRUNS")
+```
+
+### Common development tasks
+
+```r
+devtools::document("detectRUNS")          # Regenerate documentation
+devtools::test("detectRUNS")              # Run test suite
+devtools::check("detectRUNS")             # Full R CMD check
+Rcpp::compileAttributes("detectRUNS")     # Rebuild C++ wrappers after editing src/functions.cpp
+```
+
+### AI-assisted workflows
+
+With Claude Code installed, the following slash commands are available from the repo root:
+
+- `/cran-check` — verifies version, date, NEWS.md, and runs `R CMD check --as-cran`
+- `/code-review` — reviews the current diff for correctness and simplification opportunities
