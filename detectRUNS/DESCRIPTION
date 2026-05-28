@@ -28,7 +28,6 @@ Imports:
     Rcpp,
     gridExtra,
     data.table
-RoxygenNote: 7.2.3
 Suggests:
     testthat,
     knitr,
@@ -38,3 +37,4 @@ LinkingTo: Rcpp
 VignetteBuilder: knitr
 URL: https://github.com/bioinformatics-ptp/detectRUNS/tree/master/detectRUNS
 BugReports: https://github.com/bioinformatics-ptp/detectRUNS/issues
+Config/roxygen2/version: 8.0.0
