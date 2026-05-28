@@ -163,7 +163,7 @@ Froh_inbreeding <- function(runs, mapFile=NULL, genome_wide=TRUE){
 #' This function calculates the individual inbreeding coefficients based on runs of
 #' homozygosity (ROH) using only ROH of specific size classes.
 #' The parameter \code{class} specify the size interval to split up calculations.
-#' For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 80-16, >16 Mbps long
+#' For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 8-16, >16 Mbps long
 #' will be calculated.
 #'
 #' @param runs R object (dataframe) with ROH results
@@ -224,11 +224,13 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
   message("calculating Froh by Class")
 
   Froh_Class=unique(runs[c('group','id')])
-  for (i in range_mb[1:5]){
-    print(paste("Class used: >",i,sep=''))
+  for (j in seq_len(length(range_mb) - 1)){
+    lo <- range_mb[j]
+    hi <- range_mb[j + 1]
+    print(paste("Class used: ", lo, "-", hi, sep=''))
 
-    # subset ROHom/ROHet
-    subset_roh <- runs[runs$MB >= i,]
+    # subset ROHom/ROHet — runs within this class interval only
+    subset_roh <- runs[runs$MB >= lo & runs$MB < hi, ]
 
     #if subset is empty (no runs for that class) skip/continue
     if(nrow(subset_roh)<1) next
@@ -236,8 +238,8 @@ Froh_inbreedingClass <- function(runs, mapFile=NULL, Class=2){
     sum_by_id <- tapply(subset_roh$lengthBps, subset_roh$id, sum)
     Froh_temp <- data.frame(id = names(sum_by_id), sum = as.numeric(sum_by_id),
                             stringsAsFactors = FALSE)
-    Froh_temp[[paste("Froh_Class_",i,sep="")]] =  Froh_temp$sum/sum(LengthGenome$CHR_LENGTH)
-    colnames(Froh_temp)[2]<- paste("Sum_Class_",i,sep="")
+    Froh_temp[[paste("Froh_Class_",lo,sep="")]] =  Froh_temp$sum/sum(LengthGenome$CHR_LENGTH)
+    colnames(Froh_temp)[2]<- paste("Sum_Class_",lo,sep="")
     Froh_Class=merge(Froh_Class,Froh_temp,by="id",all=TRUE)
   }
 
