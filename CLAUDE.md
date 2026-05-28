@@ -34,6 +34,7 @@ devtools::load_all("detectRUNS")              # Load package for development
 devtools::build("detectRUNS")                 # Build tarball
 devtools::document("detectRUNS")              # Generate NAMESPACE and documentation from roxygen2 comments
 Rcpp::compileAttributes("detectRUNS")         # Regenerate R/RcppExports.R and src/RcppExports.cpp from C++ code
+devtools::build_readme("detectRUNS")          # Compile README.Rmd -> README.md (run after editing README.Rmd)
 ```
 
 ### Running Tests
@@ -239,5 +240,6 @@ Two workflows defined in `.github/workflows/`:
 | Update documentation | `devtools::document("detectRUNS")` |
 | Regenerate Rcpp wrappers | `Rcpp::compileAttributes("detectRUNS")` |
 | Build vignettes | `devtools::build_vignettes("detectRUNS")` |
+| Compile README.Rmd | `devtools::build_readme("detectRUNS")` |
 | Full package check | `devtools::check("detectRUNS")` |
 | Coverage report | `covr::codecov(path="detectRUNS/")` |

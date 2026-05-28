@@ -1,56 +1,68 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-detectRUNS
-==========
 
-detectRUNS is a R package for the detection of runs of homozygosity (ROH/ROHom) and of heterozygosity (ROHet, a.k.a. "heterozygosity-rich regions") in diploid genomes. Besides runs detection, it implements several functions to summarize and plot results.
+# detectRUNS
 
-Installation
-------------
+detectRUNS is a R package for the detection of runs of homozygosity
+(ROH/ROHom) and of heterozygosity (ROHet, a.k.a. “heterozygosity-rich
+regions”) in diploid genomes. Besides runs detection, it implements
+several functions to summarize and plot results.
 
-detectRUNS is installed as a standard R package. Some core functions are written in C++ to increase efficieny of calculations: this makes use of the R library Rcpp. detectRUNS uses other R packages for data manipulation and plots. These packages are set as *Imports*, and detectRUNS will try to install any missing packages upon installation.
+## Installation
 
-Dependencies
-------------
+detectRUNS is installed as a standard R package. Some core functions are
+written in C++ to increase efficieny of calculations: this makes use of
+the R library Rcpp. detectRUNS uses other R packages for data
+manipulation and plots. These packages are set as *Imports*, and
+detectRUNS will try to install any missing packages upon installation.
 
-detectRUNS imports: plyr, iterators, itertools, ggplot2, reshape2, Rcpp, gridExtra, data.table detectRUNS suggests: testthat, knitr, rmarkdown, prettydoc
+## Dependencies
 
-Documentation
--------------
+detectRUNS imports: plyr, iterators, itertools, ggplot2, reshape2, Rcpp,
+gridExtra, data.table detectRUNS suggests: testthat, knitr, rmarkdown,
+prettydoc
 
-Please see the package vignette for a complete tutorial. What follows is a minimal working example to give the gist of the tool.
+## Documentation
 
-Example
--------
+Please see the package vignette for a complete tutorial. What follows is
+a minimal working example to give the gist of the tool.
 
-This is a basic example which shows you how to detect runs of homozygosity (ROH):
+## Example
+
+This is a basic example which shows you how to detect runs of
+homozygosity (ROH):
 
 ``` r
-#1) detectRUNS (sliding-windows method)
+library(detectRUNS)
+
+# Input files (bundled example data)
 genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-# calculating runs with sliding window approach
-\dontrun{
- # skipping runs calculation
- runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
- minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
- minLengthBps = 100000,  minDensity = 1/10000)
-}
-# loading pre-calculated data
-runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,  colClasses = colClasses)
 
-#2) summarise results
-summaryList <- summaryRuns(runs = runs, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+# 1) Detect runs with the sliding-window approach
+runs <- slidingRUNS.run(
+  genotypeFile, mapFile,
+  windowSize = 15, threshold = 0.1,
+  minSNP = 15, ROHet = FALSE,
+  maxOppWindow = 1, maxMissWindow = 1,
+  maxGap = 10^6, minLengthBps = 100000, minDensity = 1/10000
+)
 
-#3) plot results
+# 2) Summarise results
+summaryList <- summaryRuns(
+  runs = runs, mapFile = mapFile, genotypeFile = genotypeFile,
+  Class = 6, snpInRuns = TRUE
+)
+
+# 3) Plot results
 plot_Runs(runs = runs)
 ```
 
-Development
------------
+## Development
 
-This repository is configured for AI-assisted development with [Claude Code](https://claude.ai/code). A `CLAUDE.md` file at the repo root documents the full project structure, build commands, and development conventions for the AI assistant.
+This repository is configured for AI-assisted development with [Claude
+Code](https://claude.ai/code). A `CLAUDE.md` file at the repo root
+documents the full project structure, build commands, and development
+conventions for the AI assistant.
 
 ### Setting up a development environment
 
@@ -76,7 +88,10 @@ Rcpp::compileAttributes("detectRUNS")     # Rebuild C++ wrappers after editing s
 
 ### AI-assisted workflows
 
-With Claude Code installed, the following slash commands are available from the repo root:
+With Claude Code installed, the following slash commands are available
+from the repo root:
 
--   `/cran-check` — verifies version, date, NEWS.md, and runs `R CMD check --as-cran`
--   `/code-review` — reviews the current diff for correctness and simplification opportunities
+- `/cran-check` — verifies version, date, NEWS.md, and runs
+  `R CMD check --as-cran`
+- `/code-review` — reviews the current diff for correctness and
+  simplification opportunities

@@ -1,7 +1,7 @@
 ---
 output:
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -34,26 +34,29 @@ Please see the package vignette for a complete tutorial. What follows is a minim
 
 This is a basic example which shows you how to detect runs of homozygosity (ROH):
 
-```{r example, eval=FALSE, include=TRUE}
-#1) detectRUNS (sliding-windows method)
+```{r example, eval=FALSE}
+library(detectRUNS)
+
+# Input files (bundled example data)
 genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-# calculating runs with sliding window approach
-\dontrun{
- # skipping runs calculation
- runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
- minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
- minLengthBps = 100000,  minDensity = 1/10000)
-}
-# loading pre-calculated data
-runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,  colClasses = colClasses)
 
-#2) summarise results
-summaryList <- summaryRuns(runs = runs, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+# 1) Detect runs with the sliding-window approach
+runs <- slidingRUNS.run(
+  genotypeFile, mapFile,
+  windowSize = 15, threshold = 0.1,
+  minSNP = 15, ROHet = FALSE,
+  maxOppWindow = 1, maxMissWindow = 1,
+  maxGap = 10^6, minLengthBps = 100000, minDensity = 1/10000
+)
 
-#3) plot results
+# 2) Summarise results
+summaryList <- summaryRuns(
+  runs = runs, mapFile = mapFile, genotypeFile = genotypeFile,
+  Class = 6, snpInRuns = TRUE
+)
+
+# 3) Plot results
 plot_Runs(runs = runs)
 ```
 
