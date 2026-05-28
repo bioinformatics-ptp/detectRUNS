@@ -13,7 +13,7 @@ readMapFile(mapFile)
 data.table object
 }
 \description{
-This is an utility function which check for file existance, define 
+This is an utility function which check for file existance, define
 colClasses and then returns the read data.table object
 }
 \keyword{internal}

@@ -322,7 +322,12 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
     mapChrom <- mappa[mappa$CHR==chromosome,]
     print(paste("N.of SNP is",nrow(mapChrom)))
 
-    snpInRuns <- snpInsideRunsCpp(runsChrom, mapChrom, genotypeFile)
+    pops <- readPOPCpp(genotypeFile)
+    snpInRuns <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
+
+    # remove Number column
+    snpInRuns$Number <- NULL
+
     krom <- subset(snpInRuns,CHR==chromosome)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -432,7 +437,13 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
   for (chrom in sort(unique(runs$CHROMOSOME))) {
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
     mapChrom <- mappa[mappa$CHR==chrom,]
-    snpInRuns <- snpInsideRunsCpp(runsChrom,mapChrom, genotypeFile)
+
+    pops <- readPOPCpp(genotypeFile)
+    snpInRuns <- snpInsideRunsCpp(runsChrom,mapChrom, pops)
+
+    # remove Number column
+    snpInRuns$Number <- NULL
+
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
@@ -783,7 +794,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g1 <- g1 +  scale_x_discrete(labels=list_chr)
     g1 <- g1 +  xlab("Inbreeding by Chromosome") + ylab("Froh")
     if(!is.null(plotTitle)) { g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5)) }
-    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }     # if you want split or not!
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill="none") }     # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
 
@@ -795,7 +806,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
     g2 <- g2 + scale_x_discrete(labels=list_chr)
     g2 <- g2 + xlab("Inbreeding by Chromosome") + ylab("Froh")
     if(!is.null(plotTitle)) { g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5)) }
-    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
 
@@ -827,7 +838,8 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
-#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #'
 #' @return plot Distribution Runs
 #' @export
@@ -847,7 +859,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
+#' plot_DistributionRuns(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
 plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") ,
@@ -885,33 +897,12 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
 
-  step_value=Class
-  range_mb=c(0,0,0,0,0,99999)
-  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
-    range_mb[i]=step_value
-    step_value=step_value*2
-  }
-
-  #range_mb
-  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
-               paste(range_mb[2],"-",range_mb[3],sep=''),
-               paste(range_mb[3],"-",range_mb[4],sep=''),
-               paste(range_mb[4],"-",range_mb[5],sep=''),
-               paste(">",range_mb[5],sep=''),
-               paste(">",range_mb[6],sep=''))
-
-  # Creating the data frame
-  runs$MB <- runs$lengthBps/1000000
-  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
-  levels(runs$CLASS) = name_CLASS
-  runs$CLASS=factor(runs$CLASS)
-
-  head(runs)
+  # classify runs in bins
+  runs <- classifyRuns(runs, class_size = Class)$runs
 
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
-  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
 
 
   #RESULTS!!!!!
@@ -949,7 +940,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g1 <- g1 + geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 + xlab("Class Length Category") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
     g1 <- g1 +  ggtitle(mainTitle1) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g1 <- g1 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput1 , plot = g1, device = "pdf") } else { print(g1) }
   }
 
@@ -962,7 +953,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g2 <- g2 + geom_bar(stat="identity", position=position_dodge())
     g2 <- g2 + xlab("Chromosome") + ylab("Mean (Mb)") + scale_x_discrete(limits=unique(long_DF$chrom))
     g2 <- g2 +  ggtitle(mainTitle2) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g2 <- g2 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput2 , plot = g2, device = "pdf") } else { print(g2) }
   }
 
@@ -974,7 +965,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g3 <- g3 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$CLASS))
     g3 <- g3 + xlab("Class Length Category") + ylab("Frequency")
     g3 <- g3 +  ggtitle(mainTitle3) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g3 <- g3 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g3 <- g3 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput3 , plot = g3, device = "pdf") } else { print(g3) }
   }
 
@@ -987,7 +978,7 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
     g4 <- g4 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$chrom))
     g4 <- g4 + xlab("Chromosome") + ylab("Frequency")
     g4 <- g4 +  ggtitle(mainTitle4) + theme(plot.title = element_text(hjust = 0.5))
-    if (groupSplit) { g4 <- g4 + facet_grid(group ~. ) + guides(fill=FALSE) }    # if you want split or not!
+    if (groupSplit) { g4 <- g4 + facet_grid(group ~. ) + guides(fill="none") }    # if you want split or not!
     if (savePlots){ ggsave(filename = fileNameOutput4 , plot = g4, device = "pdf") } else { print(g4) }
   }
 }

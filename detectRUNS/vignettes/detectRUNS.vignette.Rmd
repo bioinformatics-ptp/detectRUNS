@@ -189,7 +189,7 @@ We can, for instance, have a look at the number of runs per class-size (Mbps) in
 summaryList$summary_ROH_count
 ```
 
-Or, the average number of ROH per chromosome and per breed can be obtained.
+Or, the average size of ROH/HRRs (Mb) per chromosome and per breed can be obtained.
 
 ```{r}
 summaryList$summary_ROH_mean_chr

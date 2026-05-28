@@ -30,7 +30,8 @@ plot_DistributionRuns(
 
 \item{plotTitle}{title in plot (default NULL)}
 
-\item{Class}{group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)}
+\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
+for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
 }
 \value{
 plot Distribution Runs
@@ -56,6 +57,6 @@ ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  m
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 
-plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
+plot_DistributionRuns(runs = runsDF, mapFile = mapFile, style='All')
 
 }

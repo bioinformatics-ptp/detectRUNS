@@ -1,6 +1,11 @@
 
 # Valuating detectRUNS performance
 
+library(devtools)
+library(here)
+
+load_all(path = here("detectRUNS/"))
+
 # clean up
 rm(list = ls())
 
@@ -20,12 +25,14 @@ parameters <- list(
   minSNP=5,
   ROHet=TRUE,
   maxOppositeGenotype=1,
+  maxOppWindow=1,
   maxMiss=1,
   maxGap=10^6,
   minLengthBps=1000,
   minDensity=1/10,
-  maxOppRun=NULL,
-  maxMissRun=NULL
+  maxOppRun=1,
+  maxMissRun=1,
+  maxMissWindow=1
 )
 
 # how many times perform test
@@ -52,7 +59,7 @@ animals <- readPOPCpp(genotypeFile = genotypeFile)
 
 # get only one individual. Get index
 # idx <- 1
-idx <- which(animals$ID=="H70")
+idx <- which(animals$ID=="H114")
 
 # get an animal
 animal <- animals[idx, ]
@@ -75,8 +82,8 @@ steps <- ceiling(seq(1, length(x), length.out = (x_points+1) ))[-1]
 
 # calculating runs of Homozygosity
 runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
-                        minSNP = 15, ROHet = FALSE,  maxOppositeGenotype = 1,
-                        maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+                        minSNP = 15, ROHet = FALSE,  maxOppWindow = 1,
+                        maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
 
 # fix column names
 names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -256,9 +263,12 @@ for (i in steps) {
   tmp <- data.frame(fun=test_fun, step=test_step, time=test_snpInsideRuns$time, language=test_language)
   tests <- rbind(tests, tmp)
 
+  # read pops
+  pops <- readPOPCpp(genotypeFile)
+
   # check cpp snpInsideRuns
   test_snpInsideRunsCpp <- microbenchmark(
-    snpInsideRunsCpp(runs, mappa, genotypeFile),
+    snpInsideRunsCpp(runs, mappa, pops),
     unit = 'ms',
     times = times
   )
