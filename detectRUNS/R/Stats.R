@@ -234,9 +234,9 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' 4) summary_ROH_percentage: percent distribution of runs per size-class (Mb) in each breed/group (sum to 1)
 #' 5) summary_ROH_mean_chr: average size of runs (Mb) per chromosome and breed/group
 #' 6) summary_ROH_mean_class: average size of runs (Mb) per size-class (Mb) in each breed/group
-#' 7) result_Froh_genome_wide: genome-wide inbreeding ($F_{ROH}$) for each individual in the dataset
-#' 8) result_Froh_chromosome_wide inbreeding ($F_{ROH}$) for each individual (and chromosome) in the dataset
-#' 9) result_Froh_class: genome-wide inbreeding ($F_{ROH}$) for each individual in the dataset per size-class (Mb) of runs
+#' 7) result_Froh_genome_wide: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual in the dataset
+#' 8) result_Froh_chromosome_wide inbreeding (\eqn{F_{ROH}}) for each individual (and chromosome) in the dataset
+#' 9) result_Froh_class: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual in the dataset per size-class (Mb) of runs
 #' @export
 #'
 #' @examples
