@@ -137,7 +137,8 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #'
 #' @param runs R object (dataframe) with ROH results
 #' @param mapFile Plink map file (for SNP position)
-#' @param Class base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #'
 #'
 #' @return A data frame with individual inbreeding coefficients based on ROH-length of
@@ -164,28 +165,10 @@ Froh_inbreeding <- function(runs, mapFile, genome_wide=TRUE){
 #'
 
 Froh_inbreedingClass <- function(runs, mapFile, Class=2){
-
-  step_value=Class
-  range_mb=c(0,0,0,0,0,99999)
-  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
-    range_mb[i]=step_value
-    step_value=step_value*2
-  }
-
-  #range_mb
-  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
-               paste(range_mb[2],"-",range_mb[3],sep=''),
-               paste(range_mb[3],"-",range_mb[4],sep=''),
-               paste(range_mb[4],"-",range_mb[5],sep=''),
-               paste(">",range_mb[5],sep=''),
-               paste(">",range_mb[6],sep=''))
-
-  # Creating the data frame
-  runs$MB <- runs$lengthBps/1000000
-  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
-  levels(runs$CLASS) = name_CLASS
-  runs$CLASS=factor(runs$CLASS)
-  table(runs$CLASS)
+  # classify runs in bins
+  classified_runs <- classifyRuns(runs, class_size = Class)
+  runs <- classified_runs$runs
+  range_mb <- classified_runs$range_mb
 
   LengthGenome=chromosomeLength(mapFile)
 
@@ -226,7 +209,8 @@ Froh_inbreedingClass <- function(runs, mapFile, Class=2){
 #' @param genotypeFile Plink ped file (for SNP position)
 #' @param mapFile Plink map file (for SNP position)
 #' @param runs R object (dataframe) with results on detected runs
-#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
+#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
+#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
 #' @param snpInRuns TRUE/FALSE (default): should the function \code{snpInsideRuns} be
 #' called to compute the proportion of times each SNP falls inside a run in the
 #' group/population?
@@ -284,8 +268,6 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
   MB <- NULL
   chrom <- NULL
 
-  n_class=Class
-
   result_Froh_genome_wide <- Froh_inbreeding(runs = runs,
                                              mapFile = mapFile,
                                              genome_wide = TRUE)
@@ -294,37 +276,14 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
                                                  genome_wide = FALSE)
   result_Froh_class <- Froh_inbreedingClass(runs = runs,
                                                        mapFile = mapFile,
-                                                       Class = n_class)
+                                                       Class = Class)
 
-
-  runs$MB <- runs$lengthBps/1000000
-  head(runs)
-  #step_value=2
-
-  range_mb <- c(0,0,0,0,0,99999)
-
-  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
-    range_mb[i]=n_class
-    n_class=n_class*2
-  }
-
-  #range_mb
-  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
-               paste(range_mb[2],"-",range_mb[3],sep=''),
-               paste(range_mb[3],"-",range_mb[4],sep=''),
-               paste(range_mb[4],"-",range_mb[5],sep=''),
-               paste(">",range_mb[5],sep=''),
-               paste(">",range_mb[6],sep=''))
-
-  message(paste("Class created:"  ,name_CLASS[0:5],sep=' '))
-  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
-  levels(runs$CLASS) = name_CLASS
-  runs$CLASS=factor(runs$CLASS)
+  # classify runs in bins
+  runs <- classifyRuns(runs, class_size = Class)$runs
 
   #RESULTS!!!!!
   summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
   summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
-  levels(summary_ROH_mean_class$CLASS) = name_CLASS[0:5]
 
   #RESULTS!!!!!
   summary_ROH_mean_chr1 = ddply(runs,.(group,chrom),summarize,sum=mean(MB))
@@ -403,8 +362,6 @@ summaryRuns <- function(runs, mapFile, genotypeFile, Class=2, snpInRuns=FALSE){
     result_summary=append(result_summary,list(SNPinRun = all_SNPinROH))
     message("Calculation % SNP in ROH finish") #FILIPPO
   }
-
-
 
   return(result_summary)
 }

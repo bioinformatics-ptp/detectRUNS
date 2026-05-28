@@ -13,7 +13,8 @@ summaryRuns(runs, mapFile, genotypeFile, Class = 2, snpInRuns = FALSE)
 
 \item{genotypeFile}{Plink ped file (for SNP position)}
 
-\item{Class}{group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)}
+\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
+for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
 
 \item{snpInRuns}{TRUE/FALSE (default): should the function \code{snpInsideRuns} be
 called to compute the proportion of times each SNP falls inside a run in the
