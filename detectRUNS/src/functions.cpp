@@ -1230,7 +1230,7 @@ DataFrame tableRuns(
     Rprintf(
       "Processing chromosome '%s' (%d/%d)\n",
       chrom.c_str(),
-      i+1, unique_chromosomes.size());
+      (int)(i+1), (int)unique_chromosomes.size());
 
     // extract the desired chrom
     DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);
