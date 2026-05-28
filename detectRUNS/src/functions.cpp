@@ -908,7 +908,7 @@ void Runs::dumpRuns() {
 //'
 //' @param runsChrom R object (dataframe) with results per chromosome
 //' @param mapChrom R map object with SNP per chromosome
-//' @param genotypeFile genotype (.ped) file location
+//' @param pops R object (dataframe) with populations see \code{\link{readPOPCpp}}
 //'
 //' @return dataframe with counts per SNP in runs (per population)
 //'
@@ -919,12 +919,12 @@ void Runs::dumpRuns() {
 //'
 // [[Rcpp::export]]
 DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
-                           std::string genotypeFile) {
+                           DataFrame pops) {
 
-  // transform R object in Cpp object
-  std::vector<int> POSITIONS = as<std::vector<int> >(mapChrom["POSITION"]);
-  std::vector<std::string> SNP_NAME = as<std::vector<std::string> >(mapChrom["SNP_NAME"]);
-  std::vector<std::string> CHR = as<std::vector<std::string> >(mapChrom["CHR"]);
+  // get columns as vectors
+  IntegerVector POSITIONS = mapChrom["POSITION"];
+  CharacterVector SNP_NAME = mapChrom["SNP_NAME"];
+  CharacterVector CHR = mapChrom["CHR"];
 
   // get unique breeds
   CharacterVector population = runsChrom["POPULATION"];
@@ -948,9 +948,9 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
   IntegerVector count(result_size);
   CharacterVector breed(result_size);
   NumericVector percentage(result_size);
+  IntegerVector number(result_size);
 
   // get all populations
-  DataFrame pops = readPOPCpp(genotypeFile);
   CharacterVector pop = pops["POP"];
 
   // instantiate a Runs object
@@ -988,6 +988,7 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
       count[index] = snpCounts[ras];
       breed[index] = ras;
       percentage[index] = double(snpCounts[ras])/nBreeds[ras]*100;
+      number[index] = j+1;
 
       // debug
       // if (SNP_NAME[j] == "OAR24_6970428.1") {
@@ -1006,10 +1007,380 @@ DataFrame snpInsideRunsCpp(DataFrame runsChrom, DataFrame mapChrom,
 
   // initialize dataframe of results.
   DataFrame res = DataFrame::create(
-    Named("SNP_NAME")=snp_name, Named("CHR")=chrom, Named("POSITION")=position,
-    Named("COUNT")=count, Named("BREED")=fast_factor(breed)  , //returns a factor
-    Named("PERCENTAGE")=percentage, _["stringsAsFactors"] = false);
+    Named("SNP_NAME") = snp_name,
+    Named("CHR") = chrom,
+    Named("POSITION") = position,
+    Named("COUNT") = count,
+    Named("BREED") = fast_factor(breed), //returns a factor
+    Named("PERCENTAGE") = percentage,
+    Named("Number") = number,
+    _["stringsAsFactors"] = false);
 
   // returning all runs for this individual genotype
   return(res);
+}
+
+
+DataFrame subset_runs_by_chrom(DataFrame runs, std::string chrom){
+  CharacterVector population = runs[0];
+  CharacterVector ind = runs[1];
+  CharacterVector chromosomes = runs[2];
+  IntegerVector count = runs[3];
+  IntegerVector start = runs[4];
+  IntegerVector end = runs[5];
+  IntegerVector length = runs[6];
+
+  LogicalVector chrom_idx(chromosomes.size());
+
+  // Rprintf("Got %d runs\n", runs.nrows());
+
+  for (unsigned int j=0; j<chromosomes.size(); j++) {
+    chrom_idx[j] = (chromosomes[j] == chrom);
+  }
+
+  DataFrame res = DataFrame::create(
+    Named("POPULATION") = population[chrom_idx],
+    Named("IND") = ind[chrom_idx],
+    Named("CHROMOSOME") = chromosomes[chrom_idx],
+    Named("COUNT") = count[chrom_idx],
+    Named("START") = start[chrom_idx],
+    Named("END") = end[chrom_idx],
+    Named("LENGTH") = length[chrom_idx]
+  );
+
+  // Rprintf("%d runs remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
+  return res;
+}
+
+
+DataFrame subset_map_by_chrom(DataFrame mappa, std::string chrom){
+  CharacterVector chromosomes = mappa["CHR"];
+  CharacterVector snps = mappa["SNP_NAME"];
+  IntegerVector positions = mappa["POSITION"];
+
+  LogicalVector chrom_idx(chromosomes.size());
+
+  // Rprintf("Got %d snps\n", mappa.nrows());
+
+  for (unsigned int j=0; j<chromosomes.size(); j++) {
+    chrom_idx[j] = (as<std::string>(chromosomes[j]) == chrom);
+  }
+
+  DataFrame res = DataFrame::create(
+    Named("CHR") = chromosomes[chrom_idx],
+    Named("SNP_NAME") = snps[chrom_idx],
+    Named("POSITION") = positions[chrom_idx]
+  );
+
+  // Rprintf("%d snps remained after filtering for chrom %s\n", res.nrows(), chrom.c_str());
+  return res;
+}
+
+
+DataFrame filter_snpInsideRuns_by_threshold(
+    DataFrame snpInsideRuns, float threshold){
+  CharacterVector snps = snpInsideRuns["SNP_NAME"];
+  CharacterVector chromosomes = snpInsideRuns["CHR"];
+  IntegerVector positions = snpInsideRuns["POSITION"];
+  IntegerVector counts = snpInsideRuns["COUNT"];
+  CharacterVector breeds = snpInsideRuns["BREED"];
+  NumericVector percentages = snpInsideRuns["PERCENTAGE"];
+  IntegerVector numbers = snpInsideRuns["Number"];
+
+  LogicalVector idx(percentages.size());
+
+  // Rprintf("Got %d snpInsideRuns\n", snpInsideRuns.nrows());
+
+  for (unsigned int j=0; j<percentages.size(); j++) {
+    idx[j] = (percentages[j] >= threshold);
+  }
+
+  DataFrame res = DataFrame::create(
+    Named("SNP_NAME") = snps[idx],
+    Named("CHR") = chromosomes[idx],
+    Named("POSITION") = positions[idx],
+    Named("COUNT") = counts[idx],
+    Named("BREED") = fast_factor(breeds[idx]), //returns a factor
+    Named("PERCENTAGE") = percentages[idx],
+    Named("Number") = numbers[idx],
+    _["stringsAsFactors"] = false);
+
+  // Rprintf("%d snpInsideRuns remained after filtering for threshold %f\n", res.nrows(), threshold);
+  return res;
+}
+
+
+DataFrame filter_snpInsideRuns_by_breed(
+    DataFrame snpInsideRuns, std::string breed){
+  CharacterVector snps = snpInsideRuns["SNP_NAME"];
+  CharacterVector chromosomes = snpInsideRuns["CHR"];
+  IntegerVector positions = snpInsideRuns["POSITION"];
+  IntegerVector counts = snpInsideRuns["COUNT"];
+  CharacterVector breeds = snpInsideRuns["BREED"];
+  NumericVector percentages = snpInsideRuns["PERCENTAGE"];
+  IntegerVector numbers = snpInsideRuns["Number"];
+
+  LogicalVector idx(breeds.size());
+
+  for (unsigned int j=0; j<breeds.size(); j++) {
+    idx[j] = (breeds[j] == breed);
+  }
+
+  return DataFrame::create(
+    Named("SNP_NAME") = snps[idx],
+    Named("CHR") = chromosomes[idx],
+    Named("POSITION") = positions[idx],
+    Named("COUNT") = counts[idx],
+    Named("BREED") = fast_factor(breeds[idx]), //returns a factor
+    Named("PERCENTAGE") = percentages[idx],
+    Named("Number") = numbers[idx],
+    _["stringsAsFactors"] = false);
+}
+
+//' Function to retrieve most common runs in the population
+//'
+//' This function takes in input either the run results and returns a subset of
+//' the runs most commonly found in the group/population. The parameter
+//' \code{threshold} controls the definition
+//' of most common (e.g. in at least 50\%, 70\% etc. of the sampled individuals)
+//'
+//' @param genotypeFile Plink ped file (for SNP position)
+//' @param mapFile Plink map file (for SNP position)
+//' @param runs R object (dataframe) with results on detected runs
+//' @param threshold value from 0 to 1 (default 0.5) that controls the desired
+//' proportion of individuals carrying that run (e.g. 50\%)
+//'
+//' @return A dataframe with the most common runs detected in the sampled individuals
+//' (the group/population, start and end position of the run, chromosome, number of SNP
+//' included in the run and average percentage of SNPs in run
+//' are reported in the output dataframe)
+//' @export
+//'
+//' @examples
+//' # getting map and ped paths
+//' genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
+//' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
+//'
+//' # calculating runs of Homozygosity
+//' \dontrun{
+//' # skipping runs calculation
+//' runs <- slidingRUNS.run(genotypeFile, mapFile,
+//'   windowSize = 15, threshold = 0.1, minSNP = 15,
+//'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+//' )
+//' }
+//' # loading pre-calculated data
+//' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
+//' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
+//'
+//' table <- tableRuns(
+//'   runs = runsDF, genotypeFile = genotypeFile,
+//'   mapFile = mapFile, threshold = 0.5)
+//'
+//' @useDynLib detectRUNS
+//' @importFrom Rcpp sourceCpp
+//'
+// [[Rcpp::export]]
+DataFrame tableRuns(
+    DataFrame runs, std::string genotypeFile, std::string mapFile,
+    const float threshold = 0.5) {
+
+  // check for threshold value
+  if (threshold > 1 || threshold < 0) {
+    throw std::range_error("Threshold must be between 0 and 1");
+  }
+
+  // set a threshold
+  float threshold_used = threshold * 100;
+  Rprintf("Threshold used: %f\n", threshold_used);
+
+  // Obtaining namespace of detectRUNS package
+  Environment pkg = Environment::namespace_env("detectRUNS");
+
+  // Picking up readMapFile function from detectRUNS package
+  Function readMapFile = pkg["readMapFile"];
+
+  // read mapfile using R function (which uses data.table::fread)
+  DataFrame mappa = readMapFile(mapFile);
+
+  // read populations from genotypeFile
+  Rprintf("Read populations from '%s'...\n", genotypeFile.c_str());
+  DataFrame pops = readPOPCpp(genotypeFile);
+  Rprintf("Done!\n");
+
+  // get distinct chromosomes
+  CharacterVector chromosomes = runs[2];
+  CharacterVector unique_chromosomes = sort_unique(chromosomes);
+
+  // These will be the output vectors
+  CharacterVector res_group;
+  CharacterVector res_start_snp;
+  CharacterVector res_end_snp;
+  CharacterVector res_chrom;
+  IntegerVector res_n_snp;
+  IntegerVector res_from;
+  IntegerVector res_to;
+  NumericVector res_avg_pct;
+
+  Rcout << "Calculation % SNP in ROH\n";
+
+  for (unsigned int i=0; i<unique_chromosomes.size(); i++) {
+    std::string chrom = as<std::string>(unique_chromosomes[i]);
+
+    Rprintf(
+      "Processing chromosome '%s' (%d/%d)\n",
+      chrom.c_str(),
+      i+1, unique_chromosomes.size());
+
+    // extract the desired chrom
+    DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);
+
+    if (runsChrom.nrows() == 0) {
+      REprintf("No runs on chromosome %s\n", chrom.c_str());
+      continue;
+    }
+
+    DataFrame mapKrom = subset_map_by_chrom(mappa, chrom);
+
+    if (mapKrom.nrows() == 0) {
+      REprintf("No SNPs data for chromosome %s\n", chrom.c_str());
+      continue;
+    }
+
+    // calculate snpInsideRuns
+    DataFrame snpInsideRuns = snpInsideRunsCpp(runsChrom, mapKrom, pops);
+
+    if (snpInsideRuns.nrows() == 0) {
+      REprintf("No SNPs in runs for chromosome %s\n", chrom.c_str());
+      continue;
+    }
+
+    // now filter snpInsideRuns relying on threshold
+    snpInsideRuns = filter_snpInsideRuns_by_threshold(snpInsideRuns, threshold_used);
+
+    if (snpInsideRuns.nrows() == 0) {
+      REprintf(
+        "No SNPs in runs after filtering %f for chromosome %s\n",
+        threshold_used,  chrom.c_str());
+      continue;
+    }
+
+    // collect the distinct breeds
+    CharacterVector breeds = snpInsideRuns["BREED"];
+    CharacterVector group_list = unique(breeds);
+
+    for (unsigned int j=0; j<group_list.size(); j++) {
+      std::string grp = as<std::string>(group_list[j]);
+
+      // Rprintf("Processing breed: %s, chromosome: %s", grp.c_str(), chrom.c_str());
+
+      DataFrame group_subset = filter_snpInsideRuns_by_breed(snpInsideRuns, grp);
+
+      // after filtering, I need to have at least 2 rows or I can't do the following stuff
+      if (group_subset.nrows() < 2) {
+        continue;
+      }
+
+      // initialize stuff
+      IntegerVector idxs = group_subset["Number"];
+      IntegerVector positions = group_subset["POSITION"];
+      CharacterVector snp_names = group_subset["SNP_NAME"];
+      NumericVector sum_pcts = group_subset["PERCENTAGE"];
+
+      int old_idx = idxs[0];
+      int from = positions[0];
+      String Start_SNP = snp_names[0];
+      int snp_count = 1;
+      double sum_pct = sum_pcts[0];
+
+      // Rprintf("Starting from old_idx: %d, from: %d, ", old_idx, from);
+      // Rprintf("Start_SNP: %s, snp_count: %d, ", Start_SNP.get_cstring(), snp_count);
+      // Rprintf("sum_pct: %f\n", sum_pct);
+
+      for (int x=1; x<group_subset.nrows(); x++) {
+        // Rprintf("Processing: %s, ", as<std::string>(snp_names[x]).c_str());
+        // Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
+
+        // get current index
+        int new_idx = idxs[x];
+
+        // Difference between indexes. This will be 1 in case of adjacent rows
+        int diff = new_idx - old_idx;
+
+        // declare other variables
+        String end_SNP;
+        int TO;
+
+        if ((diff > 1) | (x == group_subset.nrows()-1)) {
+          if (x == group_subset.nrows()-1) {
+            // Rcout << "End of subset\n";
+            end_SNP = snp_names[x];
+            TO = positions[x];
+          } else {
+            // Rcout << "End of segment\n";
+            end_SNP = snp_names[x-1];
+            TO = positions[x-1];
+          }
+
+          // throw away row if composed by only one SNP
+          if (snp_count > 1) {
+            res_group.push_back(grp);
+            res_start_snp.push_back(Start_SNP);
+            res_end_snp.push_back(end_SNP);
+            res_chrom.push_back(chrom);
+            res_n_snp.push_back(snp_count);
+            res_from.push_back(from);
+            res_to.push_back(TO);
+            res_avg_pct.push_back(sum_pct);
+
+            // Rprintf("Writing group: %s, Start_SNP: %s, ", grp.c_str(), Start_SNP.get_cstring());
+            // Rprintf("end_SNP: %s, chrom: %s, ", end_SNP.get_cstring(), chrom.c_str());
+            // Rprintf("snp_count: %d, from: %d, TO: %d, ", snp_count, from, TO);
+            // Rprintf("sum_pct: %d\n", sum_pct);
+          }
+
+          // reset variable
+          // Rprintf("Start a new segment: %s, ", as<std::string>(snp_names[x]).c_str());
+          // Rprintf("start: %d, perc: %f\n", positions[x], sum_pcts[x]);
+
+          snp_count = 1;
+          sum_pct = sum_pcts[x];
+          from = positions[x];
+          Start_SNP = snp_names[x];
+        } else {
+          // update stuff
+          snp_count++;
+          sum_pct += sum_pcts[x];
+
+          // Rprintf("Add %s to group ", as<std::string>(snp_names[x]).c_str());
+          // Rprintf("(count: %d, sum_pct: %f)\n", snp_count, sum_pct);
+        }
+
+        // update index
+        old_idx = new_idx;
+      } // cycle for snpInsideRuns
+
+    } // cycle for group (breed)
+
+  } // cycle for chromosome
+
+  // calculate the avg percentage
+  for (unsigned int i=0; i<res_avg_pct.size(); i++) {
+    res_avg_pct[i] = res_avg_pct[i] / res_n_snp[i];
+  }
+
+  Rcout << "Calculation % SNP in ROH finish\n";
+
+  return DataFrame::create(
+    Named("Group") = fast_factor(res_group),
+    Named("Start_SNP") = res_start_snp,
+    Named("End_SNP") = res_end_snp,
+    Named("chrom") = res_chrom,
+    Named("nSNP") = res_n_snp,
+    Named("from") = res_from,
+    Named("to") = res_to,
+    Named("avg_pct") = res_avg_pct,
+    _["stringsAsFactors"] = false
+  );
+
 }
