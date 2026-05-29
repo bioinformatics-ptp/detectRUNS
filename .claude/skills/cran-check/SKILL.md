@@ -59,8 +59,7 @@ Read `detectRUNS/cran-comments.md`. Remind the user to update it with current R 
 
 Run the check from the repo root using devtools, which sets the correct CRAN-equivalent flags (`--as-cran` enables `NOTE`-level checks for URLs, examples, etc.):
 
-```powershell
-cd "G:\Utenti\Paolo\Documenti\Projects\detectRUNS"
+```sh
 Rscript -e "devtools::check('detectRUNS', remote = TRUE, manual = TRUE, error_on = 'never')"
 ```
 
