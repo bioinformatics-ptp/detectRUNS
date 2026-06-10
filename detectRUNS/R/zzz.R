@@ -56,7 +56,7 @@ rohIslands <- function(...) {
 #' @param minDensity Minimum SNP density in SNPs/kbp.
 #' @param maxOppRun Max opposite genotypes in the full run.
 #' @param maxMissRun Max missing genotypes in the full run.
-#' @return A \code{\link{RUNS}} object (was a plain data.frame).
+#' @return A \code{RUNS} object (was a plain data.frame).
 #' @export
 #' @keywords internal
 slidingRUNS.run <- function(genotypeFile, mapFile,
@@ -100,7 +100,7 @@ slidingRUNS.run <- function(genotypeFile, mapFile,
 #' @param minSNP Minimum SNPs in a run.
 #' @param minLengthBps Minimum run length in bp.
 #' @param maxGap Maximum gap between SNPs in bp.
-#' @return A \code{\link{RUNS}} object (was a plain data.frame).
+#' @return A \code{RUNS} object (was a plain data.frame).
 #' @export
 #' @keywords internal
 consecutiveRUNS.run <- function(genotypeFile, mapFile,

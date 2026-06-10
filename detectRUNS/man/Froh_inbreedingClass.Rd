@@ -11,8 +11,7 @@ Froh_inbreedingClass(runs, mapFile = NULL, Class = 2)
 
 \item{mapFile}{Plink map file (for SNP position)}
 
-\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
-for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
+\item{Class}{base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)}
 }
 \value{
 A data frame with individual inbreeding coefficients based on ROH-length of
@@ -23,7 +22,7 @@ reported alongside
 This function calculates the individual inbreeding coefficients based on runs of
 homozygosity (ROH) using only ROH of specific size classes.
 The parameter \code{class} specify the size interval to split up calculations.
-For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 80-16, >16 Mbps long
+For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 8-16, >16 Mbps long
 will be calculated.
 }
 \examples{

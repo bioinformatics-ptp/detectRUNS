@@ -2,10 +2,10 @@ Package: detectRUNS
 Type: Package
 Title: Detect Runs of Homozygosity and Runs of Heterozygosity in
     Diploid Genomes
-Version: 1.0.0.9000
+Version: 1.1.0.9000
 Authors@R: c(
     person("Filippo",  "Biscarini", email="filippo.biscarini@gmail.com",    role=c("aut","cre")),
-    person("Paolo",    "Cozzi",     email="paolo.cozzi@ptp.it",             role="aut"),
+    person("Paolo",    "Cozzi",     email="paolo.cozzi@ibba.cnr.it",        role="aut"),
     person("Giustino", "Gaspa",     email="gigaspa@uniss.it",               role="aut"),
     person("Gabriele", "Marras",    email="gabriele.marras85@gmail.com",    role="aut")
   )

@@ -2,10 +2,11 @@
 
 # detectRUNS
 
-detectRUNS is an R package for detecting **Runs of Homozygosity** (ROH/ROHom)
-and **Runs of Heterozygosity** (ROHet) in diploid genomes. It implements two
-detection methods (sliding-window and consecutive) and provides functions to
-summarise, plot, and compute inbreeding coefficients from detected runs.
+detectRUNS is a R package for detecting **Runs of Homozygosity**
+(ROH/ROHom) and **Runs of Heterozygosity** (ROHet) in diploid genomes.
+It implements two detection methods (sliding-window and consecutive) and
+provides functions to summarise, plot, and compute inbreeding
+coefficients from detected runs.
 
 ## Installation
 
@@ -17,13 +18,14 @@ detectRUNS will try to install any missing packages upon installation.
 
 To install the CRAN version of this package, simply type:
 
-```r
+``` r
 install.packages("detectRUNS")
 ```
 
-In a R terminal. In alternative, you can install a development version from github:
+In a R terminal. In alternative, you can install a development version
+from github:
 
-```r
+``` r
 # install.packages("devtools")
 # install `master` branch of the package
 devtools::install_github("bioinformatics-ptp/detectRUNS/detectRUNS")
@@ -33,13 +35,13 @@ devtools::install_github("bioinformatics-ptp/detectRUNS/detectRUNS")
 
 ## Dependencies
 
-`Imports`: ggplot2, Rcpp, gridExtra, data.table  
-`Suggests`: testthat, knitr, rmarkdown  
-`SystemRequirements`: OpenMP (optional, for parallel BED scanning)
+`Imports`: ggplot2, Rcpp, gridExtra, data.table `Suggests`: testthat,
+knitr, rmarkdown `SystemRequirements`: OpenMP (optional, for parallel
+BED scanning)
 
 ## Quick start
 
-```r
+``` r
 library(detectRUNS)
 
 # Scan a PLINK BED file — auto-detects format, runs in parallel
@@ -68,7 +70,7 @@ plot_manhattanRuns(roh)
 
 ## PED/MAP input
 
-```r
+``` r
 pedFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped",
                         package = "detectRUNS")
 roh <- scanRUNS(pedFile, method = "consecutive",
@@ -77,7 +79,7 @@ roh <- scanRUNS(pedFile, method = "consecutive",
 
 ## Build an ROH object from existing results
 
-```r
+``` r
 # From a CSV saved by a previous session or from readExternalRuns()
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv",
                          package = "detectRUNS")
@@ -89,4 +91,44 @@ roh  <- as_ROH(runs, mapFile = mapFile, method = "sliding", type = "ROHom")
 
 ## Documentation
 
-See `vignette("detectRUNS.vignette", package = "detectRUNS")` for a full tutorial.
+See `vignette("detectRUNS.vignette", package = "detectRUNS")` for a full
+tutorial.
+
+## Development
+
+This repository is configured for AI-assisted development with [Claude
+Code](https://claude.ai/code). A `CLAUDE.md` file at the repo root
+documents the full project structure, build commands, and development
+conventions for the AI assistant.
+
+### Setting up a development environment
+
+``` r
+# 1. Install pak if not already available
+install.packages("pak")
+
+# 2. Install all package dependencies (Imports + Suggests)
+pak::local_install_deps("detectRUNS", dependencies = TRUE)
+
+# 3. Load the package for interactive development
+devtools::load_all("detectRUNS")
+```
+
+### Common development tasks
+
+``` r
+devtools::document("detectRUNS")          # Regenerate documentation
+devtools::test("detectRUNS")              # Run test suite
+devtools::check("detectRUNS")             # Full R CMD check
+Rcpp::compileAttributes("detectRUNS")     # Rebuild C++ wrappers after editing src/functions.cpp
+```
+
+### AI-assisted workflows
+
+With Claude Code installed, the following slash commands are available
+from the repo root:
+
+- `/cran-check` — verifies version, date, NEWS.md, and runs
+  `R CMD check --as-cran`
+- `/code-review` — reviews the current diff for correctness and
+  simplification opportunities
