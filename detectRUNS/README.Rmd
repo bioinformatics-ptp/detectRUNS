@@ -103,7 +103,27 @@ roh  <- as_ROH(runs, mapFile = mapFile, method = "sliding", type = "ROHom")
 
 ## Documentation
 
-See `vignette("detectRUNS.vignette", package = "detectRUNS")` for a full tutorial.
+The package ships with two vignettes:
+
+- `detectRUNS.vignette` — a full tutorial covering the main workflow
+- `detectRUNS_technical_report` — a technical report with validation details
+
+List the available vignettes:
+
+```r
+vignette(package = "detectRUNS")
+```
+
+Open a specific one:
+
+```r
+vignette("detectRUNS.vignette", package = "detectRUNS")
+vignette("detectRUNS_technical_report", package = "detectRUNS")
+```
+
+Note: vignettes are only available if the package was installed with
+`build_vignettes = TRUE` (see [Building the vignette](#building-the-vignette)
+below).
 
 ## Development
 
@@ -129,6 +149,22 @@ devtools::document("detectRUNS")          # Regenerate documentation
 devtools::test("detectRUNS")              # Run test suite
 devtools::check("detectRUNS")             # Full R CMD check
 Rcpp::compileAttributes("detectRUNS")     # Rebuild C++ wrappers after editing src/functions.cpp
+```
+
+### Building the vignette
+
+`devtools::build_vignettes()` is deprecated. To render the vignette during
+development:
+
+```r
+rmarkdown::render("detectRUNS/vignettes/detectRUNS.vignette.Rmd")
+```
+
+To build the package tarball with the compiled vignette included (e.g. before
+a release):
+
+```r
+devtools::build("detectRUNS", vignettes = TRUE)
 ```
 
 ### AI-assisted workflows

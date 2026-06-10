@@ -15,3 +15,5 @@
 ^performance/
 ^vignettes/.*\.html$
 ^NEWS\.html$
+^doc$
+^Meta$
