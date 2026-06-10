@@ -2,14 +2,14 @@
 
 ## New features
 
-* **`rohIslands()`**: permutation-based ROH island detection (Falchi et al. 2026,
+* **`runsIslands()`**: permutation-based ROH island detection (Falchi et al. 2026,
   BMC Genomics). For each chromosome, builds a null SNPROH distribution by randomly
   permuting sample identity `n_perm` times (default 1000) and re-running the ROH scan.
   SNPs whose real SNPROH exceeds the chromosome-specific 99th-percentile threshold are
   declared ROH islands. The permutation loop is fully parallelised in C++ via OpenMP.
 
-* **`ROH` object** now stores `$bed_path` and `$scan_params` (BED-engine scans only),
-  allowing `rohIslands()` to automatically reuse the original scan parameters without
+* **`RUNS` object** now stores `$bed_path` and `$scan_params` (BED-engine scans only),
+  allowing `runsIslands()` to automatically reuse the original scan parameters without
   requiring the user to re-specify them.
 
 # detectRUNS 1.0.0
@@ -22,17 +22,17 @@
 
 * **`scanRUNS()`**: new unified entry point replacing the deprecated
   `slidingRUNS.run()` and `consecutiveRUNS.run()`. Auto-detects file format
-  (BED or PED) from the file extension. Returns an `ROH` S3 object.
+  (BED or PED) from the file extension. Returns a `RUNS` S3 object.
 
-* **`ROH` S3 class**: `scanRUNS()` now returns a rich object that carries the
+* **`RUNS` S3 class**: `scanRUNS()` now returns a rich object that carries the
   run table, per-individual summary, chromosome lengths, sample info, and SNP map.
   All downstream functions (`summaryRuns`, `Froh_inbreeding`, all plot functions)
-  accept an `ROH` object directly — no file paths needed after the initial scan.
+  accept a `RUNS` object directly — no file paths needed after the initial scan.
 
-* **`saveROH()` / `loadROH()`**: binary serialisation of scan results. Save once,
-  reload instantly in future sessions without re-running the scan.
+* **`saveRUNS()` / `loadRUNS()`**: binary serialisation of scan results to ROHB
+  format. Save once, reload instantly in future sessions without re-running the scan.
 
-* **`as_ROH()`**: build an `ROH` object from pre-existing results (e.g. loaded via
+* **`as_RUNS()`**: build a `RUNS` object from pre-existing results (e.g. loaded via
   `readExternalRuns()` or from an earlier session).
 
 ## Dependency removal
@@ -69,10 +69,26 @@
   returns effect sizes with Bonferroni and Benjamini-Hochberg FDR-adjusted p-values.
   Accepts an `ROH` object or a plain data.frame of runs.
 
+## Breaking changes
+
+* Minimum R version raised from 3.0.0 to **4.1.0** (required for native pipe and
+  lambda syntax used in the new C++ engine glue code).
+
+* `slidingRUNS.run()` and `consecutiveRUNS.run()` are now **deprecated**. They
+  still work but emit a deprecation warning. They will be removed in a future release.
+  Migrate to `scanRUNS(..., method = "sliding")` and
+  `scanRUNS(..., method = "consecutive")` respectively. Note: the return value is
+  now a `RUNS` object instead of a plain `data.frame`; use `as.data.frame()` on the
+  result if needed for backward-compatible downstream code.
+
+* `tableRunsCpp()` (low-level C++ wrapper, previously `tableRuns` in RcppExports)
+  is no longer exported. Use the public `tableRuns()` function from `Stats.R`.
+
 ## Backward compatibility
 
-* `slidingRUNS.run()` and `consecutiveRUNS.run()` still exist as deprecated
-  wrappers and continue to work unchanged.
+* `saveROH()`, `loadROH()`, `as_ROH()`, and `rohIslands()` are kept as deprecated
+  aliases for `saveRUNS()`, `loadRUNS()`, `as_RUNS()`, and `runsIslands()`.
+  They will be removed in a future release.
 
 * All statistics and plot functions still accept a plain `data.frame` alongside
   explicit `mapFile=` / `genotypeFile=` arguments.

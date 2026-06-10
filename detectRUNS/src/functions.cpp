@@ -1151,7 +1151,7 @@ DataFrame filter_snpInsideRuns_by_breed(
 //' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 //' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 //'
-//' table <- tableRuns(
+//' table <- tableRunsCpp(
 //'   runs = runsDF, genotypeFile = genotypeFile,
 //'   mapFile = mapFile, threshold = 0.5)
 //'
@@ -1159,7 +1159,7 @@ DataFrame filter_snpInsideRuns_by_breed(
 //' @importFrom Rcpp sourceCpp
 //'
 // [[Rcpp::export]]
-DataFrame tableRuns(
+DataFrame tableRunsCpp(
     DataFrame runs, std::string genotypeFile, std::string mapFile,
     const float threshold = 0.5) {
 

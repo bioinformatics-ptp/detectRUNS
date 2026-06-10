@@ -231,15 +231,15 @@ snpInsideRunsCpp <- function(runsChrom, mapChrom, pops) {
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 #'
-#' table <- tableRuns(
+#' table <- tableRunsCpp(
 #'   runs = runsDF, genotypeFile = genotypeFile,
 #'   mapFile = mapFile, threshold = 0.5)
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-tableRuns <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
-    .Call('_detectRUNS_tableRuns', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
+tableRunsCpp <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
+    .Call('_detectRUNS_tableRunsCpp', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
 }
 
 #' Scan PLINK binary (BED/BIM/FAM) for runs of homozygosity or heterozygosity
