@@ -1,7 +1,7 @@
 ---
 output:
   md_document:
-    variant: markdown_github
+    variant: gfm
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -34,26 +34,61 @@ Please see the package vignette for a complete tutorial. What follows is a minim
 
 This is a basic example which shows you how to detect runs of homozygosity (ROH):
 
-```{r example, eval=FALSE, include=TRUE}
-#1) detectRUNS (sliding-windows method)
+```{r example, eval=FALSE}
+library(detectRUNS)
+
+# Input files (bundled example data)
 genotypeFile <- system.file("extdata", "Kijas2016_Sheep_subset.ped", package = "detectRUNS")
 mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
-# calculating runs with sliding window approach
-\dontrun{
- # skipping runs calculation
- runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,
- minSNP = 15, ROHet = FALSE,  maxOppWindow = 1, maxMissWindow = 1, maxGap=10^6,
- minLengthBps = 100000,  minDensity = 1/10000)
-}
-# loading pre-calculated data
-runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
-colClasses <- c(rep("character", 3), rep("numeric", 4)  )
-runs <- read.csv2(runsFile, header = TRUE, stringsAsFactors = FALSE,  colClasses = colClasses)
 
-#2) summarise results
-summaryList <- summaryRuns(runs = runs, mapFile = mapFilePath, genotypeFile = genotypeFilePath, Class = 6, snpInRuns = TRUE)
+# 1) Detect runs with the sliding-window approach
+runs <- slidingRUNS.run(
+  genotypeFile, mapFile,
+  windowSize = 15, threshold = 0.1,
+  minSNP = 15, ROHet = FALSE,
+  maxOppWindow = 1, maxMissWindow = 1,
+  maxGap = 10^6, minLengthBps = 100000, minDensity = 1/10000
+)
 
-#3) plot results
+# 2) Summarise results
+summaryList <- summaryRuns(
+  runs = runs, mapFile = mapFile, genotypeFile = genotypeFile,
+  Class = 6, snpInRuns = TRUE
+)
+
+# 3) Plot results
 plot_Runs(runs = runs)
 ```
 
+## Development
+
+This repository is configured for AI-assisted development with [Claude Code](https://claude.ai/code). A `CLAUDE.md` file at the repo root documents the full project structure, build commands, and development conventions for the AI assistant.
+
+### Setting up a development environment
+
+```r
+# 1. Install pak if not already available
+install.packages("pak")
+
+# 2. Install all package dependencies (Imports + Suggests)
+pak::local_install_deps("detectRUNS", dependencies = TRUE)
+
+# 3. Load the package for interactive development
+devtools::load_all("detectRUNS")
+```
+
+### Common development tasks
+
+```r
+devtools::document("detectRUNS")          # Regenerate documentation
+devtools::test("detectRUNS")              # Run test suite
+devtools::check("detectRUNS")             # Full R CMD check
+Rcpp::compileAttributes("detectRUNS")     # Rebuild C++ wrappers after editing src/functions.cpp
+```
+
+### AI-assisted workflows
+
+With Claude Code installed, the following slash commands are available from the repo root:
+
+- `/cran-check` — verifies version, date, NEWS.md, and runs `R CMD check --as-cran`
+- `/code-review` — reviews the current diff for correctness and simplification opportunities
