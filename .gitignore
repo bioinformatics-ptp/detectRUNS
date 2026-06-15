@@ -40,3 +40,31 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
+.positai
+
+# Large external data and compiled binaries
+detectRUNS/inst/extdata/Ext_Data/
+detectRUNS/inst/extdata/plink
+
+# Compiled C++ objects
+detectRUNS/src/*.o
+detectRUNS/src/*.so
+
+# Personal / local files — not part of the package
+CHANGES_PERSONAL.md
+Coding_AI/
+Rplots.pdf
+
+# External datasets and development scripts — local only
+Ext_Data/
+dev/
+
+# Editor and AI tool directories
+.claude/
+.vscode/
+
+# Generated package files not covered elsewhere
+detectRUNS/NEWS.html
+detectRUNS/src/symbols.rds
+detectRUNS/tests/testthat/test.hh
+detectRUNS/tests/testthat/test.log

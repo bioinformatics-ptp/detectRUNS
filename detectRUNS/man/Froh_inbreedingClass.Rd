@@ -4,15 +4,14 @@
 \alias{Froh_inbreedingClass}
 \title{Function to calculated Froh using a ROH-class}
 \usage{
-Froh_inbreedingClass(runs, mapFile, Class = 2)
+Froh_inbreedingClass(runs, mapFile = NULL, Class = 2)
 }
 \arguments{
 \item{runs}{R object (dataframe) with ROH results}
 
 \item{mapFile}{Plink map file (for SNP position)}
 
-\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
-for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
+\item{Class}{base ROH-length interval (in Mbps) (default: 0-2, 2-4, 4-8, 8-16, >16)}
 }
 \value{
 A data frame with individual inbreeding coefficients based on ROH-length of
@@ -23,7 +22,7 @@ reported alongside
 This function calculates the individual inbreeding coefficients based on runs of
 homozygosity (ROH) using only ROH of specific size classes.
 The parameter \code{class} specify the size interval to split up calculations.
-For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 80-16, >16 Mbps long
+For example, if \code{class = 2} Froh based on ROH 0-2, 2-4, 4-8, 8-16, >16 Mbps long
 will be calculated.
 }
 \examples{
@@ -34,8 +33,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 }
 # loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")

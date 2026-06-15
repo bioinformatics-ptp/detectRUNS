@@ -21,29 +21,29 @@ genoConvert <- function(x) {
 
 
 #' Read from a .map file locations and return a data.table object
-#'
-#' This is an utility function which check for file existance, define
+#' 
+#' This is an utility function which check for file existance, define 
 #' colClasses and then returns the read data.table object
 #' @param mapFile map file (.map) file path
 #' @keywords internal
 #' @return data.table object
-#'
+#' 
 
 readMapFile <- function(mapFile) {
   # define colClasses
   colClasses <- c("character", "character", "character", "numeric")
-
+  
   if(file.exists(mapFile)){
     # using data.table to read data
-    mappa <- data.table::fread(mapFile, header = F, colClasses = colClasses)
+    mappa <- data.table::fread(mapFile, header = FALSE, colClasses = colClasses)
   } else {
-    stop(paste("file", mapFile, "doesn't exists"))
+    stop(paste("file", mapFile, "doesn't exist"))
   }
-
+  
   # set column names
   names(mappa) <- c("CHR","SNP_NAME","x","POSITION")
   mappa$x <- NULL
-
+  
   return(mappa)
 }
 
@@ -72,7 +72,7 @@ homoZygotTest <- function(x,gaps,maxHet,maxMiss,maxGap,i,windowSize) {
   indexSNP <- seq(i,i+windowSize-1)[which(x==1 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
 
-  windowStatus <- ifelse(!(nHet > maxHet | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  windowStatus <- ifelse(!(nHet > maxHet | nMiss > maxMiss), TRUE, FALSE)
   return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
 
@@ -101,7 +101,7 @@ heteroZygotTest <- function(x,gaps,maxHom,maxMiss,maxGap,i,windowSize) {
   indexSNP <- seq(i,i+windowSize-1)[which(x==0 | is.na(x))]
   names(oppositeAndMissingSNP) <- indexSNP
 
-  windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss | any(gaps > maxGap)), TRUE,FALSE)
+  windowStatus <- ifelse(!(nHom > maxHom | nMiss > maxMiss), TRUE, FALSE)
   return(list("windowStatus"=windowStatus,"oppositeAndMissingSNP"=oppositeAndMissingSNP))
 }
 
@@ -130,7 +130,7 @@ slidingWindow <- function(data, gaps, windowSize, step, maxGap, ROHet=TRUE, maxO
   oppositeAndMissingGenotypes <- array(character(0))
   y <- genoConvert(data)
 
-  print(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
+  message(paste("Analysing",ifelse(ROHet,"Runs of Heterozygosity (ROHet)","Runs of Homozygosity (ROHom)"),sep=" "))
 
   if(ROHet) {
 
@@ -190,15 +190,16 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 
   # compute n. of homozygous/heterozygous windows that overlap at each SNP locus (Bjelland et al. 2013)
   # create two sets of indices to slice the vector of windows containing or not a run (RunVector)
-  iInd <- itertools::izip(ind1 = c(rep(1,windowSize-1),seq(1,RunVector_length)), ind2 = c(seq(1,RunVector_length),rep(RunVector_length,windowSize-1)))
-  hWin <- sapply(iInd, function(n) sum(RunVector[n$ind1:n$ind2]), simplify = TRUE)
+  ind1 <- c(rep(1L, windowSize - 1L), seq_len(RunVector_length))
+  ind2 <- c(seq_len(RunVector_length), rep(RunVector_length, windowSize - 1L))
+  hWin <- mapply(function(a, b) sum(RunVector[a:b]), ind1, ind2)
 
   # ratio between homozygous/heterozygous windows and total overlapping windows at each SNP
   quotient <- hWin/nWin
 
 
-  #vector of SNP belonging to a ROH
-  snpRun <- ifelse(quotient>threshold,TRUE,FALSE)
+  #vector of SNP belonging to a ROH (>= matches PLINK --homozyg behaviour)
+  snpRun <- ifelse(quotient >= threshold, TRUE, FALSE)
   # print(paste(
   #   "Lenght of output file:",
   #   length(snpRun),sep=" "))
@@ -220,21 +221,23 @@ snpInRun <- function(RunVector,windowSize,threshold) {
 #' @param oppositeAndMissingSNP indexed array of missing and opposite genotypes (SNP order in the genome is the index)
 #' @param maxOppRun max n. of opposite genotype SNPs in the run (not in the window!)
 #' @param maxMissRun max n. of missing SNPs in the run (not in the window!)
+#' @param maxGap max distance (bp) between consecutive SNPs; a gap >= this value breaks a run
 #'
 #' @return a data.frame with RUNS per animal
 #'
 #' @import utils
-#' @import itertools
 #' @importFrom stats na.omit
 #'
 
 createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
                         minDensity = 1/10, oppositeAndMissingSNP, maxOppRun=NULL,
-                        maxMissRun=NULL) {
+                        maxMissRun=NULL, maxGap=NULL) {
 
+  bps_all <- mapFile$bps
   dd <- cbind.data.frame(snpRun,"Chrom"=mapFile$Chrom,"n"=seq(1,nrow(mapFile)))
 
-  dL <- plyr::ddply(dd,"Chrom",function(x) {
+  parts <- split(dd, dd$Chrom)
+  dL <- do.call(rbind, lapply(parts, function(x) {
 
     # define where RUNs change states
     # cutPoints for "from" and "to" on the original snpRun vector
@@ -245,20 +248,44 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
     cutPoints <- which(diff(sign(x$snpRun)) != 0)
     from_bis <- c(1, cutPoints + 1)
     to_bis <- c(cutPoints, length(x$snpRun))
-    # iterate on the vectors from and to
-    iLaenge <- itertools::izip(a = from_bis,b = to_bis)
-    lengte <- sapply(iLaenge, function(n) sum(x$snpRun[n$a:n$b]))
+    # count SNPs in each run segment
+    lengte <- mapply(function(a, b) sum(x$snpRun[a:b]), from_bis, to_bis)
+
+    # Run-level gap split (PLINK-compatible): for each TRUE run segment,
+    # split into sub-runs wherever two consecutive SNPs have gap > maxGap.
+    # Both boundary SNPs are kept (no SNP loss, unlike the snpRun-vector trick).
+    if (!is.null(maxGap) && maxGap > 0L && any(lengte > 0L)) {
+      exp_from <- integer(0); exp_to <- integer(0); exp_nsnp <- integer(0)
+      for (i in seq_along(from)) {
+        f <- from[i]; t <- to[i]
+        if (lengte[i] == 0L) {
+          exp_from <- c(exp_from, f); exp_to <- c(exp_to, t); exp_nsnp <- c(exp_nsnp, 0L)
+        } else {
+          cur_f <- f
+          for (j in seq(f, t - 1L)) {
+            if (bps_all[j + 1L] - bps_all[j] > maxGap) {
+              exp_from <- c(exp_from, cur_f); exp_to <- c(exp_to, j)
+              exp_nsnp <- c(exp_nsnp, j - cur_f + 1L)
+              cur_f <- j + 1L
+            }
+          }
+          exp_from <- c(exp_from, cur_f); exp_to <- c(exp_to, t)
+          exp_nsnp <- c(exp_nsnp, t - cur_f + 1L)
+        }
+      }
+      from <- exp_from; to <- exp_to; lengte <- exp_nsnp
+    }
+
     # get n of rows
     n_rows <- length(lengte)
 
-    return(data.frame("from"=from,
-                      "to"=to,
-                      "nSNP"=lengte,
-                      "chrom"=character(n_rows),
-                      "lengthBps"=numeric(n_rows), stringsAsFactors = F))
-  })
+    data.frame("from"=from,
+               "to"=to,
+               "nSNP"=lengte,
+               "chrom"=character(n_rows),
+               "lengthBps"=numeric(n_rows), stringsAsFactors=FALSE)
+  }))
 
-  dL$Chrom <- NULL
   # filter RUNs by minSNP
   dL <- dL[dL$nSNP>=minSNP, ]
   dL <- na.omit(dL)
@@ -278,7 +305,7 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
 
   # setting other values
   dL$chrom <- as.character(chroms)
-  dL$lengthBps <- (dL$to-dL$from)
+  dL$lengthBps <- (dL$to - dL$from + 1L)
 
   # filters on minimum run length and minimum SNP density
   dL <- dL[dL$lengthBps >= minLengthBps,]
@@ -292,23 +319,14 @@ createRUNdf <- function(snpRun, mapFile, minSNP = 3, minLengthBps = 1000,
   }
 
   # filters on max heterozygotes and missing in a run
-  if(!is.null(maxOppRun) | !is.null(maxMissRun)) {
+  if(!is.null(maxOppRun) || !is.null(maxMissRun)) {
     # Add map information to opposite and missing SNPs
     W <- cbind.data.frame(oppositeAndMissingSNP)
     W <- cbind.data.frame(W, mapFile[as.numeric(row.names(W)), ])
 
     # Add nOpp and nMiss columns to dataframe
-    dL <- plyr::adply(dL, 1, function(x) {
-      # calc nOpp by filtering opposite SNPs using RUN coordinates
-      nOpp <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
-                       W$oppositeAndMissingSNP==0, ])
-
-      # calc nMiss by filtering opposite SNPs using RUN coordinates
-      nMiss <- nrow(W[W$Chrom==x$chrom & (W$bps >= x$from & W$bps <= x$to) &
-                        W$oppositeAndMissingSNP==9, ])
-
-      return(c("nOpp"=nOpp,"nMiss"=nMiss))
-    })
+    dL$nOpp  <- mapply(function(chr, f, t) sum(W$Chrom==chr & W$bps>=f & W$bps<=t & W$oppositeAndMissingSNP==0), dL$chrom, dL$from, dL$to)
+    dL$nMiss <- mapply(function(chr, f, t) sum(W$Chrom==chr & W$bps>=f & W$bps<=t & W$oppositeAndMissingSNP==9), dL$chrom, dL$from, dL$to)
 
     if(!is.null(maxOppRun)) {
       # filter RUNs by opposite SNPs
@@ -353,9 +371,6 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
 
   if(nrow(dRUN) > 0) {
-    # debug
-    message(paste("N. of RUNS for individual",ind,"is:",nrow(dRUN),sep=" "))
-
     append = FALSE
     headers = TRUE
 
@@ -382,8 +397,8 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #'
 #'
 #' @param runsChrom R object (dataframe) with results per chromosome (column names:"POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
-#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","x","POSITION")
-#' @param genotypeFile genotype (.ped) file location
+#' @param mapChrom R object (dataframe) with SNP name and position per chromosome (map file) (column names: "CHR","SNP_NAME","POSITION")
+#' @param sample_info data.frame with columns group and id (one row per individual)
 #'
 #' @return dataframe with counts per SNP in runs (per population)
 #' @keywords internal
@@ -391,55 +406,54 @@ writeRUN <- function(ind, dRUN, ROHet=TRUE, group, outputName) {
 #' @import utils
 #'
 
-snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
+snpInsideRuns <- function(runsChrom, mapChrom, sample_info) {
 
-  # if genotype is file, read with read.big.matrix
-  if(file.exists(genotypeFile)){
-    # read first two columns of PED with a CPP function
-    pops <- readPOPCpp(genotypeFile)
+  unique_groups <- sort(unique(runsChrom$POPULATION))
+  k             <- nrow(mapChrom)
+  snp_pos       <- mapChrom$POSITION   # must be sorted ascending
 
-  } else {
-    stop(paste("file", genotypeFile, "doesn't exists"))
-  }
+  results <- vector("list", length(unique_groups))
 
-  M <- data.frame("SNP_NAME"=character(),
-                   "CHR"=integer(),
-                   "POSITION"=integer(),
-                   "COUNT"=integer(),
-                   "GROUP"=factor(),
-                   "PERCENTAGE"=numeric(),
-                   stringsAsFactors=FALSE
-  )
+  for (i in seq_along(unique_groups)) {
+    grp    <- unique_groups[i]
+    runs_g <- runsChrom[runsChrom$POPULATION == grp, ]
+    nGroup <- sum(sample_info$group == as.character(grp))
 
-  unique_groups <- unique(runsChrom$POPULATION)
+    if (nrow(runs_g) == 0L || k == 0L) {
+      count_g <- integer(k)
+    } else {
+      # Convert run bp coordinates to SNP indices (1-based).
+      # from_v: index of first SNP whose position >= START
+      # to_v  : index of last  SNP whose position <= END
+      from_v <- findInterval(runs_g$START - 1L, snp_pos) + 1L
+      to_v   <- findInterval(runs_g$END,         snp_pos)
 
-  for (ras in sort(unique_groups)) {
-
-    #print(paste("Population is:", ras))
-    runsGroup <- runsChrom[runsChrom$POPULATION==ras,]
-    nGroup <- nrow(pops[pops$POP==as.character(ras),])
-    #print(paste("N. of animals of Population",ras,nBreed,sep=" "))
-
-    iPos <- itertools::ihasNext(mapChrom$POSITION)
-    snpCount <- rep(NA,nrow(mapChrom))
-
-    i <- 1
-    while(hasNext(iPos)) {
-
-      pos <- iterators::nextElem(iPos)
-      inRun <- (pos >= runsGroup$START & pos <= runsGroup$END)
-      snpCount[i] <- length(inRun[inRun==TRUE])
-      i <- i + 1
+      valid <- from_v <= to_v & from_v >= 1L & to_v <= k
+      if (!any(valid)) {
+        count_g <- integer(k)
+      } else {
+        fv <- from_v[valid]
+        tv <- to_v[valid]
+        # Sweep-line: delta[j]+=1 at run start, delta[j]-=1 after run end.
+        # cumsum(delta)[1:k] gives the number of runs covering each SNP.
+        delta   <- tabulate(fv, nbins = k + 1L) -
+                   tabulate(tv + 1L, nbins = k + 1L)
+        count_g <- cumsum(delta)[seq_len(k)]
+      }
     }
 
-    mapChrom$COUNT <- snpCount
-    mapChrom$GROUP <- as.factor(rep(ras,nrow(mapChrom)))
-    mapChrom$PERCENTAGE <- (snpCount/nGroup)*100
-    mapChrom <- mapChrom[,c("SNP_NAME","CHR","POSITION","COUNT","GROUP","PERCENTAGE")]
-    M <- rbind.data.frame(M,mapChrom)
+    results[[i]] <- data.frame(
+      SNP_NAME   = mapChrom$SNP_NAME,
+      CHR        = mapChrom$CHR,
+      POSITION   = snp_pos,
+      COUNT      = count_g,
+      BREED      = as.factor(rep(grp, k)),
+      PERCENTAGE = (count_g / nGroup) * 100,
+      stringsAsFactors = FALSE
+    )
   }
 
-  return(M)
+  do.call(rbind, results)
 }
 
 
@@ -452,7 +466,7 @@ snpInsideRuns <- function(runsChrom, mapChrom, genotypeFile) {
 #' @param mapFile Plink map file (for SNP position)
 #' @param gaps distance between SNPs
 #' @param parameters list of parameters
-#' @param cpp use cpp functions or not (DEBUG)
+#' @param cpp logical; use C++ implementation if TRUE
 #'
 #' @details
 #' This method uses sliding windows to detect RUNs. Checks on minimum n. of SNP, max n. of opposite and missing genotypes,
@@ -484,23 +498,16 @@ slidingRuns <- function(indGeno, individual, mapFile, gaps, parameters, cpp=TRUE
     snpRun <- snpInRun(res$windowStatus, parameters$windowSize, parameters$threshold)
   }
 
-
-  # TODO: check arguments names
   dRUN <- createRUNdf(snpRun, mapFile, parameters$minSNP, parameters$minLengthBps,
                       parameters$minDensity, res$oppositeAndMissingGenotypes,
-                      parameters$maxOppRun, parameters$maxMissRun)
+                      parameters$maxOppRun, parameters$maxMissRun,
+                      maxGap = parameters$maxGap)
 
   # manipulate dRUN to order columns
+  dRUN <- as.data.frame(dRUN)
   dRUN$id <- rep(ind, nrow(dRUN))
   dRUN$group <- rep(group, nrow(dRUN))
   dRUN <- dRUN[,c(7,6,4,3,1,2,5)]
-
-  # debug
-  if(nrow(dRUN) > 0) {
-    message(paste("N. of RUNS for individual", ind, "is:", nrow(dRUN)))
-  } else {
-    message(paste("No RUNs found for animal", ind))
-  }
 
   #return RUNs to caller
   return(dRUN)
@@ -569,7 +576,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 
   # initialize dataframe of results. Defining data types accordingly slinding window
   res <- data.frame("group"=character(0),"id"=character(0),"chrom"=character(0),"nSNP"=integer(0),
-                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = F)
+                    "from"=integer(0),"to"=integer(0),"lengthBps"=integer(0), stringsAsFactors = FALSE)
 
   ##########################################################################################
   for (i in seq_along(indGeno)) {
@@ -627,7 +634,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
       # update runData values
       runData$runH <- runData$runH+1
       runData$end <- currentPos
-      runData$lengte <- (runData$end - runData$start)
+      runData$lengte <- (runData$end - runData$start + 1L)
 
     } # condition: the genotype I want
 
@@ -646,7 +653,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
         # update runData values. This opposite genotype is a part of the RUN
         runData$runH <- runData$runH+1
         runData$end <- currentPos
-        runData$lengte <- (runData$end - runData$start)
+        runData$lengte <- (runData$end - runData$start + 1L)
 
       } else {
         # message("max opposite reached")
@@ -677,7 +684,7 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
         # update runData values. This missing genotype is a part of the RUN
         runData$runH <- runData$runH+1
         runData$end <- currentPos
-        runData$lengte <- (runData$end - runData$start)
+        runData$lengte <- (runData$end - runData$start + 1L)
 
       }
       else {
@@ -711,13 +718,6 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
     runData <- NULL
   }
 
-  # debug
-  if(nrow(res) > 0) {
-    message(paste("N. of RUNS for individual", ind, "is:", nrow(res)))
-  } else {
-    message(paste("No RUNs found for animal",ind))
-  }
-
   return(res)
 }
 
@@ -744,14 +744,14 @@ consecutiveRuns <- function(indGeno, individual, mapFile, ROHet=TRUE, minSNP=3,
 #' mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detectRUNS")
 #'
 #' # calculating runs of Homozygosity
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxMissRun = 1, maxMissWindow = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #'
 #' write.table(x= runs,file = 'Kijas2016_Sheep_subset.sliding.csv', quote=F, row.names = F)
 #' }
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 #' newData=readExternalRuns(runsFile, program = 'detectRUNS')
-#'
+#' 
 
 readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detectRUNS")) {
 
@@ -782,8 +782,8 @@ readExternalRuns <- function(inputFile=NULL,program=c("plink","BCFtools","detect
 
   # BCFtools
   if (method == "BCFtools"){
-    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = F,value = T)
-    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = F,
+    subsetBCF <- grep(pattern = "RG", x = readLines(inputFile),invert = FALSE,value = TRUE)
+    BCFfinal <- read.table(text=gsub("\t", " ",subsetBCF),header = FALSE,
                            #colClasses = c("character","character","character","numeric","numeric","numeric","numeric"),
                            colClasses = c(rep("character", 3), rep("numeric", 4)),
                            col.names=c("group","id","chrom","from","to","lengthBps","nSNP","Quality")   )
@@ -824,43 +824,55 @@ reorderDF <- function(dfx) {
 }
 
 
-#' Classify runs in bins.
+###########################################################
+### PLINK binary file readers (BIM / FAM)
+###########################################################
+
+
+#' Read a PLINK BIM file
 #'
-#' @param runs a ROH dataframe object
-#' @param class_size base ROH-length interval (in Mbps). Will be doubled in each interval,
-#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
+#' Reads a PLINK .bim file and returns a \code{data.table} with one row per
+#' SNP.  Useful for inspecting SNP metadata before calling \code{scanRUNS()}.
 #'
-#' @return a list with runs and range_mb fields: runs keeps a modified version of
-#' the original runs dataframe with two additional columns, MB for ROH length in
-#' megabases and a CLASS column which tags a ROH in a proper bin relying on size;
-#' range_mb field return a list of ranges in MB used to define the classes
+#' @param bimFile Path to the .bim file.
+#' @return A \code{data.table} with columns:
+#'   \code{chrom}, \code{snp_id}, \code{cm}, \code{bp_pos}, \code{a1}, \code{a2}.
+#' @export
 #'
+readBimFile <- function(bimFile) {
+  if (!file.exists(bimFile))
+    stop(paste("BIM file not found:", bimFile))
 
-classifyRuns <- function(runs, class_size=2) {
-  # calculate ROH sizes in MB
-  runs$MB <- runs$lengthBps/1000000
-
-  # this is required to classify runs in bins
-  range_mb <- c(0,0,0,0,0,99999)
-
-  for (i in seq(from = 2 , to = length(range_mb) - 1, by = 1) ) {
-    range_mb[i] <- class_size
-    class_size <- class_size * 2
-  }
-
-  # using intervals to construct labels
-  name_CLASS <- c(
-    paste(range_mb[1], "-", range_mb[2], sep = ''),
-    paste(range_mb[2], "-", range_mb[3], sep = ''),
-    paste(range_mb[3], "-", range_mb[4], sep = ''),
-    paste(range_mb[4], "-", range_mb[5], sep = ''),
-    paste(">", range_mb[5], sep = '')
+  bim <- data.table::fread(
+    bimFile, header = FALSE,
+    colClasses = c("character", "character", "numeric",
+                   "integer",   "character", "character")
   )
+  data.table::setnames(bim, c("chrom", "snp_id", "cm", "bp_pos", "a1", "a2"))
+  return(bim)
+}
 
-  message("Class created: ", paste(name_CLASS[0:5], collapse = ' '))
-  runs$CLASS <- cut(as.numeric(runs$MB), range_mb)
-  levels(runs$CLASS) <- name_CLASS
-  runs$CLASS <- factor(runs$CLASS)
 
-  return(list("runs" = runs, "range_mb" = range_mb))
+#' Read a PLINK FAM file
+#'
+#' Reads a PLINK .fam file and returns a \code{data.table} with one row per
+#' sample.  Useful for inspecting sample metadata before calling
+#' \code{scanRUNS()}.
+#'
+#' @param famFile Path to the .fam file.
+#' @return A \code{data.table} with columns:
+#'   \code{fid}, \code{iid}, \code{pat}, \code{mat}, \code{sex}, \code{pheno}.
+#' @export
+#'
+readFamFile <- function(famFile) {
+  if (!file.exists(famFile))
+    stop(paste("FAM file not found:", famFile))
+
+  fam <- data.table::fread(
+    famFile, header = FALSE,
+    colClasses = c("character", "character", "character",
+                   "character", "integer",   "numeric")
+  )
+  data.table::setnames(fam, c("fid", "iid", "pat", "mat", "sex", "pheno"))
+  return(fam)
 }

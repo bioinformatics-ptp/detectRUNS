@@ -4,7 +4,7 @@
 \alias{Froh_inbreeding}
 \title{Function to calculated Froh genome-wide or chromosome-wide}
 \usage{
-Froh_inbreeding(runs, mapFile, genome_wide = TRUE)
+Froh_inbreeding(runs, mapFile = NULL, genome_wide = TRUE)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on runs}
@@ -39,8 +39,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 }
 # loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")

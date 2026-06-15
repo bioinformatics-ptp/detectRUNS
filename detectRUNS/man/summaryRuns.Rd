@@ -4,7 +4,13 @@
 \alias{summaryRuns}
 \title{Summary statistics on detected runs}
 \usage{
-summaryRuns(runs, mapFile, genotypeFile, Class = 2, snpInRuns = FALSE)
+summaryRuns(
+  runs,
+  mapFile = NULL,
+  genotypeFile = NULL,
+  Class = 2,
+  snpInRuns = FALSE
+)
 }
 \arguments{
 \item{runs}{R object (dataframe) with results on detected runs}
@@ -13,8 +19,7 @@ summaryRuns(runs, mapFile, genotypeFile, Class = 2, snpInRuns = FALSE)
 
 \item{genotypeFile}{Plink ped file (for SNP position)}
 
-\item{Class}{base ROH-length interval (in Mbps). Will be doubled in each interval,
-for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals}
+\item{Class}{group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)}
 
 \item{snpInRuns}{TRUE/FALSE (default): should the function \code{snpInsideRuns} be
 called to compute the proportion of times each SNP falls inside a run in the
@@ -22,21 +27,20 @@ group/population?}
 }
 \value{
 A list of dataframes containing the most relevant descriptives
-statistics on detected runs. The list conveniently contains 9 dataframes that can
-be used for further processing and visualization, or can be written out to text files:
+statistics on detected runs. The list contains 9 dataframes:
 1) summary_ROH_count_chr: n. of runs per chromosome and breed/group;
-2) summary_ROH_percentage_chr: percent distribution of runs per chromosome in each breed/group (sum to 1)
-3) summary_ROH_count: n. of runs per size-class (Mb) in each breed/group
-4) summary_ROH_percentage: percent distribution of runs per size-class (Mb) in each breed/group (sum to 1)
-5) summary_ROH_mean_chr: average size of runs (Mb) per chromosome and breed/group
-6) summary_ROH_mean_class: average size of runs (Mb) per size-class (Mb) in each breed/group
-7) result_Froh_genome_wide: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual in the dataset
-8) result_Froh_chromosome_wide inbreeding (\eqn{F_{ROH}}) for each individual (and chromosome) in the dataset
-9) result_Froh_class: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual in the dataset per size-class (Mb) of runs
+2) summary_ROH_percentage_chr: percent distribution of runs per chromosome in each breed/group (sum to 1);
+3) summary_ROH_count: n. of runs per size-class (Mb) in each breed/group;
+4) summary_ROH_percentage: percent distribution of runs per size-class (Mb) in each breed/group (sum to 1);
+5) summary_ROH_mean_chr: average size of runs (Mb) per chromosome and breed/group;
+6) summary_ROH_mean_class: average size of runs (Mb) per size-class (Mb) in each breed/group;
+7) result_Froh_genome_wide: genome-wide inbreeding (\eqn{F_{ROH}}) for each individual;
+8) result_Froh_chromosome_wide: inbreeding (\eqn{F_{ROH}}) per individual and chromosome;
+9) result_Froh_class: genome-wide inbreeding (\eqn{F_{ROH}}) per individual and size-class (Mb) of runs.
 }
 \description{
-This function processes the results from \code{slidingRUNS.run} and
-\code{consecutiveRUNS.run} and produces a number of interesting descriptives
+This function processes the results from \code{scanRUNS} and produces a
+number of interesting descriptives
 statistics on results.
 }
 \details{
@@ -57,8 +61,8 @@ mapFile <- system.file("extdata", "Kijas2016_Sheep_subset.map", package = "detec
 # calculating runs of Homozygosity
 \dontrun{
 # skipping runs calculation
-runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 }
 # loading pre-calculated data
 runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")

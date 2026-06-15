@@ -14,7 +14,8 @@ createRUNdf(
   minDensity = 1/10,
   oppositeAndMissingSNP,
   maxOppRun = NULL,
-  maxMissRun = NULL
+  maxMissRun = NULL,
+  maxGap = NULL
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ createRUNdf(
 \item{maxOppRun}{max n. of opposite genotype SNPs in the run (not in the window!)}
 
 \item{maxMissRun}{max n. of missing SNPs in the run (not in the window!)}
+
+\item{maxGap}{max distance (bp) between consecutive SNPs; a gap >= this value breaks a run}
 }
 \value{
 a data.frame with RUNS per animal

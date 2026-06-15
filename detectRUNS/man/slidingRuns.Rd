@@ -17,7 +17,7 @@ slidingRuns(indGeno, individual, mapFile, gaps, parameters, cpp = TRUE)
 
 \item{parameters}{list of parameters}
 
-\item{cpp}{use cpp functions or not (DEBUG)}
+\item{cpp}{logical; use C++ implementation if TRUE}
 }
 \value{
 A data frame of runs per individual sample

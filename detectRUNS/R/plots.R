@@ -23,6 +23,7 @@
 #' @return plot of runs by chromosome
 #' @export
 #'
+#' @import ggplot2
 #' @import utils
 #' @importFrom grDevices dev.off pdf
 #'
@@ -34,8 +35,8 @@
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -46,6 +47,7 @@
 #'
 
 plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
+  runs <- .get_runs(runs)
 
   # avoid notes
   chrom <- NULL ; from <- NULL ; to <- NULL ; group <- NULL
@@ -94,7 +96,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 
     p <- ggplot2::ggplot(teilsatz)
     p <- p + ggplot2::geom_segment(data=teilsatz,aes(x = from, y = id, xend = to,
-                                                     yend = id,colour=as.factor(group)),alpha=alfa, size=grosse)
+                                                     yend = id,colour=as.factor(group)),alpha=alfa, linewidth=grosse)
     p <- p + ggplot2::xlim(0, max(teilsatz$to)) + ggplot2::ggtitle(paste('Chromosome ',chromosome))
     p <- p + ggplot2::guides(colour=guide_legend(title="Population")) + ggplot2::xlab("Mbps")
     p <- p + theme(plot.title = element_text(hjust = 0.5))
@@ -150,8 +152,8 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -162,6 +164,7 @@ plot_Runs <- function(runs, suppressInds=FALSE, savePlots=FALSE, separatePlots=F
 #'
 
 plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
+  runs <- .get_runs(runs)
 
   # avoid notes
   chrom <- NULL
@@ -171,7 +174,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
   plot_list <- list()
   #select a POPULATION
   for (rasse in unique(runs$group)){
-    print(paste('Current population: ',rasse))
+    message(paste('Current population: ',rasse))
     teilsatz <- subset(runs,runs$group==rasse)
 
     chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
@@ -181,7 +184,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
     #select a chromosome
     for (chromosome in new_list_chr){
 
-      print(paste('CHR: ',chromosome))
+      message(paste('CHR: ',chromosome))
       krom <- subset(teilsatz,chrom==chromosome)
       krom <- krom[order(krom$from),]
 
@@ -196,7 +199,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
       yread[1] <- minstart - 1;
       ypos <- c(); #holds the y pos of the ith segment
 
-      for (r in 1:nrow(krom)){
+      for (r in seq_len(nrow(krom))){
         read <- krom[r,];
         start <- read$from;
         placed <- FALSE;
@@ -228,7 +231,7 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
       #PLOT STACKED RUNS
       p <- ggplot2::ggplot()
       p <- p + ggplot2::geom_segment(data=krom, aes(x = from/(10^6), y = ypos, xend = to/(10^6), yend = ypos),
-                                     colour="lightcoral", alpha=1, size=0.75)
+                                     colour="lightcoral", alpha=1, linewidth=0.75)
       p <- p + xlim(0, max(krom$to/(10^6))+10) + ylim(0,length(yread)+1)
       p <- p + ylab('n Runs') + xlab('Chromosome position (Mbps)')
       p <- p + ggplot2::ggtitle(paste("Group: ",rasse,'\nChromosome:',chromosome))
@@ -283,8 +286,8 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #' # calculating runs of Homozygosity
 #' # skipping runs calculation
 #' \dontrun{
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -295,12 +298,15 @@ plot_StackedRuns <- function(runs, savePlots=FALSE, separatePlots=FALSE, outputN
 #' savePlots = FALSE, outputName = "ROHom")
 #'
 
-plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
+plot_SnpsInRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, savePlots=FALSE, separatePlots=FALSE, outputName=NULL) {
+  runs_input <- runs
+  runs <- .get_runs(runs)
 
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
 
   # read map file
-  mappa <- readMapFile(mapFile)
+  mappa <- .get_snp_map(runs_input, mapFile)
+  sample_info <- .get_sample_info(runs_input, genotypeFile)
 
   chr_order <- c((0:99),"X","Y","XY","MT","Z","W")
   list_chr=unique(runs$CHROMOSOME)
@@ -315,19 +321,14 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
   plot_list <- list()
   for (chromosome in new_list_chr) {
 
-    print(paste("Chromosome is: ",chromosome))
+    message(paste("Chromosome is: ",chromosome))
     runsChrom <- runs[runs$CHROMOSOME==chromosome,]
-    print(paste("N. of runs:",nrow(runsChrom)))
+    message(paste("N. of runs:",nrow(runsChrom)))
 
     mapChrom <- mappa[mappa$CHR==chromosome,]
-    print(paste("N.of SNP is",nrow(mapChrom)))
+    message(paste("N.of SNP is",nrow(mapChrom)))
 
-    pops <- readPOPCpp(genotypeFile)
-    snpInRuns <- snpInsideRunsCpp(runsChrom, mapChrom, pops)
-
-    # remove Number column
-    snpInRuns$Number <- NULL
-
+    snpInRuns <- snpInsideRuns(runsChrom, mapChrom, sample_info)
     krom <- subset(snpInRuns,CHR==chromosome)
 
     p <- ggplot(data=krom, aes(x=POSITION/(10^6), y=PERCENTAGE, colour=BREED))
@@ -391,8 +392,8 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -403,9 +404,11 @@ plot_SnpsInRuns <- function(runs, genotypeFile, mapFile, savePlots=FALSE, separa
 #' savePlots = FALSE, plotTitle = "ROHom")
 #'
 
-plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, x_font_size = 10,
+plot_manhattanRuns <- function(runs, genotypeFile=NULL, mapFile=NULL, pct_threshold=0.33, x_font_size = 10,
                                savePlots=FALSE, file_type="pdf", outputName=NULL, plotTitle=NULL,
                                plot_w = 8, plot_h = 6) {
+  runs_input <- runs
+  runs <- .get_runs(runs)
 
   #change colnames in runs file
   names(runs) <- c("POPULATION","IND","CHROMOSOME","COUNT","START","END","LENGTH")
@@ -416,10 +419,11 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
   CHR <- NULL
 
   # read map file
-  mappa <- readMapFile(mapFile)
+  mappa <- .get_snp_map(runs_input, mapFile)
+  sample_info <- .get_sample_info(runs_input, genotypeFile)
 
   #Start calculation % SNP in ROH
-  print("Calculation % SNP in ROH") #FILIPPO
+  message("Calculation % SNP in ROH")
   all_SNPinROH <- data.frame("SNP_NAME"=character(),
                              "CHR"=integer(),
                              "POSITION"=numeric(),
@@ -430,32 +434,26 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
 
   # create progress bar
   total <- length(unique(runs$CHROMOSOME))
-  print(paste('Chromosome founds: ',total)) #FILIPPO
+  message(paste('Chromosome founds: ',total))
   n=0
   pb <- txtProgressBar(min = 0, max = total, style = 3)
 
   for (chrom in sort(unique(runs$CHROMOSOME))) {
     runsChrom <- runs[runs$CHROMOSOME==chrom,]
     mapChrom <- mappa[mappa$CHR==chrom,]
-
-    pops <- readPOPCpp(genotypeFile)
-    snpInRuns <- snpInsideRunsCpp(runsChrom,mapChrom, pops)
-
-    # remove Number column
-    snpInRuns$Number <- NULL
-
+    snpInRuns <- snpInsideRuns(runsChrom, mapChrom, sample_info)
     all_SNPinROH <- rbind.data.frame(all_SNPinROH,snpInRuns)
     n=n+1
     setTxtProgressBar(pb, n)
   }
   close(pb)
-  print("Calculation % SNP in ROH finish") #FILIPPO
+  message("Calculation % SNP in ROH finish")
 
-  print("Manhattan plot: START") #FILIPPO
+  message("Manhattan plot: START")
   group_list=unique(all_SNPinROH$BREED)
 
   for (group in group_list){
-    print(paste('Processing Groups:',group)) #FILIPPO
+    message(paste('Processing Groups:',group))
 
     #list of Groups
     subset_group=subset(all_SNPinROH,all_SNPinROH$BREED==group)
@@ -465,7 +463,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
     #sort a file
     #subset_group=subset_group[order(as.numeric(subset_group$CHR)),]
     subset_group=subset_group[order(subset_group$CHR),]
-    row.names(subset_group) <- 1:nrow(subset_group)
+    row.names(subset_group) <- seq_len(nrow(subset_group))
 
     #create a new position
     chrNum <- length(unique(subset_group$CHR))
@@ -498,7 +496,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
       main_title <- paste("Manhattan Plot - % SNP in Runs for ",group) } # default title
 
     #Manhattan plot using ggplot2
-    print(paste("Creating Manhattan plot for ",group)) #FILIPPO
+    message(paste("Creating Manhattan plot for ",group))
     p <- ggplot(subset_group)
     p <- p + geom_point(aes(x=BP, y=P, colour=as.factor(CHR)), alpha=2/3)
     p <- p + scale_color_manual(values=rep(c('red','blue'), round(chrNum/2,0)+1))
@@ -523,7 +521,7 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
              plot = roh_plot, device = file_type, width = plot_w, height = plot_h)
     } else { print(roh_plot) }
 
-    print(paste('Manhattan plot created for ',group)) #FILIPPO
+    message(paste('Manhattan plot created for ',group))
 
   }
 
@@ -558,8 +556,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -569,7 +567,8 @@ plot_manhattanRuns <- function(runs, genotypeFile, mapFile, pct_threshold=0.33, 
 #' plot_PatternRuns(runs = runsDF, mapFile = mapFile, method = 'mean')
 #'
 
-plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = NULL , savePlots = FALSE, plotTitle = NULL){
+plot_PatternRuns <- function(runs,mapFile=NULL,method=c('sum','mean'), outputName = NULL , savePlots = FALSE, plotTitle = NULL){
+  runs <- .get_runs(runs)
 
   # check method
   method <- match.arg(method)
@@ -587,29 +586,28 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
     fileNameOutput <- paste('RunsPattern_',method,'.pdf',sep='') # name outputName
   }
 
-  # avoid notes
-  lengthBps <- NULL
-  group <- NULL
-
-  # checking cromsome lengths
-  LengthGenome=chromosomeLength(mapFile)
-
-  # avoid warnings
-  freq <- NULL
-
   #start calculation by method
   if (method=="sum") {
     message("Using sum")
-    sum_ROH_genome <- ddply(runs,.(id),summarize,sum=sum(lengthBps)/10^6)
+    sum_by_id <- tapply(runs$lengthBps, runs$id, sum)
+    sum_ROH_genome <- data.frame(id = names(sum_by_id),
+                                 sum = as.numeric(sum_by_id) / 10^6,
+                                 stringsAsFactors = FALSE)
     method="Sum"
   } else {
     message("Using mean")
-    sum_ROH_genome <- ddply(runs,.(id),summarize,sum=mean(lengthBps)/10^6)
+    sum_by_id <- tapply(runs$lengthBps, runs$id, mean)
+    sum_ROH_genome <- data.frame(id = names(sum_by_id),
+                                 sum = as.numeric(sum_by_id) / 10^6,
+                                 stringsAsFactors = FALSE)
     method="Mean"
   }
 
   #sum of ROH for Sample
-  count_ROH_genome <- count(runs,"id")
+  count_by_id <- tapply(runs$lengthBps, runs$id, length)
+  count_ROH_genome <- data.frame(id = names(count_by_id),
+                                 freq = as.integer(count_by_id),
+                                 stringsAsFactors = FALSE)
   sum_ROH_genome=merge(sum_ROH_genome,count_ROH_genome,by='id')
   sum_ROH_genome=merge(sum_ROH_genome,unique(runs[,c("id","group")]),by='id')
   head(sum_ROH_genome)
@@ -652,8 +650,8 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -664,6 +662,7 @@ plot_PatternRuns <- function(runs,mapFile,method=c('sum','mean'), outputName = N
 #'
 
 plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plotTitle = NULL , savePlots = FALSE) {
+  runs <- .get_runs(runs)
 
   # Check method
   method <- match.arg(method)
@@ -681,18 +680,22 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
     fileNameOutput <- paste('ViolinPlot_',method,'.pdf',sep='') # name outputName
   }
 
-  # Avoid notes
-  lengthBps <- NULL
-  group <- NULL
-
   # Start calculation by method
+  key_ig <- paste(runs$id, runs$group, sep = "\001")
   if (method=="sum") {
-    mean_roh=ddply(runs,.(id,group),summarize,sum=sum(lengthBps/10^6))
+    agg_val <- tapply(runs$lengthBps / 10^6, key_ig, sum)
     method="Sum"
   }else{
-    mean_roh=ddply(runs,.(id,group),summarize,sum=mean(lengthBps/10^6))
+    agg_val <- tapply(runs$lengthBps / 10^6, key_ig, mean)
     method="Mean"
   }
+  parts_ig <- strsplit(names(agg_val), "\001", fixed = TRUE)
+  mean_roh <- data.frame(
+    id    = vapply(parts_ig, `[[`, "", 1L),
+    group = vapply(parts_ig, `[[`, "", 2L),
+    sum   = as.numeric(agg_val),
+    stringsAsFactors = FALSE
+  )
 
   # Violin Plot
   p <- ggplot(data=mean_roh, aes(x=group, y=sum, colour=group))
@@ -729,8 +732,8 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
@@ -739,7 +742,7 @@ plot_ViolinRuns <- function(runs, method=c("sum","mean"), outputName = NULL, plo
 #' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
-plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPlot","ChrBoxPlot","FrohBoxPlot","All"),
+plot_InbreedingChr<- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("ChrBarPlot","ChrBoxPlot","FrohBoxPlot","All"),
                               outputName = NULL, plotTitle = NULL , savePlots = FALSE){
 
   # check method
@@ -773,22 +776,22 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
   # avoid warnings
   variable <- NULL ; value <- NULL ; group <- NULL ; Froh_genome <- NULL
 
-  #transform data in long format using reshape2
-  long_DF=melt(Chromosome_Inbreeding,id.vars = c("id", "group"))
-  compact_DF=dcast(long_DF, group ~ variable ,fun.aggregate = mean, na.rm = TRUE)
+  #transform data in long format
+  long_DF <- data.table::melt(data.table::as.data.table(Chromosome_Inbreeding), id.vars=c("id","group"))
+  compact_DF <- as.data.frame(data.table::dcast(long_DF, group ~ variable, fun.aggregate=mean, na.rm=TRUE))
 
   #creating list chromosome
   name_val=colnames(compact_DF)
   list_chr=gsub("Chr_","",name_val[2:length(name_val)])
 
   #final data frame
-  final_DF=melt(compact_DF, id.vars = c("group"))
+  final_DF <- data.table::melt(data.table::as.data.table(compact_DF), id.vars=c("group"))
 
   ########
   # Plot BarPlot, BoxPlot, Froh BoxPlot
   # BarPlot by Chromosome style = ChrBarPlot
   head(final_DF)
-  if (style == "ChrBarPlot" | style == "All") {
+  if (method == "ChrBarPlot" || method == "All") {
     g1 <- ggplot(data=final_DF, aes(x=variable, y=value, fill=group))
     g1 <- g1 +  geom_bar(stat="identity", position=position_dodge())
     g1 <- g1 +  scale_x_discrete(labels=list_chr)
@@ -800,7 +803,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 
   # BoxPlot by Chromosome by group - style = ChrBoxPlot
   head(long_DF)
-  if (style == "ChrBoxPlot" | style == "All") {
+  if (method == "ChrBoxPlot" || method == "All") {
     g2 <- ggplot(data=long_DF, aes(x=variable, y=value, fill=group))
     g2 <- g2 + geom_boxplot()
     g2 <- g2 + scale_x_discrete(labels=list_chr)
@@ -812,7 +815,7 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 
   # BoxPlot Froh by group - style = FrohBoxPlot
   head(Genome_Inbreeding)
-  if (style == "FrohBoxPlot" | style == "All") {
+  if (method == "FrohBoxPlot" || method == "All") {
     g3 <- ggplot(data=Genome_Inbreeding, aes(x=group, y=Froh_genome, colour=group))
     g3 <- g3 + geom_violin(aes(fill=group))
     g3 <- g3 + geom_boxplot(width=0.1)
@@ -838,10 +841,10 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' @param savePlots should plots be saved out to files or plotted in the graphical terminal (default)?
 #' @param outputName title prefix (the base name of graph, if savePlots is TRUE)#'
 #' @param plotTitle title in plot (default NULL)
-#' @param Class base ROH-length interval (in Mbps). Will be doubled in each interval,
-#' for example the default value 2 create 0-2, 2-4, 4-8, 8-16 and >16 intervals
+#' @param Class group of length (in Mbps) by class (default: 0-2, 2-4, 4-8, 8-16, >16)
 #'
 #' @return plot Distribution Runs
+#' @importFrom stats aggregate
 #' @export
 #'
 #' @examples
@@ -852,23 +855,24 @@ plot_InbreedingChr<- function(runs, mapFile , groupSplit=TRUE, style=c("ChrBarPl
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile, windowSize = 15, threshold = 0.1,  minSNP = 15,
-#' ROHet = FALSE,  maxOppositeGenotype = 1, maxMiss = 1,  minLengthBps = 100000,  minDensity = 1/10000)
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#' ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000)
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package="detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = 'detectRUNS')
 #'
-#' plot_DistributionRuns(runs = runsDF, mapFile = mapFile, style='All')
+#' plot_InbreedingChr(runs = runsDF, mapFile = mapFile, style='All')
 #'
 
-plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") ,
+plot_DistributionRuns <- function(runs, mapFile=NULL , groupSplit=TRUE, style=c("MeanClass","MeanChr","RunsPCT","RunsPCT_Chr","All") ,
                               savePlots=FALSE, outputName=NULL, plotTitle=NULL, Class=2){
+  runs <- .get_runs(runs)
   # check method
   method <- match.arg(style)
 
   # avoid warnings
-  group =NULL ; CLASS=NULL ; MB=NULL ; chrom=NULL ; value=NULL
+  value=NULL
 
   # Set plot title
   if(!is.null(plotTitle)){
@@ -897,44 +901,66 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
 
-  # classify runs in bins
-  runs <- classifyRuns(runs, class_size = Class)$runs
+  step_value=Class
+  range_mb=c(0,0,0,0,0,99999)
+  for (i in seq(from = 2 , to= length(range_mb)-1, by = 1) ){
+    range_mb[i]=step_value
+    step_value=step_value*2
+  }
+
+  #range_mb
+  name_CLASS=c(paste(range_mb[1],"-",range_mb[2],sep=''),
+               paste(range_mb[2],"-",range_mb[3],sep=''),
+               paste(range_mb[3],"-",range_mb[4],sep=''),
+               paste(range_mb[4],"-",range_mb[5],sep=''),
+               paste(">",range_mb[5],sep=''),
+               paste(">",range_mb[6],sep=''))
+
+  # Creating the data frame
+  runs$MB <- runs$lengthBps/1000000
+  runs$CLASS=cut(as.numeric(runs$MB),range_mb)
+  levels(runs$CLASS) = name_CLASS
+  runs$CLASS=factor(runs$CLASS)
+
+  head(runs)
 
   #RESULTS!!!!!
-  summary_ROH_mean1 = ddply(runs,.(group,CLASS),summarize,sum=mean(MB))
-  summary_ROH_mean_class = dcast(summary_ROH_mean1,CLASS ~ group ,value.var = "sum")
-
-
-  #RESULTS!!!!!
-  summary_ROH_mean_chr1 = ddply(runs,.(group,chrom),summarize,sum=mean(MB))
-  summary_ROH_mean_chr = reorderDF(dcast(summary_ROH_mean_chr1,chrom ~ group ,value.var = "sum"))
-
+  mean1_agg <- aggregate(runs$MB, by=list(group=runs$group, CLASS=runs$CLASS), FUN=mean, na.rm=TRUE)
+  colnames(mean1_agg)[3] <- "sum"
+  summary_ROH_mean_class <- as.data.frame(data.table::dcast(data.table::as.data.table(mean1_agg), CLASS ~ group, value.var="sum"))
+  levels(summary_ROH_mean_class$CLASS) <- name_CLASS[0:5]
 
   #RESULTS!!!!!
-  summary_ROH_count =  ddply(runs,.(CLASS,group),nrow)
-  summary_ROH_count1=dcast(summary_ROH_count, CLASS ~ group , value.var = "V1")
-  rownames(summary_ROH_count1)=summary_ROH_count1$CLASS
-  summary_ROH_count1$CLASS=NULL
-  summary_ROH_count=summary_ROH_count1
-  summary_ROH_percentage= as.data.frame(t(as.data.frame( t(summary_ROH_count)/colSums(summary_ROH_count,na.rm=TRUE))))
-  summary_ROH_percentage$CLASS=row.names(summary_ROH_percentage)
-
+  mean_chr1_agg <- aggregate(runs$MB, by=list(group=runs$group, chrom=runs$chrom), FUN=mean, na.rm=TRUE)
+  colnames(mean_chr1_agg)[3] <- "sum"
+  summary_ROH_mean_chr <- reorderDF(as.data.frame(data.table::dcast(data.table::as.data.table(mean_chr1_agg), chrom ~ group, value.var="sum")))
 
   #RESULTS!!!!!
-  summary_ROH_count_chr =  ddply(runs,.(chrom,group),nrow)
-  summary_ROH_count_chr1=dcast(summary_ROH_count_chr, chrom ~ group , value.var = "V1")
-  rownames(summary_ROH_count_chr1)=summary_ROH_count_chr1$chrom
-  summary_ROH_count_chr1$chrom=NULL
-  summary_ROH_count_chr=summary_ROH_count_chr1
-  summary_ROH_percentage_chr= as.data.frame(t(as.data.frame( t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr,na.rm=TRUE))))
-  summary_ROH_percentage_chr$chrom=row.names(summary_ROH_percentage_chr)
+  count_agg <- aggregate(runs$MB, by=list(CLASS=runs$CLASS, group=runs$group), FUN=length)
+  colnames(count_agg)[3] <- "V1"
+  summary_ROH_count1 <- as.data.frame(data.table::dcast(data.table::as.data.table(count_agg), CLASS ~ group, value.var="V1"))
+  rownames(summary_ROH_count1) <- summary_ROH_count1$CLASS
+  summary_ROH_count1$CLASS <- NULL
+  summary_ROH_count <- summary_ROH_count1
+  summary_ROH_percentage <- as.data.frame(t(as.data.frame(t(summary_ROH_count)/colSums(summary_ROH_count, na.rm=TRUE))))
+  summary_ROH_percentage$CLASS <- row.names(summary_ROH_percentage)
+
+  #RESULTS!!!!!
+  count_chr_agg <- aggregate(runs$MB, by=list(chrom=runs$chrom, group=runs$group), FUN=length)
+  colnames(count_chr_agg)[3] <- "V1"
+  summary_ROH_count_chr1 <- as.data.frame(data.table::dcast(data.table::as.data.table(count_chr_agg), chrom ~ group, value.var="V1"))
+  rownames(summary_ROH_count_chr1) <- summary_ROH_count_chr1$chrom
+  summary_ROH_count_chr1$chrom <- NULL
+  summary_ROH_count_chr <- summary_ROH_count_chr1
+  summary_ROH_percentage_chr <- as.data.frame(t(as.data.frame(t(summary_ROH_count_chr)/colSums(summary_ROH_count_chr, na.rm=TRUE))))
+  summary_ROH_percentage_chr$chrom <- row.names(summary_ROH_percentage_chr)
 
 
   ########
   # Plot MeanClass, MeanChr, RunsPCT, RunsPCT_Chr
   # Runs mean by class
-  if (style == "MeanClass" | style == "All") {
-    long_DF=melt(summary_ROH_mean_class,id.vars = c("CLASS"))
+  if (method == "MeanClass" || method == "All") {
+    long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_mean_class), id.vars="CLASS")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g1 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group))
     g1 <- g1 + geom_bar(stat="identity", position=position_dodge())
@@ -945,9 +971,9 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
   # Runs Mean by Chromosome
-  if (style == "MeanChr" | style == "All") {
+  if (method == "MeanChr" || method == "All") {
     summary_ROH_mean_chr=reorderDF(summary_ROH_mean_chr)
-    long_DF=melt(summary_ROH_mean_chr,id.vars = c("chrom"))
+    long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_mean_chr), id.vars="chrom")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g2 <- ggplot(data=long_DF, aes(x=chrom, y=value, fill=group))
     g2 <- g2 + geom_bar(stat="identity", position=position_dodge())
@@ -958,8 +984,8 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
   # Runs percentage by Class
-  if (style == "RunsPCT" | style == "All") {
-    long_DF=melt(summary_ROH_percentage,id.vars = c("CLASS"))
+  if (method == "RunsPCT" || method == "All") {
+    long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_percentage), id.vars="CLASS")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g3 <- ggplot(data=long_DF, aes(x=CLASS, y=value, fill=group))
     g3 <- g3 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$CLASS))
@@ -970,9 +996,9 @@ plot_DistributionRuns <- function(runs, mapFile , groupSplit=TRUE, style=c("Mean
   }
 
   # Runs percentage by Chromosome
-  if (style == "RunsPCT_Chr" | style == "All") {
+  if (method == "RunsPCT_Chr" || method == "All") {
     summary_ROH_percentage_chr = reorderDF(summary_ROH_percentage_chr)
-    long_DF=melt(summary_ROH_percentage_chr,id.vars = c("chrom"))
+    long_DF <- data.table::melt(data.table::as.data.table(summary_ROH_percentage_chr), id.vars="chrom")
     colnames(long_DF)[colnames(long_DF)=='variable'] <- 'group'
     g4 <- ggplot(data=long_DF, aes(x=chrom, y=value, fill=group))
     g4 <- g4 + geom_bar(stat="identity", position=position_dodge()) + scale_x_discrete(limits=unique(long_DF$chrom))

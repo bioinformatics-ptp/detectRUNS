@@ -169,13 +169,6 @@ IntegerVector pedConvertCpp(CharacterVector genotype) {
 //'
 // [[Rcpp::export]]
 bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMiss, int maxGap) {
-  // check gaps
-  for (int i=0; i< gaps.size(); i++) {
-    if (gaps[i] > maxGap) {
-      return false;
-    }
-  }
-
   // count Heterozygots
   int nHet = std::count(x.begin(), x.end(), 1);
 
@@ -208,13 +201,6 @@ bool homoZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHet, int maxMi
 //'
 // [[Rcpp::export]]
 bool heteroZygotTestCpp(IntegerVector x, IntegerVector gaps, int maxHom, int maxMiss, int maxGap) {
-  // check gaps
-  for (int i=0; i< gaps.size(); i++) {
-    if (gaps[i] > maxGap) {
-      return false;
-    }
-  }
-
   // count Homozygots
   int nHom = std::count(x.begin(), x.end(), 0);
 
@@ -467,8 +453,8 @@ LogicalVector snpInRunCpp(LogicalVector RunVector, const int windowSize, const f
     //calc quotient
     quotient = hWin/nWin[i];
 
-    //vector of SNP belonging to a ROH. True if yes (quotient > threshold)
-    if (quotient > threshold) {
+    //vector of SNP belonging to a ROH. True if yes (quotient >= threshold, matches PLINK)
+    if (quotient >= threshold) {
       snpRun[i] = true;
     }
 
@@ -684,7 +670,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // update run_data values
       run_data.runH++;
       run_data.end = currentPos;
-      run_data.lengte = (run_data.end - run_data.start);
+      run_data.lengte = (run_data.end - run_data.start + 1);
 
     } // condition: the genotype I want
 
@@ -703,7 +689,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
       // update run_data values. This opposite genotype is a part of the RUN
         run_data.runH++;
         run_data.end = currentPos;
-        run_data.lengte = (run_data.end - run_data.start);
+        run_data.lengte = (run_data.end - run_data.start + 1);
 
       } else {
         // debug
@@ -735,7 +721,7 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
         // update run_data values. This missing genotype is a part of the RUN
         run_data.runH++;
         run_data.end = currentPos;
-        run_data.lengte = (run_data.end - run_data.start);
+        run_data.lengte = (run_data.end - run_data.start + 1);
       } else {
         // debug
         // Rcout << "max missing reached" << std::endl;
@@ -772,13 +758,6 @@ DataFrame consecutiveRunsCpp(IntegerVector indGeno, List individual, DataFrame m
     Named("group")=group, Named("id")=id, Named("chrom")=chrom, Named("nSNP")=nSNP,
     Named("from")=from, Named("to")=to, Named("lengthBps")=lengthBps,
     _["stringsAsFactors"] = false);
-
-  // debug
-  if(res.nrows() > 0) {
-    Rcout << "N. of RUNS for individual " << iid << " is: " << res.nrows() << std::endl;
-  } else {
-    Rcout << "No RUNs found for animal " << iid << std::endl;
-  }
 
   // returning all runs for this individual genotype
   return(res);
@@ -1164,16 +1143,15 @@ DataFrame filter_snpInsideRuns_by_breed(
 //' # calculating runs of Homozygosity
 //' \dontrun{
 //' # skipping runs calculation
-//' runs <- slidingRUNS.run(genotypeFile, mapFile,
-//'   windowSize = 15, threshold = 0.1, minSNP = 15,
-//'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+//' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+//'   ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000
 //' )
 //' }
 //' # loading pre-calculated data
 //' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 //' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 //'
-//' table <- tableRuns(
+//' table <- tableRunsCpp(
 //'   runs = runsDF, genotypeFile = genotypeFile,
 //'   mapFile = mapFile, threshold = 0.5)
 //'
@@ -1181,7 +1159,7 @@ DataFrame filter_snpInsideRuns_by_breed(
 //' @importFrom Rcpp sourceCpp
 //'
 // [[Rcpp::export]]
-DataFrame tableRuns(
+DataFrame tableRunsCpp(
     DataFrame runs, std::string genotypeFile, std::string mapFile,
     const float threshold = 0.5) {
 
@@ -1228,9 +1206,9 @@ DataFrame tableRuns(
     std::string chrom = as<std::string>(unique_chromosomes[i]);
 
     Rprintf(
-      "Processing chromosome '%s' (%d/%d)\n",
+      "Processing chromosome '%s' (%u/%u)\n",
       chrom.c_str(),
-      (int)(i+1), (int)unique_chromosomes.size());
+      i+1, (unsigned int)unique_chromosomes.size());
 
     // extract the desired chrom
     DataFrame runsChrom = subset_runs_by_chrom(runs, chrom);

@@ -223,23 +223,112 @@ snpInsideRunsCpp <- function(runsChrom, mapChrom, pops) {
 #' # calculating runs of Homozygosity
 #' \dontrun{
 #' # skipping runs calculation
-#' runs <- slidingRUNS.run(genotypeFile, mapFile,
-#'   windowSize = 15, threshold = 0.1, minSNP = 15,
-#'   ROHet = FALSE, maxOppositeGenotype = 1, maxMiss = 1, minLengthBps = 100000, minDensity = 1 / 10000
+#' runs <- scanRUNS(genotypeFile, method = "sliding", windowSize = 15, threshold = 0.1, minSNP = 15,
+#'   ROHet = FALSE, maxOpp = 1, maxMiss = 1, minLengthBps = 100000
 #' )
 #' }
 #' # loading pre-calculated data
 #' runsFile <- system.file("extdata", "Kijas2016_Sheep_subset.sliding.csv", package = "detectRUNS")
 #' runsDF <- readExternalRuns(inputFile = runsFile, program = "detectRUNS")
 #'
-#' table <- tableRuns(
+#' table <- tableRunsCpp(
 #'   runs = runsDF, genotypeFile = genotypeFile,
 #'   mapFile = mapFile, threshold = 0.5)
 #'
 #' @useDynLib detectRUNS
 #' @importFrom Rcpp sourceCpp
 #'
-tableRuns <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
-    .Call('_detectRUNS_tableRuns', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
+tableRunsCpp <- function(runs, genotypeFile, mapFile, threshold = 0.5) {
+    .Call('_detectRUNS_tableRunsCpp', PACKAGE = 'detectRUNS', runs, genotypeFile, mapFile, threshold)
+}
+
+#' Scan PLINK binary (BED/BIM/FAM) for runs of homozygosity or heterozygosity
+#'
+#' Low-level C++ entry point called by \code{scanRUNS()}.
+#' Do not call directly; use \code{scanRUNS()} instead.
+#'
+#' @param bed_path Path to the .bed file
+#' @param bim_path Path to the .bim file
+#' @param fam_path Path to the .fam file
+#' @param method Integer: 0 = consecutive (Marras 2015), 1 = sliding window (Bjelland 2013)
+#' @param roh_type Integer: 0 = ROHom, 1 = ROHet
+#' @param min_snps Minimum SNPs in a qualifying run
+#' @param max_opposite Max opposite-type genotypes in a run (consecutive) or window (sliding)
+#' @param max_missing Max missing genotypes in a run (consecutive) or window (sliding)
+#' @param min_length_bp Minimum run length in base pairs
+#' @param max_gap Max gap between consecutive SNPs (bp); >= this breaks a run
+#' @param window_size Window width in SNPs (method=1 only)
+#' @param threshold Bjelland coverage ratio threshold, strictly > (method=1 only)
+#' @param n_threads Number of OpenMP threads (1 = single-threaded)
+#' @param verbose If TRUE, print a progress bar during scan and a summary on completion
+#' @return Named list: runs, summary, snp_freq, chrom_map
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_scan_roh_bed <- function(bed_path, bim_path, fam_path, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, verbose) {
+    .Call('_detectRUNS_C_scan_roh_bed', PACKAGE = 'detectRUNS', bed_path, bim_path, fam_path, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, verbose)
+}
+
+#' Save ROH scan results to a compact binary file
+#'
+#' Low-level C++ entry point called by \code{saveROH()}.
+#' Do not call directly.
+#'
+#' @param runs_df   data.frame with columns group, id, chrom, nSNP, from, to, lengthBps
+#' @param chrom_map_r Named integer vector from \code{scanRUNS()$chrom_map}
+#' @param path      Output file path
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_save_roh <- function(runs_df, chrom_map_r, path) {
+    invisible(.Call('_detectRUNS_C_save_roh', PACKAGE = 'detectRUNS', runs_df, chrom_map_r, path))
+}
+
+#' Load ROH scan results from a binary file
+#'
+#' Low-level C++ entry point called by \code{loadROH()}.
+#' Do not call directly.
+#'
+#' @param path Path to a .roh binary file written by \code{saveROH()}
+#' @return Named list with element \code{runs} (data.frame, same format as
+#'   \code{scanRUNS()$runs})
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_load_roh <- function(path) {
+    .Call('_detectRUNS_C_load_roh', PACKAGE = 'detectRUNS', path)
+}
+
+#' Permutation-based ROH island detection
+#'
+#' Low-level C++ entry point called by \code{rohIslands()}.
+#' Do not call directly; use \code{rohIslands()} instead.
+#'
+#' @param bed_path    Path to the .bed file
+#' @param bim_path    Path to the .bim file
+#' @param fam_path    Path to the .fam file
+#' @param snp_freq_r  Named integer vector of real SNPROH counts from
+#'   \code{scanRUNS()$snp_freq}
+#' @param method      Integer: 0=consecutive, 1=sliding
+#' @param roh_type    Integer: 0=ROHom, 1=ROHet
+#' @param min_snps    Same parameter as the original scan
+#' @param max_opposite Same parameter as the original scan
+#' @param max_missing Same parameter as the original scan
+#' @param min_length_bp Same parameter as the original scan
+#' @param max_gap     Same parameter as the original scan
+#' @param window_size Sliding window width (sliding method only)
+#' @param threshold   Coverage ratio threshold (sliding method only)
+#' @param n_threads   OpenMP thread count (parallelism over permutations)
+#' @param n_perm      Number of permutations
+#' @param percentile  Quantile for threshold derivation (e.g. 0.99)
+#' @param seed        MT19937 seed; 0 = draw from random_device
+#'
+#' @return Named list with \code{thresholds} (named numeric vector, one per
+#'   chromosome) and \code{is_island} (named logical vector, one per SNP).
+#'
+#' @useDynLib detectRUNS
+#' @importFrom Rcpp sourceCpp
+C_perm_roh_islands <- function(bed_path, bim_path, fam_path, snp_freq_r, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, n_perm, percentile, seed) {
+    .Call('_detectRUNS_C_perm_roh_islands', PACKAGE = 'detectRUNS', bed_path, bim_path, fam_path, snp_freq_r, method, roh_type, min_snps, max_opposite, max_missing, min_length_bp, max_gap, window_size, threshold, n_threads, n_perm, percentile, seed)
 }
 
